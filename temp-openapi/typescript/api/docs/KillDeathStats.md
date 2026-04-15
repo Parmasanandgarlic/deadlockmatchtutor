@@ -1,0 +1,28 @@
+# KillDeathStats
+
+
+## Properties
+
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**deaths** | **number** |  | [default to undefined]
+**killer_team** | **number** |  | [default to undefined]
+**kills** | **number** |  | [default to undefined]
+**position_x** | **number** |  | [default to undefined]
+**position_y** | **number** |  | [default to undefined]
+
+## Example
+
+```typescript
+import { KillDeathStats } from 'deadlock_api_client';
+
+const instance: KillDeathStats = {
+    deaths,
+    killer_team,
+    kills,
+    position_x,
+    position_y,
+};
+```
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

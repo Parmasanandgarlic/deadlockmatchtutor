@@ -1,0 +1,19 @@
+# CreateCustomRequest
+
+## Properties
+
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**callback_url** | Option<**String**> | If a callback url is provided, we will send a POST request to this url when the match starts. | [optional]
+**cheats_enabled** | Option<**bool**> |  | [optional]
+**disable_auto_ready** | Option<**bool**> | If auto-ready is disabled, the bot will not automatically ready up. You need to call the `ready` endpoint to ready up. | [optional]
+**duplicate_heroes_enabled** | Option<**bool**> |  | [optional]
+**game_mode** | Option<[**models::GameMode**](GameMode.md)> |  | [optional]
+**is_publicly_visible** | Option<**bool**> |  | [optional]
+**min_roster_size** | Option<**u32**> |  | [optional]
+**randomize_lanes** | Option<**bool**> |  | [optional]
+**server_region** | Option<[**models::ServerRegion**](ServerRegion.md)> |  | [optional]
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
+

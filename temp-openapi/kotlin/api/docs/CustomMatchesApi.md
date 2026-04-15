@@ -1,0 +1,286 @@
+# CustomMatchesApi
+
+All URIs are relative to *https://api.deadlock-api.com*
+
+| Method | HTTP request | Description |
+| ------------- | ------------- | ------------- |
+| [**createCustom**](CustomMatchesApi.md#createCustom) | **POST** /v1/matches/custom/create | Create Match |
+| [**getCustom**](CustomMatchesApi.md#getCustom) | **GET** /v1/matches/custom/{party_id}/match-id | Get Match ID |
+| [**leave**](CustomMatchesApi.md#leave) | **POST** /v1/matches/custom/{lobby_id}/leave | Leave Lobby |
+| [**readyUp**](CustomMatchesApi.md#readyUp) | **POST** /v1/matches/custom/{lobby_id}/ready | Ready Up |
+| [**start**](CustomMatchesApi.md#start) | **POST** /v1/matches/custom/{lobby_id}/start | Start Match |
+| [**unready**](CustomMatchesApi.md#unready) | **POST** /v1/matches/custom/{lobby_id}/unready | Unready |
+
+
+<a id="createCustom"></a>
+# **createCustom**
+> CreateCustomResponse createCustom(createCustomRequest)
+
+Create Match
+
+ This endpoint creates a custom match using a bot account.  **Process:** 1. A party is created with your provided settings. 2. The system waits for the party code to be generated. 3. The party code is returned in the response. 4. The bot switches to spectator mode. 5. The bot marks itself as ready. 6. You and other players join, ready up, and start the match.  **Callbacks:** If a callback URL is provided, POST requests will be sent to it: - **settings:** When lobby settings change, a POST is sent to &#x60;{callback_url}/settings&#x60; with the &#x60;CsoCitadelParty&#x60; protobuf message as JSON. - **match start:** When the match starts, a POST is sent to &#x60;{callback_url}&#x60; with the match ID.  _Protobuf definitions: [https://github.com/SteamDatabase/Protobufs](https://github.com/SteamDatabase/Protobufs)_  **Note:** The bot will leave the match 15 minutes after creation, regardless of match state.  ### Rate Limits: | Type | Limit | | ---- | ----- | | IP | API-Key ONLY | | Key | 100req/30min | | Global | 1000req/h | 
+
+### Example
+```kotlin
+// Import classes:
+//import deadlock_api_client.infrastructure.*
+//import deadlock_api_client.models.*
+
+val apiInstance = CustomMatchesApi()
+val createCustomRequest : CreateCustomRequest =  // CreateCustomRequest | 
+try {
+    val result : CreateCustomResponse = apiInstance.createCustom(createCustomRequest)
+    println(result)
+} catch (e: ClientException) {
+    println("4xx response calling CustomMatchesApi#createCustom")
+    e.printStackTrace()
+} catch (e: ServerException) {
+    println("5xx response calling CustomMatchesApi#createCustom")
+    e.printStackTrace()
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **createCustomRequest** | [**CreateCustomRequest**](CreateCustomRequest.md)|  | |
+
+### Return type
+
+[**CreateCustomResponse**](CreateCustomResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a id="getCustom"></a>
+# **getCustom**
+> GetCustomMatchIdResponse getCustom(partyId)
+
+Get Match ID
+
+ This endpoint allows you to get the match id of a custom match.  ### Rate Limits: | Type | Limit | | ---- | ----- | | IP | 100req/s | | Key | - | | Global | - | 
+
+### Example
+```kotlin
+// Import classes:
+//import deadlock_api_client.infrastructure.*
+//import deadlock_api_client.models.*
+
+val apiInstance = CustomMatchesApi()
+val partyId : kotlin.Long = 789 // kotlin.Long | 
+try {
+    val result : GetCustomMatchIdResponse = apiInstance.getCustom(partyId)
+    println(result)
+} catch (e: ClientException) {
+    println("4xx response calling CustomMatchesApi#getCustom")
+    e.printStackTrace()
+} catch (e: ServerException) {
+    println("5xx response calling CustomMatchesApi#getCustom")
+    e.printStackTrace()
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **partyId** | **kotlin.Long**|  | |
+
+### Return type
+
+[**GetCustomMatchIdResponse**](GetCustomMatchIdResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+<a id="leave"></a>
+# **leave**
+> leave(lobbyId)
+
+Leave Lobby
+
+ This endpoint makes the bot leave the custom match lobby early. By default the bot leaves automatically after 15 minutes, but this endpoint allows you to trigger it sooner.  ### Rate Limits: | Type | Limit | | ---- | ----- | | IP | API-Key ONLY | | Key | 100req/30min | | Global | 1000req/h | 
+
+### Example
+```kotlin
+// Import classes:
+//import deadlock_api_client.infrastructure.*
+//import deadlock_api_client.models.*
+
+val apiInstance = CustomMatchesApi()
+val lobbyId : kotlin.String = lobbyId_example // kotlin.String | 
+try {
+    apiInstance.leave(lobbyId)
+} catch (e: ClientException) {
+    println("4xx response calling CustomMatchesApi#leave")
+    e.printStackTrace()
+} catch (e: ServerException) {
+    println("5xx response calling CustomMatchesApi#leave")
+    e.printStackTrace()
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **lobbyId** | **kotlin.String**|  | |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+<a id="readyUp"></a>
+# **readyUp**
+> readyUp(lobbyId)
+
+Ready Up
+
+ This endpoint allows you to ready up for a custom match.  ### Rate Limits: | Type | Limit | | ---- | ----- | | IP | API-Key ONLY | | Key | 100req/30min | | Global | 1000req/h | 
+
+### Example
+```kotlin
+// Import classes:
+//import deadlock_api_client.infrastructure.*
+//import deadlock_api_client.models.*
+
+val apiInstance = CustomMatchesApi()
+val lobbyId : kotlin.String = lobbyId_example // kotlin.String | 
+try {
+    apiInstance.readyUp(lobbyId)
+} catch (e: ClientException) {
+    println("4xx response calling CustomMatchesApi#readyUp")
+    e.printStackTrace()
+} catch (e: ServerException) {
+    println("5xx response calling CustomMatchesApi#readyUp")
+    e.printStackTrace()
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **lobbyId** | **kotlin.String**|  | |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+<a id="start"></a>
+# **start**
+> start(lobbyId)
+
+Start Match
+
+ This endpoint starts a custom match.  ### Rate Limits: | Type | Limit | | ---- | ----- | | IP | API-Key ONLY | | Key | 100req/30min | | Global | 1000req/h | 
+
+### Example
+```kotlin
+// Import classes:
+//import deadlock_api_client.infrastructure.*
+//import deadlock_api_client.models.*
+
+val apiInstance = CustomMatchesApi()
+val lobbyId : kotlin.String = lobbyId_example // kotlin.String | 
+try {
+    apiInstance.start(lobbyId)
+} catch (e: ClientException) {
+    println("4xx response calling CustomMatchesApi#start")
+    e.printStackTrace()
+} catch (e: ServerException) {
+    println("5xx response calling CustomMatchesApi#start")
+    e.printStackTrace()
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **lobbyId** | **kotlin.String**|  | |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+<a id="unready"></a>
+# **unready**
+> unready(lobbyId)
+
+Unready
+
+ This endpoint allows you to unready for a custom match.  ### Rate Limits: | Type | Limit | | ---- | ----- | | IP | API-Key ONLY | | Key | 100req/30min | | Global | 1000req/h | 
+
+### Example
+```kotlin
+// Import classes:
+//import deadlock_api_client.infrastructure.*
+//import deadlock_api_client.models.*
+
+val apiInstance = CustomMatchesApi()
+val lobbyId : kotlin.String = lobbyId_example // kotlin.String | 
+try {
+    apiInstance.unready(lobbyId)
+} catch (e: ClientException) {
+    println("4xx response calling CustomMatchesApi#unready")
+    e.printStackTrace()
+} catch (e: ServerException) {
+    println("5xx response calling CustomMatchesApi#unready")
+    e.printStackTrace()
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **lobbyId** | **kotlin.String**|  | |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+

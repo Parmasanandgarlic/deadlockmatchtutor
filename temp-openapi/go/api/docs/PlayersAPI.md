@@ -1,0 +1,563 @@
+# \PlayersAPI
+
+All URIs are relative to *https://api.deadlock-api.com*
+
+Method | HTTP request | Description
+------------- | ------------- | -------------
+[**AccountStats**](PlayersAPI.md#AccountStats) | **Get** /v1/players/{account_id}/account-stats | Account Stats
+[**Card**](PlayersAPI.md#Card) | **Get** /v1/players/{account_id}/card | Card
+[**EnemyStats**](PlayersAPI.md#EnemyStats) | **Get** /v1/players/{account_id}/enemy-stats | Enemy Stats
+[**MatchHistory**](PlayersAPI.md#MatchHistory) | **Get** /v1/players/{account_id}/match-history | Match History
+[**MateStats**](PlayersAPI.md#MateStats) | **Get** /v1/players/{account_id}/mate-stats | Mate Stats
+[**PlayerHeroStats**](PlayersAPI.md#PlayerHeroStats) | **Get** /v1/players/hero-stats | Hero Stats
+[**RankPredict**](PlayersAPI.md#RankPredict) | **Get** /v1/players/{account_id}/rank-predict | Rank Predict
+
+
+
+## AccountStats
+
+> []PlayerAccountStats AccountStats(ctx, accountId).Execute()
+
+Account Stats
+
+
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/deadlock-api/openapi-clients"
+)
+
+func main() {
+	accountId := int32(56) // int32 | The players `SteamID3`
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.PlayersAPI.AccountStats(context.Background(), accountId).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `PlayersAPI.AccountStats``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `AccountStats`: []PlayerAccountStats
+	fmt.Fprintf(os.Stdout, "Response from `PlayersAPI.AccountStats`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**accountId** | **int32** | The players &#x60;SteamID3&#x60; | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiAccountStatsRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+
+### Return type
+
+[**[]PlayerAccountStats**](PlayerAccountStats.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## Card
+
+> []PlayerCard Card(ctx, accountId).Execute()
+
+Card
+
+
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/deadlock-api/openapi-clients"
+)
+
+func main() {
+	accountId := int32(56) // int32 | The players `SteamID3`
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.PlayersAPI.Card(context.Background(), accountId).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `PlayersAPI.Card``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `Card`: []PlayerCard
+	fmt.Fprintf(os.Stdout, "Response from `PlayersAPI.Card`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**accountId** | **int32** | The players &#x60;SteamID3&#x60; | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiCardRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+
+### Return type
+
+[**[]PlayerCard**](PlayerCard.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## EnemyStats
+
+> []EnemyStats EnemyStats(ctx, accountId).GameMode(gameMode).MinUnixTimestamp(minUnixTimestamp).MaxUnixTimestamp(maxUnixTimestamp).MinDurationS(minDurationS).MaxDurationS(maxDurationS).MinMatchId(minMatchId).MaxMatchId(maxMatchId).MinMatchesPlayed(minMatchesPlayed).MaxMatchesPlayed(maxMatchesPlayed).Execute()
+
+Enemy Stats
+
+
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/deadlock-api/openapi-clients"
+)
+
+func main() {
+	accountId := int32(56) // int32 | The players `SteamID3`
+	gameMode := "gameMode_example" // string | Filter matches based on their game mode. Valid values: `normal`, `street_brawl`. **Default:** `normal`. (optional)
+	minUnixTimestamp := int64(789) // int64 | Filter matches based on their start time (Unix timestamp). (optional)
+	maxUnixTimestamp := int64(789) // int64 | Filter matches based on their start time (Unix timestamp). (optional)
+	minDurationS := int64(789) // int64 | Filter matches based on their duration in seconds (up to 7000s). (optional)
+	maxDurationS := int64(789) // int64 | Filter matches based on their duration in seconds (up to 7000s). (optional)
+	minMatchId := int64(789) // int64 | Filter matches based on their ID. (optional)
+	maxMatchId := int64(789) // int64 | Filter matches based on their ID. (optional)
+	minMatchesPlayed := int64(789) // int64 | Filter based on the number of matches played. (optional)
+	maxMatchesPlayed := int64(789) // int64 | Filter based on the number of matches played. (optional)
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.PlayersAPI.EnemyStats(context.Background(), accountId).GameMode(gameMode).MinUnixTimestamp(minUnixTimestamp).MaxUnixTimestamp(maxUnixTimestamp).MinDurationS(minDurationS).MaxDurationS(maxDurationS).MinMatchId(minMatchId).MaxMatchId(maxMatchId).MinMatchesPlayed(minMatchesPlayed).MaxMatchesPlayed(maxMatchesPlayed).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `PlayersAPI.EnemyStats``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `EnemyStats`: []EnemyStats
+	fmt.Fprintf(os.Stdout, "Response from `PlayersAPI.EnemyStats`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**accountId** | **int32** | The players &#x60;SteamID3&#x60; | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiEnemyStatsRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+ **gameMode** | **string** | Filter matches based on their game mode. Valid values: &#x60;normal&#x60;, &#x60;street_brawl&#x60;. **Default:** &#x60;normal&#x60;. | 
+ **minUnixTimestamp** | **int64** | Filter matches based on their start time (Unix timestamp). | 
+ **maxUnixTimestamp** | **int64** | Filter matches based on their start time (Unix timestamp). | 
+ **minDurationS** | **int64** | Filter matches based on their duration in seconds (up to 7000s). | 
+ **maxDurationS** | **int64** | Filter matches based on their duration in seconds (up to 7000s). | 
+ **minMatchId** | **int64** | Filter matches based on their ID. | 
+ **maxMatchId** | **int64** | Filter matches based on their ID. | 
+ **minMatchesPlayed** | **int64** | Filter based on the number of matches played. | 
+ **maxMatchesPlayed** | **int64** | Filter based on the number of matches played. | 
+
+### Return type
+
+[**[]EnemyStats**](EnemyStats.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## MatchHistory
+
+> []PlayerMatchHistoryEntry MatchHistory(ctx, accountId).ForceRefetch(forceRefetch).Execute()
+
+Match History
+
+
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/deadlock-api/openapi-clients"
+)
+
+func main() {
+	accountId := int32(56) // int32 | The players `SteamID3`
+	forceRefetch := true // bool | Refetch the match history from Steam, even if it is already cached in `ClickHouse`. Only use this if you are sure that the data in `ClickHouse` is outdated. Enabling this flag results in a strict rate limit. (optional)
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.PlayersAPI.MatchHistory(context.Background(), accountId).ForceRefetch(forceRefetch).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `PlayersAPI.MatchHistory``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `MatchHistory`: []PlayerMatchHistoryEntry
+	fmt.Fprintf(os.Stdout, "Response from `PlayersAPI.MatchHistory`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**accountId** | **int32** | The players &#x60;SteamID3&#x60; | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiMatchHistoryRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+ **forceRefetch** | **bool** | Refetch the match history from Steam, even if it is already cached in &#x60;ClickHouse&#x60;. Only use this if you are sure that the data in &#x60;ClickHouse&#x60; is outdated. Enabling this flag results in a strict rate limit. | 
+
+### Return type
+
+[**[]PlayerMatchHistoryEntry**](PlayerMatchHistoryEntry.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## MateStats
+
+> []MateStats MateStats(ctx, accountId).GameMode(gameMode).MinUnixTimestamp(minUnixTimestamp).MaxUnixTimestamp(maxUnixTimestamp).MinDurationS(minDurationS).MaxDurationS(maxDurationS).MinMatchId(minMatchId).MaxMatchId(maxMatchId).MinMatchesPlayed(minMatchesPlayed).MaxMatchesPlayed(maxMatchesPlayed).Execute()
+
+Mate Stats
+
+
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/deadlock-api/openapi-clients"
+)
+
+func main() {
+	accountId := int32(56) // int32 | The players `SteamID3`
+	gameMode := "gameMode_example" // string | Filter matches based on their game mode. Valid values: `normal`, `street_brawl`. **Default:** `normal`. (optional)
+	minUnixTimestamp := int64(789) // int64 | Filter matches based on their start time (Unix timestamp). (optional)
+	maxUnixTimestamp := int64(789) // int64 | Filter matches based on their start time (Unix timestamp). (optional)
+	minDurationS := int64(789) // int64 | Filter matches based on their duration in seconds (up to 7000s). (optional)
+	maxDurationS := int64(789) // int64 | Filter matches based on their duration in seconds (up to 7000s). (optional)
+	minMatchId := int64(789) // int64 | Filter matches based on their ID. (optional)
+	maxMatchId := int64(789) // int64 | Filter matches based on their ID. (optional)
+	minMatchesPlayed := int64(789) // int64 | Filter based on the number of matches played. (optional)
+	maxMatchesPlayed := int64(789) // int64 | Filter based on the number of matches played. (optional)
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.PlayersAPI.MateStats(context.Background(), accountId).GameMode(gameMode).MinUnixTimestamp(minUnixTimestamp).MaxUnixTimestamp(maxUnixTimestamp).MinDurationS(minDurationS).MaxDurationS(maxDurationS).MinMatchId(minMatchId).MaxMatchId(maxMatchId).MinMatchesPlayed(minMatchesPlayed).MaxMatchesPlayed(maxMatchesPlayed).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `PlayersAPI.MateStats``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `MateStats`: []MateStats
+	fmt.Fprintf(os.Stdout, "Response from `PlayersAPI.MateStats`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**accountId** | **int32** | The players &#x60;SteamID3&#x60; | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiMateStatsRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+ **gameMode** | **string** | Filter matches based on their game mode. Valid values: &#x60;normal&#x60;, &#x60;street_brawl&#x60;. **Default:** &#x60;normal&#x60;. | 
+ **minUnixTimestamp** | **int64** | Filter matches based on their start time (Unix timestamp). | 
+ **maxUnixTimestamp** | **int64** | Filter matches based on their start time (Unix timestamp). | 
+ **minDurationS** | **int64** | Filter matches based on their duration in seconds (up to 7000s). | 
+ **maxDurationS** | **int64** | Filter matches based on their duration in seconds (up to 7000s). | 
+ **minMatchId** | **int64** | Filter matches based on their ID. | 
+ **maxMatchId** | **int64** | Filter matches based on their ID. | 
+ **minMatchesPlayed** | **int64** | Filter based on the number of matches played. | 
+ **maxMatchesPlayed** | **int64** | Filter based on the number of matches played. | 
+
+### Return type
+
+[**[]MateStats**](MateStats.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## PlayerHeroStats
+
+> []HeroStats PlayerHeroStats(ctx).AccountIds(accountIds).GameMode(gameMode).HeroIds(heroIds).MinUnixTimestamp(minUnixTimestamp).MaxUnixTimestamp(maxUnixTimestamp).MinDurationS(minDurationS).MaxDurationS(maxDurationS).MinNetworth(minNetworth).MaxNetworth(maxNetworth).MinAverageBadge(minAverageBadge).MaxAverageBadge(maxAverageBadge).MinMatchId(minMatchId).MaxMatchId(maxMatchId).Execute()
+
+Hero Stats
+
+
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/deadlock-api/openapi-clients"
+)
+
+func main() {
+	accountIds := []int32{int32(123)} // []int32 | Comma separated list of account ids, Account IDs are in `SteamID3` format.
+	gameMode := "gameMode_example" // string | Filter matches based on their game mode. Valid values: `normal`, `street_brawl`. **Default:** `normal`. (optional)
+	heroIds := "heroIds_example" // string | Filter matches based on the hero IDs. See more: <https://assets.deadlock-api.com/v2/heroes> (optional)
+	minUnixTimestamp := int64(789) // int64 | Filter matches based on their start time (Unix timestamp). (optional)
+	maxUnixTimestamp := int64(789) // int64 | Filter matches based on their start time (Unix timestamp). (optional)
+	minDurationS := int64(789) // int64 | Filter matches based on their duration in seconds (up to 7000s). (optional)
+	maxDurationS := int64(789) // int64 | Filter matches based on their duration in seconds (up to 7000s). (optional)
+	minNetworth := int64(789) // int64 | Filter players based on their final net worth. (optional)
+	maxNetworth := int64(789) // int64 | Filter players based on their final net worth. (optional)
+	minAverageBadge := int32(56) // int32 | Filter matches based on the average badge level (tier = first digits, subtier = last digit) of *both* teams involved. See more: <https://assets.deadlock-api.com/v2/ranks> (optional)
+	maxAverageBadge := int32(56) // int32 | Filter matches based on the average badge level (tier = first digits, subtier = last digit) of *both* teams involved. See more: <https://assets.deadlock-api.com/v2/ranks> (optional)
+	minMatchId := int64(789) // int64 | Filter matches based on their ID. (optional)
+	maxMatchId := int64(789) // int64 | Filter matches based on their ID. (optional)
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.PlayersAPI.PlayerHeroStats(context.Background()).AccountIds(accountIds).GameMode(gameMode).HeroIds(heroIds).MinUnixTimestamp(minUnixTimestamp).MaxUnixTimestamp(maxUnixTimestamp).MinDurationS(minDurationS).MaxDurationS(maxDurationS).MinNetworth(minNetworth).MaxNetworth(maxNetworth).MinAverageBadge(minAverageBadge).MaxAverageBadge(maxAverageBadge).MinMatchId(minMatchId).MaxMatchId(maxMatchId).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `PlayersAPI.PlayerHeroStats``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `PlayerHeroStats`: []HeroStats
+	fmt.Fprintf(os.Stdout, "Response from `PlayersAPI.PlayerHeroStats`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiPlayerHeroStatsRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **accountIds** | **[]int32** | Comma separated list of account ids, Account IDs are in &#x60;SteamID3&#x60; format. | 
+ **gameMode** | **string** | Filter matches based on their game mode. Valid values: &#x60;normal&#x60;, &#x60;street_brawl&#x60;. **Default:** &#x60;normal&#x60;. | 
+ **heroIds** | **string** | Filter matches based on the hero IDs. See more: &lt;https://assets.deadlock-api.com/v2/heroes&gt; | 
+ **minUnixTimestamp** | **int64** | Filter matches based on their start time (Unix timestamp). | 
+ **maxUnixTimestamp** | **int64** | Filter matches based on their start time (Unix timestamp). | 
+ **minDurationS** | **int64** | Filter matches based on their duration in seconds (up to 7000s). | 
+ **maxDurationS** | **int64** | Filter matches based on their duration in seconds (up to 7000s). | 
+ **minNetworth** | **int64** | Filter players based on their final net worth. | 
+ **maxNetworth** | **int64** | Filter players based on their final net worth. | 
+ **minAverageBadge** | **int32** | Filter matches based on the average badge level (tier &#x3D; first digits, subtier &#x3D; last digit) of *both* teams involved. See more: &lt;https://assets.deadlock-api.com/v2/ranks&gt; | 
+ **maxAverageBadge** | **int32** | Filter matches based on the average badge level (tier &#x3D; first digits, subtier &#x3D; last digit) of *both* teams involved. See more: &lt;https://assets.deadlock-api.com/v2/ranks&gt; | 
+ **minMatchId** | **int64** | Filter matches based on their ID. | 
+ **maxMatchId** | **int64** | Filter matches based on their ID. | 
+
+### Return type
+
+[**[]HeroStats**](HeroStats.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## RankPredict
+
+> RankPredictResponse RankPredict(ctx, accountId).Execute()
+
+Rank Predict
+
+
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/deadlock-api/openapi-clients"
+)
+
+func main() {
+	accountId := int32(56) // int32 | The players `SteamID3`
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.PlayersAPI.RankPredict(context.Background(), accountId).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `PlayersAPI.RankPredict``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `RankPredict`: RankPredictResponse
+	fmt.Fprintf(os.Stdout, "Response from `PlayersAPI.RankPredict`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**accountId** | **int32** | The players &#x60;SteamID3&#x60; | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiRankPredictRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+
+### Return type
+
+[**RankPredictResponse**](RankPredictResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+

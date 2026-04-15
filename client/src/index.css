@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #1e2230 #0c0e14;
+  }
+
+  *::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: #0c0e14;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: #1e2230;
+    border-radius: 3px;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-deadlock-surface border border-deadlock-border rounded-xl p-5;
+  }
+
+  .btn-primary {
+    @apply bg-deadlock-accent hover:bg-deadlock-accent-dim text-black font-semibold
+           px-6 py-2.5 rounded-lg transition-colors duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-deadlock-surface border border-deadlock-border hover:border-deadlock-accent
+           text-deadlock-text font-medium px-5 py-2 rounded-lg transition-colors duration-200;
+  }
+
+  .input-field {
+    @apply w-full bg-deadlock-bg border border-deadlock-border rounded-lg
+           px-4 py-3 text-deadlock-text placeholder-deadlock-muted
+           focus:outline-none focus:border-deadlock-accent focus:ring-1 focus:ring-deadlock-accent
+           transition-colors duration-200;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-win {
+    @apply badge bg-deadlock-green/15 text-deadlock-green;
+  }
+
+  .badge-loss {
+    @apply badge bg-deadlock-red/15 text-deadlock-red;
+  }
+
+  .tab {
+    @apply px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200
+           text-deadlock-text-dim hover:text-deadlock-text hover:bg-deadlock-border/50;
+  }
+
+  .tab-active {
+    @apply tab bg-deadlock-accent/15 text-deadlock-accent;
+  }
+}

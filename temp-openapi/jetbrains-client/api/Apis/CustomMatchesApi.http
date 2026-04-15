@@ -1,0 +1,41 @@
+## CustomMatchesApi
+
+### Create Match
+## Create Match
+POST https://api.deadlock-api.com/v1/matches/custom/create
+Content-Type: application/json
+Accept: application/json
+
+{
+ "callback_url": "<string>",
+ "cheats_enabled": "<string>",
+ "disable_auto_ready": "<string>",
+ "duplicate_heroes_enabled": "<string>",
+ "game_mode": "<string>",
+ "is_publicly_visible": "<string>",
+ "min_roster_size": "<number>",
+ "randomize_lanes": "<string>",
+ "server_region": "<string>"
+}
+
+
+### Get Match ID
+## Get Match ID
+GET https://api.deadlock-api.com/v1/matches/custom/{{party_id}}/match-id
+Accept: application/json
+
+### Leave Lobby
+## Leave Lobby
+POST https://api.deadlock-api.com/v1/matches/custom/{{lobby_id}}/leave
+
+### Ready Up
+## Ready Up
+POST https://api.deadlock-api.com/v1/matches/custom/{{lobby_id}}/ready
+
+### Start Match
+## Start Match
+POST https://api.deadlock-api.com/v1/matches/custom/{{lobby_id}}/start
+
+### Unready
+## Unready
+POST https://api.deadlock-api.com/v1/matches/custom/{{lobby_id}}/unready

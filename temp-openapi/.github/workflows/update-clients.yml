@@ -1,0 +1,32 @@
+name: Update API Clients
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs every day at midnight
+  workflow_dispatch:
+
+jobs:
+  update-clients:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Run make clean all
+        run: make clean all
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          commit_message: "chore: Automated API client updates"
+          branch: master
