@@ -1,5 +1,5 @@
 import ItemTimingChart from '../charts/ItemTimingChart';
-import { formatTime, formatNumber } from '../../utils/formatters';
+import { formatTime, formatNumber, getItemImage } from '../../utils/formatters';
 import { ShoppingBag, Clock, Zap, Box } from 'lucide-react';
 
 export default function ItemizationModule({ data }) {
@@ -66,19 +66,34 @@ export default function ItemizationModule({ data }) {
         </h3>
         {activeItemUsage?.items?.length > 0 ? (
           <div className="space-y-2">
-            {activeItemUsage.items.map((item, i) => (
-              <div key={i} className="flex items-center justify-between bg-deadlock-bg rounded-lg px-3 py-2 text-sm">
-                <div className="flex items-center gap-3">
-                   <div className="w-6 h-6 overflow-hidden rounded bg-deadlock-surface border border-deadlock-border flex items-center justify-center text-deadlock-muted">
-                      <Box className="w-3 h-3" />
-                   </div>
-                   <span className="font-medium">{item.name}</span>
+            {activeItemUsage.items.map((item, i) => {
+              const itemImg = getItemImage(item.name);
+              return (
+                <div key={i} className="flex items-center justify-between bg-deadlock-bg rounded-lg px-3 py-2 text-sm">
+                  <div className="flex items-center gap-3">
+                     {itemImg ? (
+                       <img 
+                         src={itemImg} 
+                         alt={item.name} 
+                         className="w-6 h-6 object-contain rounded"
+                         onError={(e) => {
+                           e.currentTarget.onerror = null;
+                           e.currentTarget.style.display = 'none';
+                         }}
+                       />
+                     ) : (
+                       <div className="w-6 h-6 overflow-hidden rounded bg-deadlock-surface border border-deadlock-border flex items-center justify-center text-deadlock-muted">
+                          <Box className="w-3 h-3" />
+                       </div>
+                     )}
+                     <span className="font-medium">{item.name}</span>
+                  </div>
+                  <span className="font-mono">
+                    {item.casts}/{item.opportunities} casts
+                  </span>
                 </div>
-                <span className="font-mono">
-                  {item.casts}/{item.opportunities} casts
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <p className="text-deadlock-muted text-sm bg-deadlock-bg rounded-lg px-3 py-4 text-center">
@@ -99,14 +114,27 @@ export default function ItemizationModule({ data }) {
 }
 
 function TimingCard({ label, item, benchmark }) {
+  const itemImg = item ? getItemImage(item.item) : null;
   return (
     <div className="bg-deadlock-bg rounded-lg p-4">
       <p className="text-xs text-deadlock-muted mb-3">{label}</p>
       {item ? (
         <div className="flex items-start gap-4">
-           <div className="w-12 h-12 overflow-hidden rounded bg-deadlock-surface border border-deadlock-border flex-shrink-0 flex items-center justify-center text-deadlock-muted">
-               <Box className="w-6 h-6" />
-           </div>
+           {itemImg ? (
+             <img 
+               src={itemImg} 
+               alt={item.item} 
+               className="w-12 h-12 rounded flex-shrink-0 object-contain bg-black"
+               onError={(e) => {
+                 e.currentTarget.onerror = null;
+                 e.currentTarget.style.display = 'none';
+               }}
+             />
+           ) : (
+             <div className="w-12 h-12 overflow-hidden rounded bg-deadlock-surface border border-deadlock-border flex-shrink-0 flex items-center justify-center text-deadlock-muted">
+                 <Box className="w-6 h-6" />
+             </div>
+           )}
            <div>
               <p className="font-semibold text-lg">{item.item}</p>
               <p className="font-mono text-deadlock-accent">{item.timeFormatted}</p>

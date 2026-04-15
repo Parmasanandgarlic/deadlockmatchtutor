@@ -40,3 +40,30 @@ export function formatDuration(seconds) {
   const s = Math.floor(seconds % 60);
   return `${m}m ${s}s`;
 }
+
+/**
+ * Get official Deadlock API hero image URL.
+ */
+export function getHeroImage(heroName, type = 'small') {
+  if (!heroName || heroName === 'Unknown Hero') return null;
+  const safeName = heroName.toLowerCase().replace(/[^a-z0-9]/g, '');
+  
+  const types = {
+    small: `images/heroes/${safeName}_sm.png`,
+    card: `images/heroes/${safeName}_card.png`,
+    minimap: `images/heroes/${safeName}_mm.png`,
+    icon: `icons/${safeName}.svg`
+  };
+  
+  return `https://assets-bucket.deadlock-api.com/assets-api-res/${types[type] || types.small}`;
+}
+
+/**
+ * Get official Deadlock API item/mod image URL.
+ */
+export function getItemImage(itemName) {
+  if (!itemName) return null;
+  // Basic normalization — exact mapping might require a dictionary if names don't map cleanly
+  const safeName = itemName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+  return `https://assets-bucket.deadlock-api.com/assets-api-res/images/mods/${safeName}.png`;
+}

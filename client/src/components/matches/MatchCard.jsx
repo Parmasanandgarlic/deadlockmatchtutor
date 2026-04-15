@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, User } from 'lucide-react';
-import { formatDuration, formatResult } from '../../utils/formatters';
+import { formatDuration, formatResult, getHeroImage } from '../../utils/formatters';
 
 export default function MatchCard({ match, accountId }) {
   const won = match.player_team_won ?? match.won ?? null;
@@ -13,6 +13,8 @@ export default function MatchCard({ match, accountId }) {
     ? Number(match.net_worth).toLocaleString()
     : '--';
 
+  const avatarUrl = getHeroImage(heroName, 'small');
+
   return (
     <Link
       to={`/dashboard/${match.match_id}/${accountId}`}
@@ -20,9 +22,21 @@ export default function MatchCard({ match, accountId }) {
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-           <div className="w-8 h-8 rounded-full overflow-hidden bg-deadlock-bg flex items-center justify-center border border-deadlock-border text-deadlock-muted">
-               <User className="w-5 h-5" />
-           </div>
+           {avatarUrl ? (
+             <img 
+               src={avatarUrl} 
+               alt={heroName} 
+               className="w-8 h-8 rounded-full border border-deadlock-border object-cover bg-black"
+               onError={(e) => {
+                 e.currentTarget.onerror = null;
+                 e.currentTarget.style.display = 'none';
+               }}
+             />
+           ) : (
+             <div className="w-8 h-8 rounded-full overflow-hidden bg-deadlock-bg flex items-center justify-center border border-deadlock-border text-deadlock-muted">
+                 <User className="w-5 h-5" />
+             </div>
+           )}
            <h3 className="font-semibold text-deadlock-text truncate">{heroName}</h3>
         </div>
         {won !== null && (
