@@ -1,6 +1,6 @@
 const axios = require('axios');
 const logger = require('../utils/logger');
-const { normalizeSteamInput, steam64ToSteam32 } = require('../utils/helpers');
+const { normalizeSteamInput, steam64ToSteam32, steam32ToSteam64 } = require('../utils/helpers');
 
 /**
  * Resolve any Steam input (vanity URL, profile link, or raw ID) to a Steam64 ID.
@@ -8,6 +8,13 @@ const { normalizeSteamInput, steam64ToSteam32 } = require('../utils/helpers');
  */
 async function resolveSteamId(rawInput) {
   const parsed = normalizeSteamInput(rawInput);
+
+  if (parsed.type === 'steam32') {
+    return {
+      steam64: steam32ToSteam64(parsed.value),
+      steam32: Number(parsed.value),
+    };
+  }
 
   if (parsed.type === 'steam64') {
     return {

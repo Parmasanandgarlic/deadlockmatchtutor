@@ -75,11 +75,14 @@ async function getMatchInfo(matchId) {
 async function getPlayerHeroStats(accountId, heroId) {
   try {
     const { data } = await playersApi.playerHeroStats({
-      accountId: Number(accountId),
-      heroId: Number(heroId),
+      accountIds: [Number(accountId)],
+      heroIds: [Number(heroId)],
     });
     logger.debug(`Fetched hero stats for account ${accountId}, hero ${heroId}`);
-    return data;
+    
+    // The API returns an array, so we find the matching hero stats
+    const stats = Array.isArray(data) ? data.find(h => Number(h.hero_id) === Number(heroId)) : data;
+    return stats || {};
   } catch (err) {
     logger.error(`Failed to fetch hero stats for ${accountId}/${heroId}: ${err.message}`);
     throw new Error('Failed to fetch hero stats from Deadlock API.');
@@ -97,6 +100,10 @@ async function getPlayerRankPredict(accountId) {
     logger.debug(`Fetched rank predict for account ${accountId}`);
     return data;
   } catch (err) {
+    if (err.response?.status === 403 || err.response?.status === 404) {
+      logger.warn(`Rank predict forbidden or missing for ${accountId}. Continuing without it.`);
+      return {};
+    }
     logger.error(`Failed to fetch rank predict for ${accountId}: ${err.message}`);
     throw new Error('Failed to fetch rank prediction from Deadlock API.');
   }
@@ -113,6 +120,10 @@ async function getPlayerAccountStats(accountId) {
     logger.debug(`Fetched account stats for account ${accountId}`);
     return data;
   } catch (err) {
+    if (err.response?.status === 403) {
+      logger.warn(`Account stats forbidden (private) for ${accountId}. Continuing without it.`);
+      return {};
+    }
     logger.error(`Failed to fetch account stats for ${accountId}: ${err.message}`);
     throw new Error('Failed to fetch account stats from Deadlock API.');
   }
@@ -129,6 +140,10 @@ async function getPlayerCard(accountId) {
     logger.debug(`Fetched player card for account ${accountId}`);
     return data;
   } catch (err) {
+    if (err.response?.status === 403) {
+      logger.warn(`Player card forbidden (private) for ${accountId}. Continuing without it.`);
+      return {};
+    }
     logger.error(`Failed to fetch player card for ${accountId}: ${err.message}`);
     throw new Error('Failed to fetch player card from Deadlock API.');
   }
