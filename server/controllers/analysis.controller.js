@@ -3,25 +3,17 @@ const { downloadReplay, decompressReplay, cleanup } = require('../services/repla
 const { parseDemoFile } = require('../services/parser.service');
 const { runPipeline } = require('../pipeline');
 const logger = require('../utils/logger');
+const { supabase } = require('../utils/supabase');
 
 /**
- * In-memory cache for analysis results.
- * Key: `${matchId}_${accountId}`, Value: analysis JSON
- * Replace with Redis in production.
+ * In-memory cache fallback for analysis results.
+ * Used if Supabase is unavailable.
  */
-const analysisCache = new Map();
+const fallbackCache = new Map();
 
 /**
  * POST /api/analysis/run
  * Body: { matchId, accountId }
- *
- * Full analysis pipeline:
- *   1. Fetch metadata (for CDN salt)
- *   2. Download .dem.bz2
- *   3. Decompress
- *   4. Parse
- *   5. Run ETL pipeline
- *   6. Return results
  */
 async function runAnalysis(req, res, next) {
   const { matchId, accountId } = req.body;
@@ -35,20 +27,38 @@ async function runAnalysis(req, res, next) {
 
   const cacheKey = `${matchId}_${accountId}`;
 
-  // Check cache
-  if (analysisCache.has(cacheKey)) {
-    logger.info(`Cache hit for ${cacheKey}`);
-    return res.json({ cached: true, ...analysisCache.get(cacheKey) });
+  // 1. Check Supabase (stateless cache)
+  try {
+    const { data: existingRecord, error } = await supabase
+      .from('analyses')
+      .select('data')
+      .eq('match_id', Number(matchId))
+      .eq('account_id', Number(accountId))
+      .maybeSingle();
+
+    if (existingRecord?.data) {
+      logger.info(`[Supabase] Cache hit for ${cacheKey}`);
+      return res.json({ cached: true, ...existingRecord.data });
+    }
+  } catch (err) {
+    logger.warn(`[Supabase] Check failed, falling back to memory cache: ${err.message}`);
   }
 
+  // 1b. Check local fallback cache (for Vercel local dev / temporary)
+  if (fallbackCache.has(cacheKey)) {
+    logger.info(`[FallbackCache] Cache hit for ${cacheKey}`);
+    return res.json({ cached: true, ...fallbackCache.get(cacheKey) });
+  }
+
+  let bz2Path = null;
   let demPath = null;
 
   try {
-    // Step 1: Metadata
+    // Step 2: Metadata
     logger.info(`[Analysis] Fetching metadata for match ${matchId}`);
     const metadata = await getMatchMetadata(matchId);
 
-    // Step 1b: Match info
+    // Step 2b: Match info
     let matchInfo = {};
     try {
       matchInfo = await getMatchInfo(matchId);
@@ -56,29 +66,42 @@ async function runAnalysis(req, res, next) {
       logger.warn('Could not fetch match info; continuing with metadata only.');
     }
 
-    // Step 2: Download
+    // Step 3: Download
     logger.info(`[Analysis] Downloading replay for match ${matchId}`);
-    const bz2Path = await downloadReplay(matchId, metadata);
+    bz2Path = await downloadReplay(matchId, metadata);
 
-    // Step 3: Decompress
+    // Step 4: Decompress
     logger.info(`[Analysis] Decompressing replay`);
     demPath = await decompressReplay(bz2Path);
 
-    // Step 4: Parse
+    // Step 5: Parse
     logger.info(`[Analysis] Parsing demo file`);
     const parsedData = await parseDemoFile(demPath);
 
-    // Step 5: ETL Pipeline
+    // Release storage immediately post-parse in Serverless
+    cleanup(demPath);
+    demPath = null; 
+
+    // Step 6: ETL Pipeline
     logger.info(`[Analysis] Running analysis pipeline`);
     const result = await runPipeline(parsedData, accountId, matchInfo);
 
-    // Cache result
-    analysisCache.set(cacheKey, result);
-
-    // Limit cache size (simple LRU — evict oldest after 100 entries)
-    if (analysisCache.size > 100) {
-      const firstKey = analysisCache.keys().next().value;
-      analysisCache.delete(firstKey);
+    // Cache result persistently to Supabase
+    try {
+      const { error } = await supabase.from('analyses').upsert(
+        {
+          match_id: Number(matchId),
+          account_id: Number(accountId),
+          data: result,
+          updated_at: new Date().toISOString()
+        },
+        { onConflict: 'match_id,account_id' }
+      );
+      if (error) throw error;
+    } catch (dbErr) {
+      logger.warn(`[Supabase] Failed to save analysis, saving to fallback cache: ${dbErr.message}`);
+      fallbackCache.set(cacheKey, result);
+      if (fallbackCache.size > 100) fallbackCache.delete(fallbackCache.keys().next().value);
     }
 
     res.json({ cached: false, ...result });
@@ -86,7 +109,8 @@ async function runAnalysis(req, res, next) {
     logger.error(`Analysis failed for match ${matchId}: ${err.message}`);
     next(err);
   } finally {
-    // Aggressive cleanup — delete .dem immediately
+    // Aggressive cleanup — free /tmp storage immediately
+    if (bz2Path) cleanup(bz2Path);
     if (demPath) cleanup(demPath);
   }
 }
@@ -98,10 +122,27 @@ async function runAnalysis(req, res, next) {
 async function getCachedAnalysis(req, res, next) {
   try {
     const { matchId, accountId } = req.params;
-    const cacheKey = `${matchId}_${accountId}`;
+    
+    // 1. Check Supabase
+    try {
+      const { data: existingRecord } = await supabase
+        .from('analyses')
+        .select('data')
+        .eq('match_id', Number(matchId))
+        .eq('account_id', Number(accountId))
+        .maybeSingle();
 
-    if (analysisCache.has(cacheKey)) {
-      return res.json(analysisCache.get(cacheKey));
+      if (existingRecord?.data) {
+        return res.json(existingRecord.data);
+      }
+    } catch (err) {
+      logger.warn(`[Supabase] Fetch failed: ${err.message}`);
+    }
+
+    // 2. Check local fallback cache
+    const cacheKey = `${matchId}_${accountId}`;
+    if (fallbackCache.has(cacheKey)) {
+      return res.json(fallbackCache.get(cacheKey));
     }
 
     return res.status(404).json({

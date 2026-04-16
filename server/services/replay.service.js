@@ -27,6 +27,11 @@ async function downloadReplay(matchId, metadata) {
   const url = buildCdnUrl(matchId, metadata);
   const destPath = path.join(config.tempDir, `${matchId}.dem.bz2`);
 
+  // Ensure temp directory exists before writing
+  if (!fs.existsSync(config.tempDir)) {
+    fs.mkdirSync(config.tempDir, { recursive: true });
+  }
+
   logger.info(`Downloading replay: ${url}`);
 
   try {
