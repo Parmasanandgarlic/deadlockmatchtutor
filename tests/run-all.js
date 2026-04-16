@@ -15,6 +15,10 @@ const suites = [
   { name: 'Integration: pipeline', file: 'integration/pipeline.test.js' },
   { name: 'API: http',           file: 'api/api.test.js' },
   { name: 'Database: supabase',  file: 'database/database.test.js' },
+  { name: 'Performance: load',   file: 'performance/load.test.js' },
+  { name: 'Stress: burst/limits', file: 'performance/stress.test.js' },
+  { name: 'DAST: pen test',      file: 'security/dast.test.js' },
+  { name: 'Failover: DR',        file: 'failover/failover.test.js' },
 ];
 
 const results = [];

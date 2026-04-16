@@ -20,7 +20,11 @@
     "test:sast": "node tests/sast/sast-scan.js",
     "test:integration": "node tests/integration/pipeline.test.js",
     "test:api": "node tests/api/api.test.js",
-    "test:db": "node tests/database/database.test.js"
+    "test:db": "node tests/database/database.test.js",
+    "test:load": "node tests/performance/load.test.js",
+    "test:stress": "node tests/performance/stress.test.js",
+    "test:dast": "node tests/security/dast.test.js",
+    "test:failover": "node tests/failover/failover.test.js"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
