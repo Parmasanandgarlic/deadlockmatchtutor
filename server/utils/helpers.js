@@ -53,6 +53,11 @@ function normalizeSteamInput(input) {
     return { type: 'steam64', value: trimmed };
   }
 
+  // Already a Steam32 ID (Account ID - usually 8-10 digits)
+  if (/^\d{8,10}$/.test(trimmed)) {
+    return { type: 'steam32', value: trimmed };
+  }
+
   // Full profile URL: https://steamcommunity.com/id/vanityname
   const vanityMatch = trimmed.match(/steamcommunity\.com\/id\/([^/]+)/);
   if (vanityMatch) {

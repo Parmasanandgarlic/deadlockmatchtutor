@@ -1,5 +1,5 @@
-require('dotenv').config();
 const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 const config = {
   port: parseInt(process.env.PORT, 10) || 3001,
@@ -32,7 +32,10 @@ const config = {
   },
 
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    // If not set, allow all origins in production for Vercel, or localhost in dev
+    origin: process.env.CORS_ORIGIN 
+      ? process.env.CORS_ORIGIN.split(',')
+      : (process.env.NODE_ENV === 'production' ? true : 'http://localhost:5173'),
   },
 };
 
