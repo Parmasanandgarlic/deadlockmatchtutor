@@ -29,6 +29,9 @@ async function runAnalysis(req, res, next) {
   if (!matchId || !accountId) {
     return res.status(400).json({ error: 'matchId and accountId are required.' });
   }
+  if (!/^\d+$/.test(String(matchId)) || !/^\d+$/.test(String(accountId))) {
+    return res.status(400).json({ error: 'matchId and accountId must be strictly numeric.' });
+  }
 
   const cacheKey = `${matchId}_${accountId}`;
 

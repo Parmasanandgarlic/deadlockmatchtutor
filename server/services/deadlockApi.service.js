@@ -16,7 +16,7 @@ const matchesApi = new MatchesApi(configuration);
  */
 async function getMatchHistory(accountId) {
   try {
-    const { data } = await playersApi.v1PlayersAccountIdMatchHistoryGet(accountId);
+    const { data } = await playersApi.matchHistory({ accountId: Number(accountId) });
     logger.debug(`Fetched ${data.length ?? 0} matches for account ${accountId}`);
     return data;
   } catch (err) {
@@ -35,7 +35,7 @@ async function getMatchHistory(accountId) {
  */
 async function getMatchMetadata(matchId) {
   try {
-    const { data } = await matchesApi.v1MatchesMatchIdSaltsGet(matchId);
+    const { data } = await matchesApi.salts({ matchId: Number(matchId) });
     logger.debug(`Fetched metadata salts for match ${matchId}`);
     return data;
   } catch (err) {
@@ -54,7 +54,7 @@ async function getMatchMetadata(matchId) {
  */
 async function getMatchInfo(matchId) {
   try {
-    const { data } = await matchesApi.v1MatchesMatchIdMetadataGet(matchId);
+    const { data } = await matchesApi.metadata({ matchId: Number(matchId) });
     logger.debug(`Fetched match info for ${matchId}`);
     return data;
   } catch (err) {

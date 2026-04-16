@@ -7,7 +7,7 @@ const config = {
   isDev: (process.env.NODE_ENV || 'development') === 'development',
 
   deadlockApi: {
-    baseUrl: process.env.DEADLOCK_API_BASE_URL || 'https://deadlock-api.com',
+    baseUrl: process.env.DEADLOCK_API_BASE_URL || 'https://api.deadlock-api.com',
   },
 
   valveCdn: {
