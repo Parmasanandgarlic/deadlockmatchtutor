@@ -52,10 +52,12 @@ app.use('/api', routes);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-// --------------- Start Server ---------------
+// Start server if not running in Vercel Serverless mode
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(config.port, () => {
+    logger.info(`Deadlock Analyzer API running on port ${config.port} [${config.nodeEnv}]`);
+  });
+}
 
-app.listen(config.port, () => {
-  logger.info(`Deadlock Analyzer API running on port ${config.port} [${config.nodeEnv}]`);
-});
-
+// Export for Vercel serverless
 module.exports = app;

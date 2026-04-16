@@ -6,6 +6,12 @@ const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   isDev: (process.env.NODE_ENV || 'development') === 'development',
 
+  supabase: {
+    url: process.env.SUPABASE_URL,
+    anonKey: process.env.SUPABASE_ANON_KEY,
+    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY, // For bypass RLS
+  },
+
   deadlockApi: {
     baseUrl: process.env.DEADLOCK_API_BASE_URL || 'https://api.deadlock-api.com',
   },
@@ -14,7 +20,7 @@ const config = {
     baseUrl: process.env.VALVE_CDN_BASE_URL || 'https://replay1.valve.net/1422450',
   },
 
-  tempDir: path.resolve(__dirname, '..', process.env.TEMP_DIR || './temp'),
+  tempDir: process.env.VERCEL ? '/tmp' : path.resolve(__dirname, '..', process.env.TEMP_DIR || './temp'),
 
   rateLimit: {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10) || 15 * 60 * 1000,
