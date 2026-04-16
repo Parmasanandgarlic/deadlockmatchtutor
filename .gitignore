@@ -29,3 +29,6 @@ server/temp/*.dem.bz2
 
 # Cache
 .cache/
+
+# Generated API client (keep built copy in server/deadlock_api_client)
+temp-openapi/
