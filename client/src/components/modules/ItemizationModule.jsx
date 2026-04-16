@@ -1,151 +1,86 @@
-import ItemTimingChart from '../charts/ItemTimingChart';
-import { formatTime, formatNumber, getItemImage } from '../../utils/formatters';
-import { ShoppingBag, Clock, Zap, Box } from 'lucide-react';
+import { formatNumber, getItemImage } from '../../utils/formatters';
+import { ShoppingBag, Coins, Box } from 'lucide-react';
 
 export default function ItemizationModule({ data }) {
-  const { coreItemTimings, floatingSoulsEvents, activeItemUsage } = data;
+  const { items, netWorth, souls } = data;
 
   return (
     <div className="space-y-6">
-      {/* Core Item Timings */}
-      <div>
-        <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3 flex items-center gap-2">
-          <ShoppingBag className="w-4 h-4" /> Core Item Timings
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <TimingCard
-            label="First 3K Item"
-            item={coreItemTimings?.first3k}
-            benchmark="~8:00"
-          />
-          <TimingCard
-            label="First 6K Item"
-            item={coreItemTimings?.first6k}
-            benchmark="~16:00"
-          />
-        </div>
+      {/* Key Stats Row */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <StatBox
+          icon={<Coins className="w-4 h-4 text-deadlock-accent" />}
+          label="Net Worth"
+          value={formatNumber(netWorth)}
+        />
+        <StatBox
+          icon={<ShoppingBag className="w-4 h-4 text-deadlock-purple" />}
+          label="Souls"
+          value={formatNumber(souls)}
+        />
+        <StatBox
+          label="Module Score"
+          value={`${data.score}/100`}
+          highlight
+        />
       </div>
 
-      {/* Purchase Timeline Chart */}
-      {coreItemTimings?.allPurchases?.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3">Item Purchase Timeline</h3>
-          <ItemTimingChart purchases={coreItemTimings.allPurchases} />
-        </div>
-      )}
-
-      {/* Floating Souls Events */}
+      {/* Items List */}
       <div>
-        <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3 flex items-center gap-2">
-          <Clock className="w-4 h-4" /> Floating Souls ({'>'}3,000 unspent outside base)
-        </h3>
-        {floatingSoulsEvents && floatingSoulsEvents.length > 0 ? (
-          <div className="space-y-2">
-            {floatingSoulsEvents.map((e, i) => (
-              <div key={i} className="flex items-center justify-between bg-deadlock-bg rounded-lg px-3 py-2 text-sm">
-                <span className="font-mono text-deadlock-accent">
-                  {formatTime(e.startSeconds)} &rarr; {formatTime(e.endSeconds)}
-                </span>
-                <span className="text-deadlock-muted">
-                  Peak: {formatNumber(e.peakSouls)} souls for {Math.round((e.durationSeconds || 0) / 60)}m
-                </span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-deadlock-muted text-sm bg-deadlock-bg rounded-lg px-3 py-4 text-center">
-            No floating souls events detected — good spending habits!
-          </p>
-        )}
-      </div>
-
-      {/* Active Item Usage */}
-      <div>
-        <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3 flex items-center gap-2">
-          <Zap className="w-4 h-4" /> Active Item Usage
-        </h3>
-        {activeItemUsage?.items?.length > 0 ? (
-          <div className="space-y-2">
-            {activeItemUsage.items.map((item, i) => {
+        <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3">Item Build</h3>
+        {items && items.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {items.map((item, i) => {
               const itemImg = getItemImage(item.name);
               return (
-                <div key={i} className="flex items-center justify-between bg-deadlock-bg rounded-lg px-3 py-2 text-sm">
-                  <div className="flex items-center gap-3">
-                     {itemImg ? (
-                       <img 
-                         src={itemImg} 
-                         alt={item.name} 
-                         className="w-6 h-6 object-contain rounded"
-                         onError={(e) => {
-                           e.currentTarget.onerror = null;
-                           e.currentTarget.style.display = 'none';
-                         }}
-                       />
-                     ) : (
-                       <div className="w-6 h-6 overflow-hidden rounded bg-deadlock-surface border border-deadlock-border flex items-center justify-center text-deadlock-muted">
-                          <Box className="w-3 h-3" />
-                       </div>
-                     )}
-                     <span className="font-medium">{item.name}</span>
-                  </div>
-                  <span className="font-mono">
-                    {item.casts}/{item.opportunities} casts
-                  </span>
+                <div key={i} className="bg-deadlock-bg rounded-lg p-3 text-center">
+                  {itemImg ? (
+                    <img
+                      src={itemImg}
+                      alt={item.name}
+                      className="w-12 h-12 mx-auto mb-2 object-contain rounded"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <div className="w-12 h-12 mx-auto mb-2 overflow-hidden rounded bg-deadlock-surface border border-deadlock-border flex items-center justify-center text-deadlock-muted">
+                      <Box className="w-6 h-6" />
+                    </div>
+                  )}
+                  <p className="text-xs text-deadlock-muted truncate">{item.name}</p>
+                  <p className="font-mono text-sm">{formatNumber(item.cost)}</p>
                 </div>
               );
             })}
           </div>
         ) : (
           <p className="text-deadlock-muted text-sm bg-deadlock-bg rounded-lg px-3 py-4 text-center">
-            Active item usage data requires ability log from parser.
+            No item data available for this match.
           </p>
         )}
       </div>
 
-      {/* Module Score */}
-      <div className="flex justify-end">
-        <div className="bg-deadlock-bg rounded-lg px-4 py-2 ring-1 ring-deadlock-accent/30">
-          <span className="text-xs text-deadlock-muted mr-2">Module Score</span>
-          <span className="font-mono font-semibold text-deadlock-accent">{data.score}/100</span>
+      {data.note && (
+        <div className="bg-deadlock-bg rounded-lg p-4 text-sm text-deadlock-muted">
+          {data.note}
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
-function TimingCard({ label, item, benchmark }) {
-  const itemImg = item ? getItemImage(item.item) : null;
+function StatBox({ icon, label, value, highlight }) {
   return (
-    <div className="bg-deadlock-bg rounded-lg p-4">
-      <p className="text-xs text-deadlock-muted mb-3">{label}</p>
-      {item ? (
-        <div className="flex items-start gap-4">
-           {itemImg ? (
-             <img 
-               src={itemImg} 
-               alt={item.item} 
-               className="w-12 h-12 rounded flex-shrink-0 object-contain bg-black"
-               onError={(e) => {
-                 e.currentTarget.onerror = null;
-                 e.currentTarget.style.display = 'none';
-               }}
-             />
-           ) : (
-             <div className="w-12 h-12 overflow-hidden rounded bg-deadlock-surface border border-deadlock-border flex-shrink-0 flex items-center justify-center text-deadlock-muted">
-                 <Box className="w-6 h-6" />
-             </div>
-           )}
-           <div>
-              <p className="font-semibold text-lg">{item.item}</p>
-              <p className="font-mono text-deadlock-accent">{item.timeFormatted}</p>
-              <p className="text-xs text-deadlock-muted mt-1">
-                Cost: {formatNumber(item.cost)} · Benchmark: {benchmark}
-              </p>
-           </div>
-        </div>
-      ) : (
-        <p className="text-deadlock-muted text-sm">Not purchased</p>
-      )}
+    <div className={`bg-deadlock-bg rounded-lg p-3 ${highlight ? 'ring-1 ring-deadlock-accent/30' : ''}`}>
+      <div className="flex items-center gap-1.5 mb-1">
+        {icon}
+        <span className="text-xs text-deadlock-muted">{label}</span>
+      </div>
+      <p className={`font-mono font-semibold text-lg ${highlight ? 'text-deadlock-accent' : ''}`}>
+        {value}
+      </p>
     </div>
   );
 }

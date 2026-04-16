@@ -1,11 +1,11 @@
 export const MODULE_LABELS = {
-  economy: 'Economy & Farming',
-  itemization: 'Itemization & Power Spikes',
-  combat: 'Combat & Engagement',
-  objectives: 'Map Control & Objectives',
+  heroPerformance: 'Hero Performance',
+  itemization: 'Itemization & Build',
+  combat: 'Combat & KDA',
+  benchmarks: 'Benchmark Comparison',
 };
 
-export const MODULE_KEYS = ['economy', 'itemization', 'combat', 'objectives'];
+export const MODULE_KEYS = ['heroPerformance', 'itemization', 'combat', 'benchmarks'];
 
 export const SEVERITY_CONFIG = {
   critical: { color: 'text-deadlock-red', bg: 'bg-deadlock-red/10', border: 'border-deadlock-red/30', label: 'Critical' },

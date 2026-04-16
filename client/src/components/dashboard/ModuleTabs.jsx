@@ -1,20 +1,20 @@
 import { useState } from 'react';
 import { MODULE_KEYS, MODULE_LABELS } from '../../utils/constants';
 import { getScoreColor } from '../../utils/grading';
-import EconomyModule from '../modules/EconomyModule';
+import HeroPerformanceModule from '../modules/HeroPerformanceModule';
 import ItemizationModule from '../modules/ItemizationModule';
 import CombatModule from '../modules/CombatModule';
-import ObjectivesModule from '../modules/ObjectivesModule';
+import BenchmarksModule from '../modules/BenchmarksModule';
 
 const MODULE_COMPONENTS = {
-  economy: EconomyModule,
+  heroPerformance: HeroPerformanceModule,
   itemization: ItemizationModule,
   combat: CombatModule,
-  objectives: ObjectivesModule,
+  benchmarks: BenchmarksModule,
 };
 
 export default function ModuleTabs({ modules }) {
-  const [active, setActive] = useState('economy');
+  const [active, setActive] = useState('heroPerformance');
 
   if (!modules) return null;
 

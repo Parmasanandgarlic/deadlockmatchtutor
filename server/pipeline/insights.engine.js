@@ -1,9 +1,7 @@
-const { FLOATING_SOULS_THRESHOLD, PHASES } = require('../utils/constants');
-const { formatTime } = require('../utils/helpers');
 const logger = require('../utils/logger');
 
 /**
- * Actionable Insights Engine (Module 2.5)
+ * Actionable Insights Engine (API-based)
  *
  * Analyzes the outputs of all four modules and generates 3–5 plain-language
  * "Insight Cards" prioritised by the magnitude of the mathematical leak.
@@ -16,13 +14,13 @@ const logger = require('../utils/logger');
  *   - impact    : estimated score-point impact
  */
 
-function generateInsights(economyResult, itemizationResult, combatResult, objectivesResult) {
+function generateInsights(heroPerformanceResult, itemizationResult, combatResult, benchmarksResult) {
   logger.debug('Generating insight cards');
 
   const insights = [];
 
-  // ---- Economy Insights ----
-  insightsFromEconomy(economyResult, insights);
+  // ---- Hero Performance Insights ----
+  insightsFromHeroPerformance(heroPerformanceResult, insights);
 
   // ---- Itemization Insights ----
   insightsFromItemization(itemizationResult, insights);
@@ -30,8 +28,8 @@ function generateInsights(economyResult, itemizationResult, combatResult, object
   // ---- Combat Insights ----
   insightsFromCombat(combatResult, insights);
 
-  // ---- Objectives Insights ----
-  insightsFromObjectives(objectivesResult, insights);
+  // ---- Benchmark Insights ----
+  insightsFromBenchmarks(benchmarksResult, insights);
 
   // Sort by impact descending, take top 5
   insights.sort((a, b) => b.impact - a.impact);
@@ -45,42 +43,39 @@ function generateInsights(economyResult, itemizationResult, combatResult, object
 // Module-specific insight generators
 // ----------------------------------------------------------------
 
-function insightsFromEconomy(eco, insights) {
-  if (!eco) return;
+function insightsFromHeroPerformance(heroPerf, insights) {
+  if (!heroPerf) return;
 
-  // Stagnation windows
-  if (eco.stagnationWindows && eco.stagnationWindows.length > 0) {
-    const worst = eco.stagnationWindows.reduce((a, b) =>
-      b.durationSeconds > a.durationSeconds ? b : a
-    );
+  // Low winrate
+  if (heroPerf.winrate < 45 && heroPerf.matchesPlayed > 5) {
     insights.push({
-      severity: worst.durationSeconds > 180 ? 'critical' : 'warning',
-      module: 'economy',
-      title: 'Farming Stagnation Detected',
-      detail: `Your soul income dropped significantly between ${worst.startFormatted} and ${worst.endFormatted} (${Math.round(worst.durationSeconds / 60)} minutes). Focus on keeping lane pressure or rotating to neutral camps during downtime.`,
-      impact: Math.min(worst.durationSeconds / 10, 20),
+      severity: heroPerf.winrate < 40 ? 'critical' : 'warning',
+      module: 'heroPerformance',
+      title: 'Low Hero Winrate',
+      detail: `Your winrate on this hero is ${heroPerf.winrate}% over ${heroPerf.matchesPlayed} matches. Consider practicing in unranked matches or switching to a hero you're more comfortable with.`,
+      impact: Math.min((50 - heroPerf.winrate) / 2, 25),
     });
   }
 
-  // Low average SPM
-  if (eco.averageSpm > 0 && eco.averageSpm < 60) {
+  // Low KDA
+  if (heroPerf.avgKda < 2.0 && heroPerf.matchesPlayed > 5) {
     insights.push({
-      severity: 'warning',
-      module: 'economy',
-      title: 'Below-Average Farm Rate',
-      detail: `Your average SPM was ${eco.averageSpm}. Aim for 80+ by farming neutral camps between fights and minimising idle time.`,
-      impact: 15,
+      severity: heroPerf.avgKda < 1.5 ? 'critical' : 'warning',
+      module: 'heroPerformance',
+      title: 'Below-Average KDA',
+      detail: `Your average KDA on this hero is ${heroPerf.avgKda}. Focus on improving positioning and survival to increase your effectiveness in teamfights.`,
+      impact: Math.min((3 - heroPerf.avgKda) * 10, 20),
     });
   }
 
-  // Low deny rate
-  if (eco.laningDenyRate < 15 && eco.laningDenyRate > 0) {
+  // High winrate - positive reinforcement
+  if (heroPerf.winrate > 60 && heroPerf.matchesPlayed > 10) {
     insights.push({
       severity: 'info',
-      module: 'economy',
-      title: 'Low Soul Deny Rate',
-      detail: `You denied only ${eco.laningDenyRate}% of contested souls in lane. Practice last-hitting denies to starve your opponent.`,
-      impact: 8,
+      module: 'heroPerformance',
+      title: 'Excellent Hero Performance',
+      detail: `Your winrate on this hero is ${heroPerf.winrate}% over ${heroPerf.matchesPlayed} matches. You're performing well above average!`,
+      impact: 0,
     });
   }
 }
@@ -88,111 +83,99 @@ function insightsFromEconomy(eco, insights) {
 function insightsFromItemization(item, insights) {
   if (!item) return;
 
-  // Floating souls
-  if (item.floatingSoulsEvents && item.floatingSoulsEvents.length > 0) {
-    const totalFloat = item.floatingSoulsEvents.reduce(
-      (sum, e) => sum + (e.durationSeconds || 0),
-      0
-    );
-    const peakSouls = Math.max(...item.floatingSoulsEvents.map((e) => e.peakSouls || 0), 0);
-
-    if (totalFloat > 60) {
-      insights.push({
-        severity: totalFloat > 180 ? 'critical' : 'warning',
-        module: 'itemization',
-        title: 'Floating Souls — Unspent Gold',
-        detail: `You held over ${FLOATING_SOULS_THRESHOLD.toLocaleString()} unspent souls for ${Math.round(totalFloat / 60)} minutes outside of base. You likely took teamfights without your next power spike. Return to base or plan item purchases proactively.`,
-        impact: Math.min(totalFloat / 15, 25),
-      });
-    }
+  // Low net worth
+  if (item.netWorth < 5000 && item.souls > 0) {
+    insights.push({
+      severity: 'warning',
+      module: 'itemization',
+      title: 'Low Net Worth Efficiency',
+      detail: `Your net worth (${item.netWorth}) seems low for your souls (${item.souls}). Focus on efficient farming and timely item purchases to convert souls into power.`,
+      impact: Math.min((10000 - item.netWorth) / 500, 15),
+    });
   }
 
-  // Late core items
-  if (item.coreItemTimings) {
-    if (item.coreItemTimings.first3k && item.coreItemTimings.first3k.timeSeconds > 600) {
-      insights.push({
-        severity: 'warning',
-        module: 'itemization',
-        title: 'Delayed 3K Item Timing',
-        detail: `Your first 3,000-soul item came at ${item.coreItemTimings.first3k.timeFormatted}. Top players average this by 8:00. Optimise your early-game farming route.`,
-        impact: 12,
-      });
-    }
+  // No items purchased
+  if (item.items && item.items.length === 0) {
+    insights.push({
+      severity: 'critical',
+      module: 'itemization',
+      title: 'No Items Purchased',
+      detail: `No item data available for this match. Ensure you're purchasing items throughout the game to scale into the late game.`,
+      impact: 20,
+    });
   }
 }
 
 function insightsFromCombat(combat, insights) {
   if (!combat) return;
 
-  // Dead-time penalty
-  if (combat.deadTimePenalty && combat.deadTimePenalty.totalDeadSeconds > 90) {
+  // High death count
+  if (combat.deaths > 10) {
     insights.push({
-      severity: combat.deadTimePenalty.totalDeadSeconds > 180 ? 'critical' : 'warning',
+      severity: combat.deaths > 15 ? 'critical' : 'warning',
       module: 'combat',
-      title: 'Excessive Death Time',
-      detail: combat.deadTimePenalty.lostFarmDescription,
-      impact: Math.min(combat.deadTimePenalty.totalDeadSeconds / 10, 20),
+      title: 'Excessive Deaths',
+      detail: `You died ${combat.deaths} times this match. Focus on positioning and knowing when to retreat to stay alive for teamfights.`,
+      impact: Math.min((combat.deaths - 5) * 2, 25),
     });
   }
 
-  // Low teamfight participation
-  if (
-    combat.teamfightParticipation &&
-    combat.teamfightParticipation.participationPercent < 40 &&
-    combat.teamfightParticipation.totalTeamKills > 5
-  ) {
+  // Low KDA
+  if (combat.kda < 1.5 && combat.kills + combat.assists > 0) {
     insights.push({
       severity: 'warning',
       module: 'combat',
-      title: 'Low Teamfight Participation',
-      detail: `You participated in only ${combat.teamfightParticipation.participationPercent}% of team kills. If your team is fighting, be there — or ensure your split-push generates equivalent value.`,
-      impact: 15,
+      title: 'Low Combat Efficiency',
+      detail: `Your KDA is ${combat.kda}. Try to secure more kills/assists while minimizing deaths to improve your combat impact.`,
+      impact: Math.min((2.5 - combat.kda) * 10, 15),
     });
   }
 
-  // High poke damage ratio
-  if (
-    combat.damageTakenBreakdown &&
-    combat.damageTakenBreakdown.pokeRatio > 0.4 &&
-    combat.damageTakenBreakdown.totalDamageTaken > 2000
-  ) {
+  // High damage output - positive reinforcement
+  if (combat.damage > 25000) {
     insights.push({
-      severity: 'warning',
+      severity: 'info',
       module: 'combat',
-      title: 'Poor Pre-Fight Positioning',
-      detail: `${Math.round(combat.damageTakenBreakdown.pokeRatio * 100)}% of the damage you received was outside teamfights. Avoid unnecessary poke trades and position more carefully before engagements.`,
-      impact: 10,
+      title: 'High Damage Output',
+      detail: `You dealt ${combat.damage} damage this match. Great job contributing to your team's damage output!`,
+      impact: 0,
     });
   }
 }
 
-function insightsFromObjectives(obj, insights) {
-  if (!obj) return;
+function insightsFromBenchmarks(benchmarks, insights) {
+  if (!benchmarks) return;
 
-  // Low objective damage
-  if (obj.objectiveDamageShare && obj.objectiveDamageShare.sharePercent < 10) {
+  // Below benchmark winrate
+  if (benchmarks.winrateDiff < -15) {
     insights.push({
-      severity: 'info',
-      module: 'objectives',
-      title: 'Low Objective Contribution',
-      detail: `You contributed only ${obj.objectiveDamageShare.sharePercent}% of your team's total objective damage. Prioritise hitting structures when your team secures map control.`,
-      impact: 10,
+      severity: benchmarks.winrateDiff < -25 ? 'critical' : 'warning',
+      module: 'benchmarks',
+      title: 'Below Top Player Winrate',
+      detail: `Your winrate is ${Math.abs(benchmarks.winrateDiff)}% below top player benchmarks. Study high-level gameplay and guides for this hero to improve.`,
+      impact: Math.min(Math.abs(benchmarks.winrateDiff) / 2, 20),
     });
   }
 
-  // Missing Mid Boss
-  if (
-    obj.midBossPresence &&
-    obj.midBossPresence.events &&
-    obj.midBossPresence.events.length > 0 &&
-    !obj.midBossPresence.wasPresent
-  ) {
+  // Below benchmark KDA
+  if (benchmarks.kdaDiff < -1.5) {
     insights.push({
-      severity: 'critical',
-      module: 'objectives',
-      title: 'Absent From Mid Boss',
-      detail: `Mid Boss was contested ${obj.midBossPresence.events.length} time(s) and you were not present. Mid Boss is a game-deciding objective — always rotate when it's in play.`,
-      impact: 18,
+      severity: 'warning',
+      module: 'benchmarks',
+      title: 'Below Top Player KDA',
+      detail: `Your KDA is ${Math.abs(benchmarks.kdaDiff)} below top player benchmarks. Work on your combat mechanics and positioning to close the gap.`,
+      impact: Math.min(Math.abs(benchmarks.kdaDiff) * 10, 15),
+    });
+  }
+
+  // Above benchmarks - positive reinforcement
+  if (benchmarks.winrateDiff > 10 && benchmarks.kdaDiff > 0.5) {
+    insights.push({
+      severity: 'info',
+      module: 'benchmarks',
+      title: 'Exceeding Top Player Benchmarks',
+      detail: `Your performance exceeds top player benchmarks! You're in the top percentile of players for this hero.`,
+      impact: 0,
     });
   }
 }

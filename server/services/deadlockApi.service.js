@@ -66,8 +66,80 @@ async function getMatchInfo(matchId) {
   }
 }
 
+/**
+ * Fetch hero-specific statistics for a player.
+ * @param {string|number} accountId
+ * @param {string|number} heroId
+ * @returns {Promise<Object>} Hero-specific stats
+ */
+async function getPlayerHeroStats(accountId, heroId) {
+  try {
+    const { data } = await playersApi.playerHeroStats({
+      accountId: Number(accountId),
+      heroId: Number(heroId),
+    });
+    logger.debug(`Fetched hero stats for account ${accountId}, hero ${heroId}`);
+    return data;
+  } catch (err) {
+    logger.error(`Failed to fetch hero stats for ${accountId}/${heroId}: ${err.message}`);
+    throw new Error('Failed to fetch hero stats from Deadlock API.');
+  }
+}
+
+/**
+ * Fetch rank prediction for a player.
+ * @param {string|number} accountId
+ * @returns {Promise<Object>} Rank prediction data
+ */
+async function getPlayerRankPredict(accountId) {
+  try {
+    const { data } = await playersApi.rankPredict({ accountId: Number(accountId) });
+    logger.debug(`Fetched rank predict for account ${accountId}`);
+    return data;
+  } catch (err) {
+    logger.error(`Failed to fetch rank predict for ${accountId}: ${err.message}`);
+    throw new Error('Failed to fetch rank prediction from Deadlock API.');
+  }
+}
+
+/**
+ * Fetch general account statistics for a player.
+ * @param {string|number} accountId
+ * @returns {Promise<Object>} Account stats
+ */
+async function getPlayerAccountStats(accountId) {
+  try {
+    const { data } = await playersApi.accountStats({ accountId: Number(accountId) });
+    logger.debug(`Fetched account stats for account ${accountId}`);
+    return data;
+  } catch (err) {
+    logger.error(`Failed to fetch account stats for ${accountId}: ${err.message}`);
+    throw new Error('Failed to fetch account stats from Deadlock API.');
+  }
+}
+
+/**
+ * Fetch player card/profile data.
+ * @param {string|number} accountId
+ * @returns {Promise<Object>} Player card data
+ */
+async function getPlayerCard(accountId) {
+  try {
+    const { data } = await playersApi.card({ accountId: Number(accountId) });
+    logger.debug(`Fetched player card for account ${accountId}`);
+    return data;
+  } catch (err) {
+    logger.error(`Failed to fetch player card for ${accountId}: ${err.message}`);
+    throw new Error('Failed to fetch player card from Deadlock API.');
+  }
+}
+
 module.exports = {
   getMatchHistory,
   getMatchMetadata,
   getMatchInfo,
+  getPlayerHeroStats,
+  getPlayerRankPredict,
+  getPlayerAccountStats,
+  getPlayerCard,
 };

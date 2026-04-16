@@ -1,6 +1,11 @@
-const { getMatchMetadata, getMatchInfo } = require('../services/deadlockApi.service');
-const { downloadReplay, decompressReplay, cleanup } = require('../services/replay.service');
-const { parseDemoFile } = require('../services/parser.service');
+const {
+  getMatchInfo,
+  getMatchHistory,
+  getPlayerHeroStats,
+  getPlayerAccountStats,
+  getPlayerRankPredict,
+  getPlayerCard,
+} = require('../services/deadlockApi.service');
 const { runPipeline } = require('../pipeline');
 const logger = require('../utils/logger');
 const { supabase } = require('../utils/supabase');
@@ -50,41 +55,53 @@ async function runAnalysis(req, res, next) {
     return res.json({ cached: true, ...fallbackCache.get(cacheKey) });
   }
 
-  let bz2Path = null;
-  let demPath = null;
-
   try {
-    // Step 2: Metadata
-    logger.info(`[Analysis] Fetching metadata for match ${matchId}`);
-    const metadata = await getMatchMetadata(matchId);
+    // Step 2: Fetch match info from API
+    logger.info(`[Analysis] Fetching match info for match ${matchId}`);
+    const matchInfo = await getMatchInfo(matchId);
 
-    // Step 2b: Match info
-    let matchInfo = {};
-    try {
-      matchInfo = await getMatchInfo(matchId);
-    } catch (_) {
-      logger.warn('Could not fetch match info; continuing with metadata only.');
+    // Step 3: Fetch player match history to get hero played in this match
+    logger.info(`[Analysis] Fetching match history for account ${accountId}`);
+    const matchHistory = await getMatchHistory(accountId);
+
+    // Find the specific match in history
+    const matchInHistory = matchHistory.find(m => m.match_id === Number(matchId));
+    if (!matchInHistory) {
+      throw new Error('Match not found in player history. The player may not have participated in this match.');
     }
 
-    // Step 3: Download
-    logger.info(`[Analysis] Downloading replay for match ${matchId}`);
-    bz2Path = await downloadReplay(matchId, metadata);
+    const heroId = matchInHistory.hero_id;
 
-    // Step 4: Decompress
-    logger.info(`[Analysis] Decompressing replay`);
-    demPath = await decompressReplay(bz2Path);
+    // Step 4: Fetch hero-specific stats
+    logger.info(`[Analysis] Fetching hero stats for hero ${heroId}`);
+    const heroStats = await getPlayerHeroStats(accountId, heroId);
 
-    // Step 5: Parse
-    logger.info(`[Analysis] Parsing demo file`);
-    const parsedData = await parseDemoFile(demPath);
+    // Step 5: Fetch general account stats
+    logger.info(`[Analysis] Fetching account stats for account ${accountId}`);
+    const accountStats = await getPlayerAccountStats(accountId);
 
-    // Release storage immediately post-parse in Serverless
-    cleanup(demPath);
-    demPath = null; 
+    // Step 6: Fetch rank prediction
+    logger.info(`[Analysis] Fetching rank prediction for account ${accountId}`);
+    const rankPredict = await getPlayerRankPredict(accountId);
 
-    // Step 6: ETL Pipeline
-    logger.info(`[Analysis] Running analysis pipeline`);
-    const result = await runPipeline(parsedData, accountId, matchInfo);
+    // Step 7: Fetch player card for additional profile data
+    logger.info(`[Analysis] Fetching player card for account ${accountId}`);
+    const playerCard = await getPlayerCard(accountId);
+
+    // Step 8: Build API-based data structure for pipeline
+    const apiData = {
+      matchInfo,
+      matchInHistory,
+      heroStats,
+      accountStats,
+      rankPredict,
+      playerCard,
+      heroId,
+    };
+
+    // Step 9: Run analysis pipeline on API data
+    logger.info(`[Analysis] Running analysis pipeline on API data`);
+    const result = await runPipeline(apiData, accountId, matchInfo);
 
     // Cache result persistently to Supabase
     try {
@@ -108,10 +125,6 @@ async function runAnalysis(req, res, next) {
   } catch (err) {
     logger.error(`Analysis failed for match ${matchId}: ${err.message}`);
     next(err);
-  } finally {
-    // Aggressive cleanup — free /tmp storage immediately
-    if (bz2Path) cleanup(bz2Path);
-    if (demPath) cleanup(demPath);
   }
 }
 

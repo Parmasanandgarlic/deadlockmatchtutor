@@ -52,7 +52,7 @@ export default function HeroHeader({ meta, overall }) {
           </div>
           <p className="text-deadlock-text-dim text-sm mb-3">
             Match <span className="font-mono text-deadlock-accent">#{meta?.matchId}</span>
-            {' · '}Player <span className="font-mono">{meta?.playerSteamId}</span>
+            {' · '}Account <span className="font-mono">{meta?.accountId}</span>
             {' · '}{formatDuration(meta?.duration)}
           </p>
 
