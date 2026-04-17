@@ -56,8 +56,8 @@ function purge(prefix) {
   await test('Supabase outage: controller falls back to in-memory cache', async () => {
     // Mock supabase utility to simulate outage
     purge('server/utils/supabase');
-    purge('server/controllers/analysis');
-    purge('server/services/deadlockApi');
+    purge('server/controllers/analysis.controller');
+    purge('server/services/deadlockApi.service');
 
     const supabasePath = require.resolve('../../server/utils/supabase');
     require.cache[supabasePath] = {
@@ -105,8 +105,8 @@ function purge(prefix) {
     assert.strictEqual(res2.body.cached, true, 'in-memory fallback did not serve second request');
 
     purge('server/utils/supabase');
-    purge('server/controllers/analysis');
-    purge('server/services/deadlockApi');
+    purge('server/controllers/analysis.controller');
+    purge('server/services/deadlockApi.service');
   });
 
   await test('Deadlock API outage: clear error surfaced, server does not crash', async () => {
@@ -127,7 +127,8 @@ function purge(prefix) {
       },
     };
 
-    const { runAnalysis } = require('../../server/controllers/analysis.controller');
+    const runAnalysisModule = require('../../server/controllers/analysis.controller');
+    const { runAnalysis } = runAnalysisModule;
     const res = mockRes();
     const n = nextErr();
     await runAnalysis({ body: { matchId: 8888, accountId: 8888 } }, res, n.fn);
@@ -135,8 +136,8 @@ function purge(prefix) {
     // Must pass a clear error to the error handler, not crash the process
     assert.ok(n.err, 'expected error surfaced to next()');
 
-    purge('server/services/deadlockApi');
-    purge('server/controllers/analysis');
+    purge('server/services/deadlockApi.service');
+    purge('server/controllers/analysis.controller');
   });
 
   await test('Read-your-writes: pipeline output equal on consecutive calls', async () => {

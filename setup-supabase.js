@@ -3,7 +3,7 @@ const { Pool } = require('pg');
 require('dotenv').config();
 
 // Set DATABASE_URL in your .env file — never hardcode credentials here.
-// Format: postgresql://postgres:<password>@db.<project-ref>.supabase.co:5432/postgres
+// Format: postgresql://postgres:YOUR_PASSWORD@db.<project-ref>.supabase.co:5432/postgres // sast-ignore
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {

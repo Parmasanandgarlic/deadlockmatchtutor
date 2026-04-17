@@ -2,20 +2,21 @@ import { Loader2 } from 'lucide-react';
 
 export default function LoadingState({ progressText }) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
+    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-8">
       <div className="relative">
-        <div className="w-16 h-16 rounded-full border-4 border-deadlock-border border-t-deadlock-accent animate-spin" />
+        <div className="w-20 h-20 border-[3px] border-deadlock-blue/10 border-t-deadlock-amber animate-spin" />
+        <div className="absolute inset-0 bg-deadlock-amber/5 blur-xl animate-pulse-slow" />
       </div>
       <div className="text-center">
-        <p className="text-deadlock-text font-medium text-lg mb-1">
+        <p className="text-white font-serif text-xl tracking-[0.2em] uppercase mb-2">
           {progressText || 'Preparing analysis...'}
         </p>
-        <p className="text-deadlock-text-dim text-sm">
-          This may take a minute for large replay files.
+        <p className="text-deadlock-text-dim text-[10px] font-bold uppercase tracking-widest">
+          Consulting the occult replay stream...
         </p>
       </div>
-      <div className="w-64 h-1.5 bg-deadlock-border rounded-full overflow-hidden">
-        <div className="h-full bg-deadlock-accent rounded-full animate-pulse-slow" style={{ width: '60%' }} />
+      <div className="w-64 h-1 bg-deadlock-border/50 overflow-hidden">
+        <div className="h-full bg-deadlock-amber animate-pulse-slow" style={{ width: '60%' }} />
       </div>
     </div>
   );

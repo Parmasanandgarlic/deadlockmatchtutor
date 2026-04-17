@@ -9,7 +9,7 @@ export const MODULE_KEYS = ['heroPerformance', 'itemization', 'combat', 'benchma
 
 export const SEVERITY_CONFIG = {
   critical: { color: 'text-deadlock-red', bg: 'bg-deadlock-red/10', border: 'border-deadlock-red/30', label: 'Critical' },
-  warning: { color: 'text-deadlock-accent', bg: 'bg-deadlock-accent/10', border: 'border-deadlock-accent/30', label: 'Warning' },
+  warning: { color: 'text-deadlock-amber', bg: 'bg-deadlock-amber/10', border: 'border-deadlock-amber/30', label: 'Warning' },
   info: { color: 'text-deadlock-blue', bg: 'bg-deadlock-blue/10', border: 'border-deadlock-blue/30', label: 'Info' },
 };
 
@@ -27,11 +27,11 @@ export const GRADE_COLORS = {
   'B+': 'text-deadlock-blue',
   'B': 'text-deadlock-blue',
   'B-': 'text-deadlock-blue',
-  'C+': 'text-deadlock-accent',
-  'C': 'text-deadlock-accent',
-  'C-': 'text-deadlock-accent',
-  'D+': 'text-orange-400',
-  'D': 'text-orange-400',
-  'D-': 'text-orange-400',
+  'C+': 'text-deadlock-amber',
+  'C': 'text-deadlock-amber',
+  'C-': 'text-deadlock-amber',
+  'D+': 'text-orange-600',
+  'D': 'text-orange-600',
+  'D-': 'text-orange-600',
   'F': 'text-deadlock-red',
 };

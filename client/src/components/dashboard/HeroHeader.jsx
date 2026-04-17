@@ -12,7 +12,7 @@ export default function HeroHeader({ meta, overall }) {
   const rank = meta?.rankPredict;
 
   return (
-    <div className="card mb-6 relative overflow-hidden bg-gradient-to-r from-deadlock-surface to-black">
+    <div className="card mb-6 relative overflow-hidden bg-gradient-to-r from-deadlock-surface to-black border-l-4 border-l-deadlock-amber">
       {/* Background decoration */}
       {heroBg ? (
         <div
@@ -20,7 +20,7 @@ export default function HeroHeader({ meta, overall }) {
           style={{ backgroundImage: `url(${heroBg})` }}
         />
       ) : (
-        <div className="absolute inset-0 z-0 opacity-5 pointer-events-none bg-gradient-to-r from-transparent to-deadlock-accent/40" />
+        <div className="absolute inset-0 z-0 opacity-5 pointer-events-none bg-gradient-to-r from-transparent to-deadlock-amber/40" />
       )}
 
       <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-6">
