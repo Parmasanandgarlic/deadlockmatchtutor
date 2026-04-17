@@ -4,6 +4,36 @@ A comprehensive post-match analytics dashboard for **Deadlock**. Fetches match d
 
 **Live Site**: https://www.aftermatch.xyz
 
+## How to Use
+
+### Finding Your Steam Profile
+
+1. **Open Steam** and go to your profile (click your username in the top right)
+2. **Copy your profile URL** from the address bar
+   - It will look like: `https://steamcommunity.com/id/yourusername` (custom URL)
+   - Or: `https://steamcommunity.com/profiles/76561198000000000` (Steam64 ID)
+3. **Paste it** into the search box on https://www.aftermatch.xyz
+
+### Accepted Input Formats
+
+- **Steam Vanity URL**: `https://steamcommunity.com/id/yourusername`
+- **Steam64 ID**: `76561198000000000` (17 digits, found in your profile URL)
+- **Steam32 ID**: `12345678` (8-10 digits, commonly used in Deadlock)
+
+### Analyzing Your Matches
+
+1. Enter your Steam profile URL or ID on the homepage
+2. Browse your recent match history
+3. Click on any match to view the full analysis
+4. Review your performance grades and actionable insights
+
+### What You'll See
+
+- **Overall Grade**: A+ to F letter grade based on your match impact
+- **Module Scores**: Economy, Itemization, Combat, and Benchmarks
+- **Insights**: Plain-English recommendations for improvement
+- **Match Details**: KDA, net worth, damage, and more
+
 ## Architecture
 
 ```
