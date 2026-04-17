@@ -23,6 +23,13 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Sanitize non-string errors from backend (e.g. Vercel 500 error objects)
+    // to prevent React from crashing (Invariant 31) when rendering err.response.data.error
+    if (error.response?.data?.error && typeof error.response.data.error === 'object') {
+      const errObj = error.response.data.error;
+      error.response.data.error = errObj.message || errObj.code || 'An unexpected server error occurred.';
+    }
+
     // Transform axios errors into cleaner messages
     if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
       error.message = 'Cannot connect to the server. Please try again later.';

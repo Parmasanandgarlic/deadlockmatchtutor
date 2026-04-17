@@ -51,7 +51,7 @@ export default function LandingPage() {
             <Crosshair className="w-12 h-12 text-deadlock-accent drop-shadow-[0_0_12px_rgba(245,158,11,0.4)]" />
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight">
               <span className="text-deadlock-accent">DEADLOCK</span>{' '}
-              <span className="text-deadlock-text">Analyzer</span>
+              <span className="text-deadlock-text">AfterMatch</span>
             </h1>
           </div>
           <p className="text-deadlock-text-dim text-base sm:text-lg max-w-xl mx-auto leading-relaxed px-2 mb-4">

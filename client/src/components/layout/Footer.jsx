@@ -9,7 +9,7 @@ export default function Footer() {
           {/* Left: Branding */}
           <div className="text-center sm:text-left">
             <p className="text-sm text-deadlock-text-dim font-medium mb-1">
-              Deadlock Match Analyzer
+              Deadlock AfterMatch
             </p>
             <p className="text-xs text-deadlock-muted">
               Not affiliated with Valve Corporation. Data sourced from{' '}

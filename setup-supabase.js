@@ -2,7 +2,15 @@ const { Pool } = require('pg');
 
 require('dotenv').config();
 
-const connectionString = 'postgresql://postgres:@Swordfishloveless1260@db.arrckvoflkfpwomankzh.supabase.co:5432/postgres';
+// Set DATABASE_URL in your .env file — never hardcode credentials here.
+// Format: postgresql://postgres:<password>@db.<project-ref>.supabase.co:5432/postgres
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.error('ERROR: DATABASE_URL environment variable is not set.');
+  console.error('Copy .env.example to .env and fill in your credentials.');
+  process.exit(1);
+}
 
 const pool = new Pool({
   connectionString,
