@@ -12,7 +12,9 @@ async function resolvePlayer(req, res, next) {
     const result = await resolveSteamId(steamInput);
     res.json(result);
   } catch (err) {
-    next(err);
+    const msg = err.message || 'Failed to resolve Steam ID.';
+    const status = msg.includes('Unrecognised') || msg.includes('Could not resolve') ? 400 : 500;
+    res.status(status).json({ error: msg });
   }
 }
 
@@ -26,7 +28,9 @@ async function getPlayerMatches(req, res, next) {
     const matches = await getMatchHistory(accountId);
     res.json(matches);
   } catch (err) {
-    next(err);
+    const msg = err.message || 'Failed to fetch match history.';
+    const status = msg.includes('not found') || msg.includes('Invalid') || msg.includes('check') ? 400 : 500;
+    res.status(status).json({ error: msg });
   }
 }
 

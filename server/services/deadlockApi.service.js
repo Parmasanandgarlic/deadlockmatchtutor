@@ -49,6 +49,10 @@ async function getMatchMetadata(matchId) {
     if (err.response?.status === 404) {
       throw new Error('Match not found. It may have expired or the ID is incorrect.');
     }
+    if (err.response?.status === 500) {
+      logger.warn(`Match metadata 500 error for match ${matchId}. Continuing without it.`);
+      return {};
+    }
     throw new Error('Failed to fetch match metadata from Deadlock API.');
   }
 }
@@ -68,6 +72,10 @@ async function getMatchInfo(matchId) {
     if (err.response?.status === 404) {
       throw new Error('Match not found.');
     }
+    if (err.response?.status === 500) {
+      logger.warn(`Match info 500 error for match ${matchId}. Continuing without it.`);
+      return {};
+    }
     throw new Error('Failed to fetch match info from Deadlock API.');
   }
 }
@@ -85,11 +93,15 @@ async function getPlayerHeroStats(accountId, heroId) {
       heroIds: [Number(heroId)],
     });
     logger.debug(`Fetched hero stats for account ${accountId}, hero ${heroId}`);
-    
+
     // The API returns an array, so we find the matching hero stats
     const stats = Array.isArray(data) ? data.find(h => Number(h.hero_id) === Number(heroId)) : data;
     return stats || {};
   } catch (err) {
+    if (err.response?.status === 403 || err.response?.status === 404 || err.response?.status === 500) {
+      logger.warn(`Hero stats error (${err.response?.status}) for ${accountId}/${heroId}. Continuing without it.`);
+      return {};
+    }
     logger.error(`Failed to fetch hero stats for ${accountId}/${heroId}: ${err.message}`);
     throw new Error('Failed to fetch hero stats from Deadlock API.');
   }
@@ -106,8 +118,8 @@ async function getPlayerRankPredict(accountId) {
     logger.debug(`Fetched rank predict for account ${accountId}`);
     return data;
   } catch (err) {
-    if (err.response?.status === 403 || err.response?.status === 404) {
-      logger.warn(`Rank predict forbidden or missing for ${accountId}. Continuing without it.`);
+    if (err.response?.status === 403 || err.response?.status === 404 || err.response?.status === 500) {
+      logger.warn(`Rank predict error (${err.response?.status}) for ${accountId}. Continuing without it.`);
       return {};
     }
     logger.error(`Failed to fetch rank predict for ${accountId}: ${err.message}`);
