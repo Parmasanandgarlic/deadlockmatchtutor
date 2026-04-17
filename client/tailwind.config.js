@@ -25,6 +25,13 @@ export default {
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'glow': 'glow 3s ease-in-out infinite',
+      },
+      keyframes: {
+        glow: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.7' },
+        },
       },
     },
   },
