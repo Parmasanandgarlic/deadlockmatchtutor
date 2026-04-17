@@ -24,6 +24,12 @@ async function getMatchHistory(accountId) {
     if (err.response?.status === 404) {
       throw new Error('Player not found. Please check the Steam ID and try again.');
     }
+    if (err.response?.status === 400) {
+      throw new Error('Invalid account ID. Please check the Steam ID and try again.');
+    }
+    if (err.response?.status === 500) {
+      throw new Error('Deadlock API is currently experiencing issues. Please try again later.');
+    }
     throw new Error('Failed to fetch match history from Deadlock API.');
   }
 }
@@ -120,8 +126,8 @@ async function getPlayerAccountStats(accountId) {
     logger.debug(`Fetched account stats for account ${accountId}`);
     return data;
   } catch (err) {
-    if (err.response?.status === 403) {
-      logger.warn(`Account stats forbidden (private) for ${accountId}. Continuing without it.`);
+    if (err.response?.status === 403 || err.response?.status === 500) {
+      logger.warn(`Account stats error (${err.response?.status}) for ${accountId}. Continuing without it.`);
       return {};
     }
     logger.error(`Failed to fetch account stats for ${accountId}: ${err.message}`);
@@ -140,8 +146,8 @@ async function getPlayerCard(accountId) {
     logger.debug(`Fetched player card for account ${accountId}`);
     return data;
   } catch (err) {
-    if (err.response?.status === 403) {
-      logger.warn(`Player card forbidden (private) for ${accountId}. Continuing without it.`);
+    if (err.response?.status === 403 || err.response?.status === 500) {
+      logger.warn(`Player card error (${err.response?.status}) for ${accountId}. Continuing without it.`);
       return {};
     }
     logger.error(`Failed to fetch player card for ${accountId}: ${err.message}`);
