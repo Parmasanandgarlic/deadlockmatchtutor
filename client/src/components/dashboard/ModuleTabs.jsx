@@ -35,7 +35,7 @@ export default function ModuleTabs({ modules }) {
               className={isActive ? 'tab-active' : 'tab'}
             >
               <span>{MODULE_LABELS[key]}</span>
-              <span className={`ml-2 font-mono text-xs ${getScoreColor(score)}`}>
+              <span className={`ml-3 px-1.5 py-0.5 bg-black/40 border border-white/5 font-bold text-[10px] ${getScoreColor(score)}`}>
                 {score}
               </span>
             </button>

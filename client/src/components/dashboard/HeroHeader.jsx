@@ -9,7 +9,7 @@ export default function HeroHeader({ meta, overall }) {
   const heroAvatar = getHeroImage(meta?.heroName, 'small');
 
   return (
-    <div className="card mb-6 relative overflow-hidden bg-gradient-to-r from-deadlock-surface to-black">
+    <div className="card mb-6 relative overflow-hidden bg-gradient-to-r from-deadlock-surface to-black border-l-4 border-l-deadlock-amber">
       {/* Background decoration */}
       {heroBg ? (
         <div 
@@ -17,7 +17,7 @@ export default function HeroHeader({ meta, overall }) {
           style={{ backgroundImage: `url(${heroBg})` }}
         />
       ) : (
-        <div className="absolute inset-0 z-0 opacity-5 pointer-events-none bg-gradient-to-r from-transparent to-deadlock-accent/40" />
+        <div className="absolute inset-0 z-0 opacity-5 pointer-events-none bg-gradient-to-r from-transparent to-deadlock-amber/40" />
       )}
 
       <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-6">
@@ -46,23 +46,23 @@ export default function HeroHeader({ meta, overall }) {
                    <User className="w-5 h-5" />
                </div>
              )}
-            <h1 className="text-2xl font-bold drop-shadow-md">
+            <h1 className="font-serif text-3xl tracking-widest uppercase text-white drop-shadow-lg">
               {meta?.heroName || 'Unknown Hero'}
             </h1>
           </div>
-          <p className="text-deadlock-text-dim text-sm mb-3">
-            Match <span className="font-mono text-deadlock-accent">#{meta?.matchId}</span>
-            {' · '}Account <span className="font-mono">{meta?.accountId}</span>
+          <p className="text-deadlock-text-dim text-[10px] font-bold uppercase tracking-[0.2em] mb-4">
+            Match <span className="text-deadlock-amber">#{meta?.matchId}</span>
+            {' · '}Account <span>{meta?.accountId}</span>
             {' · '}{formatDuration(meta?.duration)}
           </p>
 
           {/* Score Breakdown Bar */}
           {overall?.breakdown && (
-            <div className="flex flex-wrap gap-4 text-sm">
+            <div className="flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-widest">
               {Object.entries(overall.breakdown).map(([key, data]) => (
-                <div key={key} className="flex items-center gap-2 bg-black/40 px-2 py-1 rounded">
-                  <span className="text-deadlock-text-dim capitalize">{key}</span>
-                  <span className={`font-mono font-semibold ${getScoreColor(data.score)}`}>
+                <div key={key} className="flex items-center gap-2 bg-black/40 border border-white/5 px-3 py-1.5 segment-bevel">
+                  <span className="text-deadlock-text-dim">{key}</span>
+                  <span className={`${getScoreColor(data.score)}`}>
                     {data.score}
                   </span>
                 </div>
@@ -72,9 +72,9 @@ export default function HeroHeader({ meta, overall }) {
         </div>
 
         {/* Impact Label */}
-        <div className="text-center md:text-right drop-shadow">
-          <p className="text-xs text-deadlock-muted uppercase tracking-wider mb-1">Impact</p>
-          <p className={`text-xl font-bold ${scoreColor}`}>
+        <div className="text-center md:text-right">
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-deadlock-muted mb-1">Impact Level</p>
+          <p className={`text-2xl font-serif tracking-widest ${scoreColor} drop-shadow-[0_0_10px_currentColor]`}>
             {getScoreLabel(overall?.impactScore ?? 0)}
           </p>
         </div>

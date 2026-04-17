@@ -10,14 +10,14 @@ export default function GradeIndicator({ grade, score, size = 'lg' }) {
   };
 
   return (
-    <div className="flex flex-col items-center gap-1">
+    <div className="flex flex-col items-center gap-2">
       <div
-        className={`${sizeClasses[size]} rounded-full border-2 border-current flex items-center justify-center font-extrabold ${colorClass}`}
+        className={`${sizeClasses[size]} rounded-none border-2 border-current bg-black/40 flex items-center justify-center font-serif tracking-widest drop-shadow-[0_0_15px_rgba(255,255,255,0.05)] ${colorClass}`}
       >
         {grade}
       </div>
       {score != null && (
-        <span className={`text-sm font-mono ${colorClass}`}>{score}/100</span>
+        <span className={`text-[10px] font-bold uppercase tracking-[0.2em] ${colorClass}`}>{score}/100</span>
       )}
     </div>
   );

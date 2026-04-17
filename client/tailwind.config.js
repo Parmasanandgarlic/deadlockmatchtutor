@@ -5,23 +5,26 @@ export default {
     extend: {
       colors: {
         deadlock: {
-          bg: '#0c0e14',
-          surface: '#141720',
-          border: '#1e2230',
-          accent: '#FFB800',
-          'accent-dim': '#B38100',
-          red: '#ef4444',
-          green: '#22c55e',
-          blue: '#4A90E2',
+          bg: '#050506',
+          surface: '#0f1117',
+          border: '#1a1d26',
+          blue: '#3b7db2',
+          amber: '#ffad1c',
+          accent: '#ffad1c', // Default accent to amber
+          'accent-dim': '#c2780e',
+          red: '#ff4d4d',
+          green: '#2ecc71',
           purple: '#a855f7',
-          muted: '#6b7280',
-          text: '#e5e7eb',
-          'text-dim': '#9ca3af',
+          muted: '#666b7a',
+          text: '#ffffff',
+          'text-dim': '#a1a1aa',
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Outfit', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+        serif: ['Cinzel Decorative', 'serif'],
+        sketch: ['Permanent Marker', 'cursive'],
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
