@@ -5,16 +5,49 @@ const {
   getPlayerAccountStats,
   getPlayerRankPredict,
   getPlayerCard,
+  getHeroes,
 } = require('../services/deadlockApi.service');
 const { runPipeline } = require('../pipeline');
 const logger = require('../utils/logger');
 const { supabase } = require('../utils/supabase');
+const { setApiHeroNames } = require('../utils/heroes');
 
 /**
  * In-memory cache fallback for analysis results.
  * Used if Supabase is unavailable.
  */
 const fallbackCache = new Map();
+
+/**
+ * Cache for hero names from API.
+ * Refreshed periodically.
+ */
+let heroNamesCache = null;
+let heroNamesCacheTime = 0;
+const HERO_NAMES_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+/**
+ * Fetch and cache hero names from API.
+ */
+async function fetchHeroNames() {
+  const now = Date.now();
+  if (heroNamesCache && (now - heroNamesCacheTime) < HERO_NAMES_CACHE_TTL) {
+    return heroNamesCache;
+  }
+
+  try {
+    const heroMap = await getHeroes();
+    if (Object.keys(heroMap).length > 0) {
+      heroNamesCache = heroMap;
+      heroNamesCacheTime = now;
+      setApiHeroNames(heroMap);
+      logger.info(`Cached ${Object.keys(heroMap).length} hero names from API`);
+    }
+  } catch (err) {
+    logger.warn(`Failed to fetch hero names: ${err.message}`);
+  }
+  return heroNamesCache;
+}
 
 /**
  * POST /api/analysis/run
@@ -56,6 +89,9 @@ async function runAnalysis(req, res, next) {
   }
 
   try {
+    // Ensure hero names are cached
+    await fetchHeroNames();
+
     // Step 2: Fetch match info from API
     logger.info(`[Analysis] Fetching match info for match ${matchId}`);
     const matchInfo = await getMatchInfo(matchId);

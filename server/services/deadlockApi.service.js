@@ -1,4 +1,5 @@
 const { Configuration, PlayersApi, MatchesApi } = require('deadlock_api_client');
+const axios = require('axios');
 const config = require('../config');
 const logger = require('../utils/logger');
 
@@ -167,6 +168,31 @@ async function getPlayerCard(accountId) {
   }
 }
 
+/**
+ * Fetch hero names from Deadlock API.
+ * Uses the assets API which provides hero data.
+ * @returns {Promise<Object>} Map of hero_id to hero_name
+ */
+async function getHeroes() {
+  try {
+    const { data } = await axios.get('https://assets.deadlock-api.com/v2/heroes');
+    logger.debug('Fetched heroes from Deadlock Assets API');
+    // Convert array to object: { hero_id: hero_name }
+    const heroMap = {};
+    if (Array.isArray(data)) {
+      data.forEach(hero => {
+        if (hero.id && hero.name) {
+          heroMap[hero.id] = hero.name;
+        }
+      });
+    }
+    return heroMap;
+  } catch (err) {
+    logger.warn(`Failed to fetch heroes from API: ${err.message}. Using static mapping.`);
+    return {};
+  }
+}
+
 module.exports = {
   getMatchHistory,
   getMatchMetadata,
@@ -175,4 +201,5 @@ module.exports = {
   getPlayerRankPredict,
   getPlayerAccountStats,
   getPlayerCard,
+  getHeroes,
 };
