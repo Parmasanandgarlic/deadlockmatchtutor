@@ -1,7 +1,12 @@
 import axios from 'axios';
 
+// Allow overriding the API base URL via environment variable.
+// This enables deploying the client separately from the server (e.g. client on Vercel,
+// server on Railway/Render). If unset, defaults to same-origin /api (monorepo deployment).
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE_URL,
   timeout: 120000,
   headers: { 'Content-Type': 'application/json' },
 });
