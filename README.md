@@ -2,6 +2,8 @@
 
 A comprehensive post-match analytics dashboard for **Deadlock**. Fetches match data directly from the Deadlock API, runs an analysis pipeline evaluating Economy, Itemization, Combat, and Objectives, and surfaces the most critical "Game Losing Mistakes" in plain English.
 
+**Live Site**: https://www.aftermatch.xyz
+
 ## Architecture
 
 ```
@@ -54,6 +56,10 @@ npm run dev
 - **Backend API**: http://localhost:3001
 
 ### Vercel Deployment
+
+The application is deployed at **https://www.aftermatch.xyz**
+
+To deploy your own instance:
 
 ```bash
 # Install Vercel CLI

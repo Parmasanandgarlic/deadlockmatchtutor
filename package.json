@@ -2,6 +2,11 @@
   "name": "deadlock-aftermatch",
   "version": "1.0.0",
   "description": "Comprehensive post-match analyzer for Deadlock",
+  "homepage": "https://www.aftermatch.xyz",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Parmasanandgarlic/deadlockmatchtutor.git"
+  },
   "private": true,
   "workspaces": [
     "client",
