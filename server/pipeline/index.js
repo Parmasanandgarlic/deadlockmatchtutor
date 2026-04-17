@@ -1,5 +1,6 @@
 const { generateInsights } = require('./insights.engine');
 const { computeOverallScore } = require('./scoring.engine');
+const { getHeroName } = require('../utils/heroes');
 const logger = require('../utils/logger');
 
 /**
@@ -58,8 +59,8 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
       matchId: matchInfo.match_id || matchInfo.matchId || null,
       accountId,
       heroId,
-      heroName: matchInHistory?.hero_name || 'Unknown',
-      duration: matchInfo?.duration_seconds || matchInHistory?.duration || 0,
+      heroName: getHeroName(heroId),
+      duration: matchInfo?.duration_s || matchInfo?.match_duration_s || matchInHistory?.match_duration_s || 0,
       analyzedAt: new Date().toISOString(),
       pipelineMs: elapsed,
       rankPredict: rankPredict,

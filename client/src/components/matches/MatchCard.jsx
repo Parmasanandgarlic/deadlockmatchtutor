@@ -1,17 +1,26 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, User } from 'lucide-react';
 import { formatDuration, formatResult, getHeroImage } from '../../utils/formatters';
+import { getHeroName } from '../../utils/heroes';
 
 export default function MatchCard({ match, accountId }) {
-  const won = match.player_team_won ?? match.won ?? null;
-  const heroName = match.hero_name || match.hero || 'Unknown Hero';
+  // match_result: winning team (0 or 1); player_team: which team the player was on.
+  // Fallback to legacy player_team_won/won fields if present.
+  let won = null;
+  if (match.match_result != null && match.player_team != null) {
+    won = match.match_result === match.player_team;
+  } else if (match.player_team_won != null) {
+    won = match.player_team_won;
+  } else if (match.won != null) {
+    won = match.won;
+  }
+
+  const heroName = match.hero_name || getHeroName(match.hero_id);
   const kills = match.player_kills ?? match.kills ?? 0;
   const deaths = match.player_deaths ?? match.deaths ?? 0;
   const assists = match.player_assists ?? match.assists ?? 0;
-  const kda = (kills != null && deaths != null && assists != null)
-    ? `${kills}/${deaths}/${assists}`
-    : '--/--/--';
-  const duration = formatDuration(match.duration_s || match.duration || 0);
+  const kda = `${kills}/${deaths}/${assists}`;
+  const duration = formatDuration(match.match_duration_s || match.duration_s || match.duration || 0);
   const netWorth = match.net_worth != null
     ? Number(match.net_worth).toLocaleString()
     : '--';
