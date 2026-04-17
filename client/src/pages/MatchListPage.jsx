@@ -1,10 +1,12 @@
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Loader2, RefreshCw } from 'lucide-react';
 import useMatchHistory from '../hooks/useMatchHistory';
+import usePageTitle from '../hooks/usePageTitle';
 import MatchCard from '../components/matches/MatchCard';
 
 export default function MatchListPage() {
   const { accountId } = useParams();
+  usePageTitle(`Matches · ${accountId}`);
   const { matches, loading, error, refetch } = useMatchHistory(accountId);
 
   if (!accountId) {

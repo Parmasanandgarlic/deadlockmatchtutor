@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Crosshair, Search, ArrowRight, Github, Shield, BarChart3, Swords, Target, Zap } from 'lucide-react';
 import { resolvePlayer } from '../api/client';
+import usePageTitle from '../hooks/usePageTitle';
 
 const features = [
   { icon: BarChart3, label: 'Economy Grading', desc: 'Net worth efficiency & farm scores' },
@@ -11,6 +12,7 @@ const features = [
 ];
 
 export default function LandingPage() {
+  usePageTitle(null);
   const navigate = useNavigate();
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);

@@ -1,21 +1,26 @@
 import { formatNumber, getItemImage } from '../../utils/formatters';
-import { ShoppingBag, Coins, Box } from 'lucide-react';
+import { ShoppingBag, Coins, Box, TrendingUp } from 'lucide-react';
 
 export default function ItemizationModule({ data }) {
-  const { items, netWorth, souls } = data;
+  const { items, netWorth, souls, soulsPerMin } = data;
 
   return (
     <div className="space-y-6">
       {/* Key Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatBox
           icon={<Coins className="w-4 h-4 text-deadlock-accent" />}
           label="Net Worth"
           value={formatNumber(netWorth)}
         />
         <StatBox
+          icon={<TrendingUp className="w-4 h-4 text-deadlock-green" />}
+          label="Souls / min"
+          value={formatNumber(soulsPerMin ?? 0)}
+        />
+        <StatBox
           icon={<ShoppingBag className="w-4 h-4 text-deadlock-purple" />}
-          label="Souls"
+          label="Last Hits"
           value={formatNumber(souls)}
         />
         <StatBox

@@ -13,6 +13,13 @@ export const SEVERITY_CONFIG = {
   info: { color: 'text-deadlock-blue', bg: 'bg-deadlock-blue/10', border: 'border-deadlock-blue/30', label: 'Info' },
 };
 
+// Recommendation priorities (high/medium/low) — render styling aligned with severity.
+export const PRIORITY_CONFIG = {
+  high: { ...SEVERITY_CONFIG.critical, label: 'High' },
+  medium: { ...SEVERITY_CONFIG.warning, label: 'Medium' },
+  low: { ...SEVERITY_CONFIG.info, label: 'Low' },
+};
+
 export const GRADE_COLORS = {
   'A+': 'text-deadlock-green',
   'A': 'text-deadlock-green',

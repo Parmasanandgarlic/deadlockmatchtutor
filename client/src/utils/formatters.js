@@ -42,6 +42,55 @@ export function formatDuration(seconds) {
 }
 
 /**
+ * Coerce a timestamp in unix-seconds, unix-ms, or ISO string form to a Date.
+ */
+function toDate(input) {
+  if (!input) return null;
+  if (input instanceof Date) return input;
+  if (typeof input === 'number') {
+    // Heuristic: treat <10^12 as seconds
+    return new Date(input < 1e12 ? input * 1000 : input);
+  }
+  const parsed = new Date(input);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+/**
+ * Human relative time (e.g. "3 hours ago", "2 days ago").
+ */
+export function formatRelativeTime(input) {
+  const d = toDate(input);
+  if (!d) return '';
+  const diffMs = Date.now() - d.getTime();
+  const diffSec = Math.round(diffMs / 1000);
+  if (diffSec < 60) return 'just now';
+  const diffMin = Math.round(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.round(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  const diffDay = Math.round(diffHr / 24);
+  if (diffDay < 7) return `${diffDay}d ago`;
+  const diffWk = Math.round(diffDay / 7);
+  if (diffWk < 5) return `${diffWk}w ago`;
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+/**
+ * Formatted absolute date/time, e.g. "Apr 17, 2026, 1:47 AM".
+ */
+export function formatDateTime(input) {
+  const d = toDate(input);
+  if (!d) return '';
+  return d.toLocaleString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+/**
  * Get official Deadlock API hero image URL.
  */
 export function getHeroImage(heroName, type = 'small') {

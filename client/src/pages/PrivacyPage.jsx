@@ -1,4 +1,5 @@
 import { Shield, Database, Eye, Lock, Trash2 } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 const sections = [
   {
@@ -50,6 +51,7 @@ const sections = [
 ];
 
 export default function PrivacyPage() {
+  usePageTitle('Privacy Policy');
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-extrabold mb-2">

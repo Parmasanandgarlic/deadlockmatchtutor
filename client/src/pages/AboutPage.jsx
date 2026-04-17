@@ -1,4 +1,5 @@
 import { Github, GitPullRequest, Code2, Users, Heart, ExternalLink } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 const values = [
   {
@@ -33,6 +34,7 @@ const techStack = [
 ];
 
 export default function AboutPage() {
+  usePageTitle('About · Open Source');
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-extrabold mb-2">

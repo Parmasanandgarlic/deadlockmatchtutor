@@ -1,15 +1,24 @@
-import { TrendingUp, TrendingDown, BarChart3, Award } from 'lucide-react';
+import { TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
 
 export default function BenchmarksModule({ data }) {
-  const { userWinrate, benchmarkWinrate, winrateDiff, userKda, benchmarkKda, kdaDiff, percentile } = data;
+  const {
+    userKda,
+    benchmarkKda,
+    kdaDiff,
+    userSoulsPerMin,
+    benchmarkSoulsPerMin,
+    percentile,
+  } = data;
+
+  const soulsDiff = (userSoulsPerMin ?? 0) - (benchmarkSoulsPerMin ?? 0);
 
   return (
     <div className="space-y-6">
       {/* Key Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
         <StatBox
           icon={<BarChart3 className="w-4 h-4 text-deadlock-purple" />}
-          label="Percentile"
+          label="Match vs Career Score"
           value={`${percentile}%`}
         />
         <StatBox
@@ -19,29 +28,39 @@ export default function BenchmarksModule({ data }) {
         />
       </div>
 
-      {/* Winrate Comparison */}
-      <div>
-        <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3">Win Rate vs Top Players</h3>
-        <ComparisonBar
-          label="Win Rate"
-          userValue={userWinrate}
-          benchmarkValue={benchmarkWinrate}
-          diff={winrateDiff}
-          unit="%"
-        />
-      </div>
-
       {/* KDA Comparison */}
       <div>
-        <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3">KDA vs Top Players</h3>
+        <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3">
+          KDA — This Match vs Career Average
+        </h3>
         <ComparisonBar
           label="KDA"
           userValue={userKda}
           benchmarkValue={benchmarkKda}
           diff={kdaDiff}
           unit=""
+          userLabel="This Match"
+          benchmarkLabel="Career Avg"
         />
       </div>
+
+      {/* Souls/min Comparison */}
+      {benchmarkSoulsPerMin > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3">
+            Souls / min — This Match vs Career Average
+          </h3>
+          <ComparisonBar
+            label="Souls/min"
+            userValue={userSoulsPerMin}
+            benchmarkValue={benchmarkSoulsPerMin}
+            diff={soulsDiff}
+            unit=""
+            userLabel="This Match"
+            benchmarkLabel="Career Avg"
+          />
+        </div>
+      )}
 
       {data.note && (
         <div className="bg-deadlock-bg rounded-lg p-4 text-sm text-deadlock-muted">
@@ -66,7 +85,15 @@ function StatBox({ icon, label, value, highlight }) {
   );
 }
 
-function ComparisonBar({ label, userValue, benchmarkValue, diff, unit }) {
+function ComparisonBar({
+  label,
+  userValue,
+  benchmarkValue,
+  diff,
+  unit,
+  userLabel = 'You',
+  benchmarkLabel = 'Benchmark',
+}) {
   const isPositive = diff >= 0;
   const maxVal = Math.max(userValue, benchmarkValue, 1);
   const userPercent = (userValue / maxVal) * 100;
@@ -88,11 +115,10 @@ function ComparisonBar({ label, userValue, benchmarkValue, diff, unit }) {
           </span>
         </div>
       </div>
-      
+
       <div className="space-y-2">
-        {/* User Bar */}
         <div className="flex items-center gap-2 text-xs">
-          <span className="w-16 text-deadlock-muted">You</span>
+          <span className="w-24 text-deadlock-muted shrink-0">{userLabel}</span>
           <div className="flex-1 h-4 bg-deadlock-border rounded-full overflow-hidden">
             <div
               className="h-full bg-deadlock-accent rounded-full transition-all"
@@ -100,10 +126,8 @@ function ComparisonBar({ label, userValue, benchmarkValue, diff, unit }) {
             />
           </div>
         </div>
-        
-        {/* Benchmark Bar */}
         <div className="flex items-center gap-2 text-xs">
-          <span className="w-16 text-deadlock-muted">Top 10%</span>
+          <span className="w-24 text-deadlock-muted shrink-0">{benchmarkLabel}</span>
           <div className="flex-1 h-4 bg-deadlock-border rounded-full overflow-hidden">
             <div
               className="h-full bg-deadlock-purple rounded-full transition-all"

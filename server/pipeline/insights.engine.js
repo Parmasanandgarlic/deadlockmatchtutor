@@ -1,80 +1,61 @@
 const logger = require('../utils/logger');
 
 /**
- * Actionable Insights Engine (API-based)
+ * Actionable Insights Engine (API-based).
  *
- * Analyzes the outputs of all four modules and generates 3–5 plain-language
- * "Insight Cards" prioritised by the magnitude of the mathematical leak.
+ * Generates 3–5 plain-language "Insight Cards" describing what went right or
+ * wrong in THIS specific match. Each insight is sorted by estimated impact
+ * so the most important takeaways surface first.
  *
- * Each insight has:
- *   - severity  : 'critical' | 'warning' | 'info'
- *   - module    : which module it relates to
- *   - title     : short headline
- *   - detail    : plain-English explanation with numbers
- *   - impact    : estimated score-point impact
+ * Insight shape:
+ *   severity  : 'critical' | 'warning' | 'info'
+ *   module    : which module it relates to
+ *   title     : short headline
+ *   detail    : plain-English explanation with numbers
+ *   impact    : estimated score-point impact (drives sort)
  */
 
-function generateInsights(heroPerformanceResult, itemizationResult, combatResult, benchmarksResult) {
+function generateInsights(heroPerf, itemization, combat, benchmarks) {
   logger.debug('Generating insight cards');
 
   const insights = [];
 
-  // ---- Hero Performance Insights ----
-  insightsFromHeroPerformance(heroPerformanceResult, insights);
+  insightsFromMatchPerformance(heroPerf, insights);
+  insightsFromItemization(itemization, insights);
+  insightsFromCombat(combat, insights);
+  insightsFromBenchmarks(benchmarks, insights);
 
-  // ---- Itemization Insights ----
-  insightsFromItemization(itemizationResult, insights);
-
-  // ---- Combat Insights ----
-  insightsFromCombat(combatResult, insights);
-
-  // ---- Benchmark Insights ----
-  insightsFromBenchmarks(benchmarksResult, insights);
-
-  // Sort by impact descending, take top 5
   insights.sort((a, b) => b.impact - a.impact);
-  const topInsights = insights.slice(0, 5);
-
-  logger.info(`Generated ${topInsights.length} insight cards`);
-  return topInsights;
+  const top = insights.slice(0, 5);
+  logger.info(`Generated ${top.length} insight cards`);
+  return top;
 }
 
 // ----------------------------------------------------------------
-// Module-specific insight generators
+// Module-specific generators
 // ----------------------------------------------------------------
 
-function insightsFromHeroPerformance(heroPerf, insights) {
-  if (!heroPerf) return;
+function insightsFromMatchPerformance(mp, insights) {
+  if (!mp) return;
 
-  // Low winrate
-  if (heroPerf.winrate < 45 && heroPerf.matchesPlayed > 5) {
+  // Career context: many games on hero but low winrate
+  if (mp.winrate > 0 && mp.winrate < 45 && mp.matchesPlayed > 10) {
     insights.push({
-      severity: heroPerf.winrate < 40 ? 'critical' : 'warning',
+      severity: mp.winrate < 40 ? 'critical' : 'warning',
       module: 'heroPerformance',
-      title: 'Low Hero Winrate',
-      detail: `Your winrate on this hero is ${heroPerf.winrate}% over ${heroPerf.matchesPlayed} matches. Consider practicing in unranked matches or switching to a hero you're more comfortable with.`,
-      impact: Math.min((50 - heroPerf.winrate) / 2, 25),
+      title: 'Struggling on This Hero',
+      detail: `Career winrate on this hero is ${mp.winrate}% across ${mp.matchesPlayed} games. Consider watching guides or trying unranked practice.`,
+      impact: Math.min((50 - mp.winrate) / 2, 20),
     });
   }
 
-  // Low KDA
-  if (heroPerf.avgKda < 2.0 && heroPerf.matchesPlayed > 5) {
-    insights.push({
-      severity: heroPerf.avgKda < 1.5 ? 'critical' : 'warning',
-      module: 'heroPerformance',
-      title: 'Below-Average KDA',
-      detail: `Your average KDA on this hero is ${heroPerf.avgKda}. Focus on improving positioning and survival to increase your effectiveness in teamfights.`,
-      impact: Math.min((3 - heroPerf.avgKda) * 10, 20),
-    });
-  }
-
-  // High winrate - positive reinforcement
-  if (heroPerf.winrate > 60 && heroPerf.matchesPlayed > 10) {
+  // Match-level: strong individual performance this game
+  if (mp.matchKda >= 4 && mp.soulsPerMin >= 600) {
     insights.push({
       severity: 'info',
       module: 'heroPerformance',
-      title: 'Excellent Hero Performance',
-      detail: `Your winrate on this hero is ${heroPerf.winrate}% over ${heroPerf.matchesPlayed} matches. You're performing well above average!`,
+      title: 'Dominant Match Performance',
+      detail: `This match you posted a ${mp.matchKda} KDA at ${mp.soulsPerMin} souls/min. A genuinely high-impact game — keep it up.`,
       impact: 0,
     });
   }
@@ -83,25 +64,23 @@ function insightsFromHeroPerformance(heroPerf, insights) {
 function insightsFromItemization(item, insights) {
   if (!item) return;
 
-  // Low net worth
-  if (item.netWorth < 5000 && item.souls > 0) {
+  if (item.soulsPerMin > 0 && item.soulsPerMin < 400) {
     insights.push({
-      severity: 'warning',
+      severity: item.soulsPerMin < 300 ? 'critical' : 'warning',
       module: 'itemization',
-      title: 'Low Net Worth Efficiency',
-      detail: `Your net worth (${item.netWorth}) seems low for your souls (${item.souls}). Focus on efficient farming and timely item purchases to convert souls into power.`,
-      impact: Math.min((10000 - item.netWorth) / 500, 15),
+      title: 'Low Farm Efficiency',
+      detail: `Only ${item.soulsPerMin} souls/min this match. Strong cores target 600+. Prioritise last-hits, rotate through jungle camps, and avoid idle time.`,
+      impact: Math.max(5, Math.min((450 - item.soulsPerMin) / 15, 25)),
     });
   }
 
-  // No items purchased
-  if (item.items && item.items.length === 0) {
+  if (item.soulsPerMin >= 700) {
     insights.push({
-      severity: 'critical',
+      severity: 'info',
       module: 'itemization',
-      title: 'No Items Purchased',
-      detail: `No item data available for this match. Ensure you're purchasing items throughout the game to scale into the late game.`,
-      impact: 20,
+      title: 'Excellent Farming',
+      detail: `${item.soulsPerMin} souls/min is elite-tier economy pace. That kind of income compounds hard into the late game.`,
+      impact: 0,
     });
   }
 }
@@ -109,35 +88,32 @@ function insightsFromItemization(item, insights) {
 function insightsFromCombat(combat, insights) {
   if (!combat) return;
 
-  // High death count
   if (combat.deaths > 10) {
     insights.push({
-      severity: combat.deaths > 15 ? 'critical' : 'warning',
+      severity: combat.deaths > 14 ? 'critical' : 'warning',
       module: 'combat',
       title: 'Excessive Deaths',
-      detail: `You died ${combat.deaths} times this match. Focus on positioning and knowing when to retreat to stay alive for teamfights.`,
+      detail: `You died ${combat.deaths} times this match (${combat.deathsPerMin}/min). Improve map awareness and disengage earlier in lost fights.`,
       impact: Math.min((combat.deaths - 5) * 2, 25),
     });
   }
 
-  // Low KDA
   if (combat.kda < 1.5 && combat.kills + combat.assists > 0) {
     insights.push({
       severity: 'warning',
       module: 'combat',
       title: 'Low Combat Efficiency',
-      detail: `Your KDA is ${combat.kda}. Try to secure more kills/assists while minimizing deaths to improve your combat impact.`,
-      impact: Math.min((2.5 - combat.kda) * 10, 15),
+      detail: `Match KDA of ${combat.kda}. Focus on taking higher-percentage engagements and playing with teammates, not alone.`,
+      impact: Math.min((2.5 - combat.kda) * 10, 18),
     });
   }
 
-  // High damage output - positive reinforcement
-  if (combat.damage > 25000) {
+  if (combat.damagePerMin >= 1200) {
     insights.push({
       severity: 'info',
       module: 'combat',
       title: 'High Damage Output',
-      detail: `You dealt ${combat.damage} damage this match. Great job contributing to your team's damage output!`,
+      detail: `You dealt ${combat.damagePerMin} damage/min this match — excellent teamfight contribution.`,
       impact: 0,
     });
   }
@@ -146,35 +122,22 @@ function insightsFromCombat(combat, insights) {
 function insightsFromBenchmarks(benchmarks, insights) {
   if (!benchmarks) return;
 
-  // Below benchmark winrate
-  if (benchmarks.winrateDiff < -15) {
+  if (benchmarks.kdaDiff <= -1 && benchmarks.benchmarkKda > 0) {
     insights.push({
-      severity: benchmarks.winrateDiff < -25 ? 'critical' : 'warning',
+      severity: benchmarks.kdaDiff <= -2 ? 'critical' : 'warning',
       module: 'benchmarks',
-      title: 'Below Top Player Winrate',
-      detail: `Your winrate is ${Math.abs(benchmarks.winrateDiff)}% below top player benchmarks. Study high-level gameplay and guides for this hero to improve.`,
-      impact: Math.min(Math.abs(benchmarks.winrateDiff) / 2, 20),
+      title: 'Below Your Career Average',
+      detail: `KDA of ${benchmarks.userKda} is ${Math.abs(benchmarks.kdaDiff)} below your career avg (${benchmarks.benchmarkKda}). Review this match's fights — something went wrong.`,
+      impact: Math.min(Math.abs(benchmarks.kdaDiff) * 6, 18),
     });
   }
 
-  // Below benchmark KDA
-  if (benchmarks.kdaDiff < -1.5) {
-    insights.push({
-      severity: 'warning',
-      module: 'benchmarks',
-      title: 'Below Top Player KDA',
-      detail: `Your KDA is ${Math.abs(benchmarks.kdaDiff)} below top player benchmarks. Work on your combat mechanics and positioning to close the gap.`,
-      impact: Math.min(Math.abs(benchmarks.kdaDiff) * 10, 15),
-    });
-  }
-
-  // Above benchmarks - positive reinforcement
-  if (benchmarks.winrateDiff > 10 && benchmarks.kdaDiff > 0.5) {
+  if (benchmarks.kdaDiff >= 1 && benchmarks.benchmarkKda > 0) {
     insights.push({
       severity: 'info',
       module: 'benchmarks',
-      title: 'Exceeding Top Player Benchmarks',
-      detail: `Your performance exceeds top player benchmarks! You're in the top percentile of players for this hero.`,
+      title: 'Above Your Career Average',
+      detail: `KDA of ${benchmarks.userKda} is ${benchmarks.kdaDiff.toFixed(1)} above your career avg. A personal standout game.`,
       impact: 0,
     });
   }

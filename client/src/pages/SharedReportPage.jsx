@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useEffect } from 'react';
 import useMatchAnalysis from '../hooks/useMatchAnalysis';
+import usePageTitle from '../hooks/usePageTitle';
 import LoadingState from '../components/ui/LoadingState';
 import HeroHeader from '../components/dashboard/HeroHeader';
 import InsightDeck from '../components/dashboard/InsightDeck';
@@ -10,6 +11,11 @@ import { Loader2 } from 'lucide-react';
 export default function SharedReportPage() {
   const { matchId, accountId } = useParams();
   const { analysis, loading, error, loadCached } = useMatchAnalysis();
+  usePageTitle(
+    analysis?.meta
+      ? `Shared Report · ${analysis.meta.heroName}`
+      : `Shared Report · #${matchId}`
+  );
 
   useEffect(() => {
     loadCached(matchId, accountId);

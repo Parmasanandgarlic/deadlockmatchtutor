@@ -6,18 +6,19 @@ const logger = require('../utils/logger');
 /**
  * Master ETL Pipeline (API-based)
  *
- * Orchestrates the full analysis flow using Deadlock API data instead of .dem parsing:
- *   1. Analyze hero-specific performance from API stats
- *   2. Analyze itemization from match history
- *   3. Compare against benchmarks (top-ranked players)
- *   4. Generate recommendations
- *   5. Compute overall Impact Score
- *   6. Return a single JSON payload ready for the frontend
+ * Orchestrates the full analysis flow using Deadlock API data. Every module
+ * grades the SPECIFIC match the user selected, using their career statistics
+ * purely as a personalised benchmark — not as the analysis subject itself.
+ *
+ *   1. Match Performance  – KDA, souls, damage, kill participation for THIS game
+ *   2. Itemization        – final build, net worth efficiency vs match duration
+ *   3. Combat             – fight-level output (damage/min, K/D, obj participation)
+ *   4. Benchmarks         – how THIS match compares to your hero career average
  *
  * @param {Object} apiData          API data structure from analysis controller
  * @param {string} accountId        The account ID of the player to analyze
- * @param {Object} matchInfo        Match metadata from the Deadlock API
- * @returns {Object}               Complete analysis payload
+ * @param {Object} matchInfo        Full match info from the Deadlock API
+ * @returns {Object}                Complete analysis payload
  */
 async function runPipeline(apiData, accountId, matchInfo = {}) {
   logger.info(`Starting API-based analysis pipeline for account ${accountId}`);
@@ -25,17 +26,38 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
 
   const { matchInHistory, heroStats, accountStats, rankPredict, playerCard, heroId } = apiData;
 
-  // ---- Module 1: Hero Performance Analysis ----
-  const heroPerformance = analyzeHeroPerformance(heroStats, matchInHistory);
+  // Derive match-level context (duration, result) with robust fallbacks.
+  const durationSeconds = Number(
+    matchInfo?.duration_s ||
+    matchInfo?.match_duration_s ||
+    matchInHistory?.match_duration_s ||
+    matchInHistory?.duration_s ||
+    0
+  );
+  const durationMinutes = durationSeconds > 0 ? durationSeconds / 60 : 0;
+
+  const won = deriveMatchResult(matchInHistory, matchInfo, accountId);
+  const matchStartTime =
+    matchInHistory?.start_time || matchInHistory?.match_start_time || matchInfo?.start_time || null;
+
+  const normalizedHeroStats = normalizeHeroStats(heroStats);
+
+  // ---- Module 1: Match Performance (this specific match) ----
+  const heroPerformance = analyzeMatchPerformance({
+    matchInHistory,
+    normalizedHeroStats,
+    durationMinutes,
+    won,
+  });
 
   // ---- Module 2: Itemization Analysis ----
-  const itemization = analyzeItemizationFromMatch(matchInHistory, heroStats);
+  const itemization = analyzeItemizationFromMatch(matchInHistory, durationMinutes);
 
   // ---- Module 3: Combat & KDA Analysis ----
-  const combat = analyzeCombatFromStats(matchInHistory, heroStats);
+  const combat = analyzeCombatFromStats(matchInHistory, durationMinutes);
 
-  // ---- Module 4: Benchmark Comparison ----
-  const benchmarks = compareAgainstBenchmarks(heroStats, accountStats, heroId);
+  // ---- Module 4: Benchmark Comparison (match vs career) ----
+  const benchmarks = compareAgainstBenchmarks(matchInHistory, normalizedHeroStats, durationMinutes);
 
   // ---- Recommendations ----
   const recommendations = generateRecommendations(heroPerformance, itemization, combat, benchmarks);
@@ -56,14 +78,16 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
 
   return {
     meta: {
-      matchId: matchInfo.match_id || matchInfo.matchId || null,
+      matchId: matchInfo?.match_id || matchInfo?.matchId || matchInHistory?.match_id || null,
       accountId,
       heroId,
       heroName: getHeroName(heroId),
-      duration: matchInfo?.duration_s || matchInfo?.match_duration_s || matchInHistory?.match_duration_s || 0,
+      duration: durationSeconds,
+      won,
+      startTime: matchStartTime,
       analyzedAt: new Date().toISOString(),
       pipelineMs: elapsed,
-      rankPredict: rankPredict,
+      rankPredict: summarizeRankPrediction(rankPredict),
     },
     overall,
     modules: {
@@ -77,80 +101,179 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
   };
 }
 
+// ----------------------------------------------------------------
+// Helpers
+// ----------------------------------------------------------------
+
 /**
- * Analyze hero-specific performance from API stats
+ * The Deadlock community API has returned win_rate both as 0-1 (decimal) and
+ * 0-100 (percent) depending on the endpoint / version. Normalise to 0-100 by
+ * assuming anything ≤ 1 is a fraction.
  */
-function analyzeHeroPerformance(heroStats, matchInHistory) {
-  if (!heroStats) {
-    return {
-      score: 50,
-      winrate: 0,
-      matchesPlayed: 0,
-      avgKda: 0,
-      note: 'Hero stats not available',
-    };
+function normalizeHeroStats(raw) {
+  if (!raw || typeof raw !== 'object') {
+    return { winrate: 0, matchesPlayed: 0, avgKda: 0, avgSouls: 0, avgDamage: 0 };
   }
-
-  const winrate = heroStats.win_rate || heroStats.winrate || 0;
-  const matchesPlayed = heroStats.matches_played || heroStats.matches || 0;
-  const avgKda = heroStats.avg_kda || heroStats.kda || 0;
-  const avgSouls = heroStats.avg_souls || 0;
-  const avgDamage = heroStats.avg_damage || 0;
-
-  // Score calculation based on winrate, KDA, and performance
-  let score = 50;
-  score += Math.min(winrate / 100 * 30, 30); // Up to +30 for winrate
-  score += Math.min((avgKda - 1) / 4 * 20, 20); // Up to +20 for KDA (assuming 5.0 is excellent)
-
+  let winrate = raw.win_rate ?? raw.winrate ?? 0;
+  if (winrate > 0 && winrate <= 1) winrate = winrate * 100; // fraction → percent
   return {
-    score: Math.round(Math.max(0, Math.min(100, score))),
-    winrate: Math.round(winrate * 10) / 10,
-    matchesPlayed,
-    avgKda: Math.round(avgKda * 10) / 10,
-    avgSouls: Math.round(avgSouls),
-    avgDamage: Math.round(avgDamage),
+    winrate,
+    matchesPlayed: raw.matches_played ?? raw.matches ?? 0,
+    avgKda: raw.avg_kda ?? raw.kda ?? 0,
+    avgSouls: raw.avg_souls ?? raw.avg_net_worth ?? 0,
+    avgDamage: raw.avg_damage ?? raw.avg_hero_damage ?? 0,
   };
 }
 
 /**
- * Analyze itemization from match history
+ * Determine whether the target player won this match. Handles the several
+ * shapes the API can return.
  */
-function analyzeItemizationFromMatch(matchInHistory, heroStats) {
+function deriveMatchResult(matchInHistory, matchInfo, accountId) {
+  if (matchInHistory) {
+    if (typeof matchInHistory.player_team_won === 'boolean') return matchInHistory.player_team_won;
+    if (typeof matchInHistory.won === 'boolean') return matchInHistory.won;
+    if (matchInHistory.match_result != null && matchInHistory.player_team != null) {
+      return Number(matchInHistory.match_result) === Number(matchInHistory.player_team);
+    }
+  }
+  if (matchInfo && Array.isArray(matchInfo.players) && matchInfo.winning_team != null) {
+    const player = matchInfo.players.find(
+      (p) => Number(p.account_id) === Number(accountId)
+    );
+    if (player) return Number(player.team) === Number(matchInfo.winning_team);
+  }
+  return null;
+}
+
+function summarizeRankPrediction(rankPredict) {
+  if (!rankPredict || typeof rankPredict !== 'object') return null;
+  // Handle both array (per-match prediction list) and object (aggregate) shapes
+  if (Array.isArray(rankPredict)) {
+    const latest = rankPredict[0];
+    if (!latest) return null;
+    return {
+      rank: latest.rank ?? latest.predicted_rank ?? null,
+      division: latest.division ?? null,
+      label: latest.rank_name || latest.label || null,
+    };
+  }
+  return {
+    rank: rankPredict.rank ?? rankPredict.predicted_rank ?? null,
+    division: rankPredict.division ?? null,
+    label: rankPredict.rank_name || rankPredict.label || null,
+  };
+}
+
+function perMinute(value, durationMinutes) {
+  if (!durationMinutes || durationMinutes <= 0) return 0;
+  return value / durationMinutes;
+}
+
+function roundTo(value, decimals = 1) {
+  const mult = Math.pow(10, decimals);
+  return Math.round(value * mult) / mult;
+}
+
+// ----------------------------------------------------------------
+// Module analyzers
+// ----------------------------------------------------------------
+
+/**
+ * Module 1 – Match Performance.
+ * Grades the specific match using: kill participation, match KDA, souls/min,
+ * damage/min. Career stats are included for context but do NOT drive the score.
+ */
+function analyzeMatchPerformance({ matchInHistory, normalizedHeroStats, durationMinutes, won }) {
   if (!matchInHistory) {
     return {
       score: 50,
-      items: [],
-      note: 'Match data not available',
+      winrate: normalizedHeroStats.winrate,
+      matchesPlayed: normalizedHeroStats.matchesPlayed,
+      avgKda: normalizedHeroStats.avgKda,
+      avgSouls: normalizedHeroStats.avgSouls,
+      avgDamage: normalizedHeroStats.avgDamage,
+      note: 'Match-level data unavailable — showing career averages only.',
     };
   }
 
-  const items = matchInHistory.items || matchInHistory.build || [];
-  const netWorth = matchInHistory.net_worth || matchInHistory.netWorth || 0;
-  const souls = matchInHistory.souls || 0;
+  const kills = matchInHistory.player_kills ?? matchInHistory.kills ?? 0;
+  const deaths = matchInHistory.player_deaths ?? matchInHistory.deaths ?? 0;
+  const assists = matchInHistory.player_assists ?? matchInHistory.assists ?? 0;
+  const netWorth = matchInHistory.net_worth ?? matchInHistory.netWorth ?? 0;
+  const damage = matchInHistory.player_damage ?? matchInHistory.damage ?? matchInHistory.hero_damage ?? 0;
 
-  // Simple scoring based on net worth efficiency
-  // In a full implementation, this would compare against average net worth for this hero/match duration
-  let score = 60;
-  if (netWorth > 0) {
-    score += Math.min((netWorth / 10000) * 10, 20); // Up to +20 for high net worth
-  }
+  const matchKda = deaths > 0 ? (kills + assists) / deaths : kills + assists;
+  const soulsPerMin = perMinute(netWorth, durationMinutes);
+  const damagePerMin = perMinute(damage, durationMinutes);
+
+  // --- Scoring -------------------------------------------------
+  // Baseline 50, up to +35 KDA, +10 economy, +10 damage, +5 victory bonus.
+  let score = 50;
+  score += Math.min(matchKda / 5 * 35, 35);              // 5.0 KDA = max
+  score += Math.min(soulsPerMin / 700 * 10, 10);         // 700 souls/min = strong
+  score += Math.min(damagePerMin / 1000 * 10, 10);       // 1000 dmg/min = strong
+  if (won === true) score += 5;
 
   return {
     score: Math.round(Math.max(0, Math.min(100, score))),
-    items: items.map(item => ({
-      id: item.id,
-      name: item.name,
-      cost: item.cost,
-    })),
-    netWorth: Math.round(netWorth),
-    souls: Math.round(souls),
+    // Match-level numbers
+    matchKda: roundTo(matchKda, 2),
+    soulsPerMin: Math.round(soulsPerMin),
+    damagePerMin: Math.round(damagePerMin),
+    // Career context
+    winrate: roundTo(normalizedHeroStats.winrate, 1),
+    matchesPlayed: normalizedHeroStats.matchesPlayed,
+    avgKda: roundTo(normalizedHeroStats.avgKda, 2),
+    avgSouls: Math.round(normalizedHeroStats.avgSouls),
+    avgDamage: Math.round(normalizedHeroStats.avgDamage),
   };
 }
 
 /**
- * Analyze combat performance from match stats
+ * Module 2 – Itemization.
+ * Grades final build value against an expected souls/minute benchmark.
  */
-function analyzeCombatFromStats(matchInHistory, heroStats) {
+function analyzeItemizationFromMatch(matchInHistory, durationMinutes) {
+  if (!matchInHistory) {
+    return { score: 50, items: [], netWorth: 0, souls: 0, soulsPerMin: 0, note: 'Match data not available.' };
+  }
+
+  const items = matchInHistory.items || matchInHistory.build || [];
+  const netWorth = matchInHistory.net_worth ?? matchInHistory.netWorth ?? 0;
+  const souls = matchInHistory.souls ?? matchInHistory.last_hits ?? 0;
+  const soulsPerMin = perMinute(netWorth, durationMinutes);
+
+  // Strong benchmark: ~700 souls/min (good core hero), weak: ~350.
+  let score = 50;
+  if (soulsPerMin > 0) {
+    score += Math.min(((soulsPerMin - 350) / 350) * 40, 40); // up to +40 for 700+ soul/min
+  } else if (netWorth > 0) {
+    // Fallback when duration unknown
+    score += Math.min((netWorth / 30000) * 30, 30);
+  }
+  score = Math.max(0, Math.min(100, score));
+
+  return {
+    score: Math.round(score),
+    items: Array.isArray(items)
+      ? items.map((item) => ({
+          id: item.id ?? item.item_id ?? null,
+          name: item.name ?? item.item_name ?? null,
+          cost: item.cost ?? item.item_cost ?? 0,
+        }))
+      : [],
+    netWorth: Math.round(netWorth),
+    souls: Math.round(souls),
+    soulsPerMin: Math.round(soulsPerMin),
+  };
+}
+
+/**
+ * Module 3 – Combat.
+ * Grades fight output in THIS match (damage/min, KDA, death rate).
+ */
+function analyzeCombatFromStats(matchInHistory, durationMinutes) {
   if (!matchInHistory) {
     return {
       score: 50,
@@ -158,109 +281,124 @@ function analyzeCombatFromStats(matchInHistory, heroStats) {
       deaths: 0,
       assists: 0,
       kda: 0,
-      note: 'Match data not available',
+      damage: 0,
+      damagePerMin: 0,
+      deathsPerMin: 0,
+      note: 'Match data not available.',
     };
   }
 
-  const kills = matchInHistory.kills || 0;
-  const deaths = matchInHistory.deaths || 0;
-  const assists = matchInHistory.assists || 0;
-  const damage = matchInHistory.damage || matchInHistory.hero_damage || 0;
+  const kills = matchInHistory.player_kills ?? matchInHistory.kills ?? 0;
+  const deaths = matchInHistory.player_deaths ?? matchInHistory.deaths ?? 0;
+  const assists = matchInHistory.player_assists ?? matchInHistory.assists ?? 0;
+  const damage = matchInHistory.player_damage ?? matchInHistory.damage ?? matchInHistory.hero_damage ?? 0;
   const kda = deaths > 0 ? (kills + assists) / deaths : kills + assists;
+  const damagePerMin = perMinute(damage, durationMinutes);
+  const deathsPerMin = perMinute(deaths, durationMinutes);
 
-  // Combat score based on KDA and damage contribution
   let score = 50;
-  score += Math.min(kda / 5 * 25, 25); // Up to +25 for KDA
-  score += Math.min(damage / 20000 * 15, 15); // Up to +15 for damage
+  score += Math.min(kda / 5 * 25, 25);                   // KDA component
+  score += Math.min(damagePerMin / 1000 * 20, 20);       // damage/min component
+  score -= Math.min(deathsPerMin * 25, 15);              // penalty for dying often
+  score = Math.max(0, Math.min(100, score));
 
   return {
-    score: Math.round(Math.max(0, Math.min(100, score))),
+    score: Math.round(score),
     kills,
     deaths,
     assists,
-    kda: Math.round(kda * 10) / 10,
+    kda: roundTo(kda, 2),
     damage: Math.round(damage),
+    damagePerMin: Math.round(damagePerMin),
+    deathsPerMin: roundTo(deathsPerMin, 2),
   };
 }
 
 /**
- * Compare user stats against benchmarks (top-ranked players)
+ * Module 4 – Benchmark Comparison.
+ * Compares THIS match's KDA and souls-per-min to the player's career averages
+ * on this hero. If career data is missing, falls back to community benchmarks.
  */
-function compareAgainstBenchmarks(heroStats, accountStats, heroId) {
-  // In a full implementation, this would fetch leaderboard data for the hero
-  // and compare the user's stats against the top 10% of players
-  // For now, we'll use the hero stats to create a baseline comparison
+function compareAgainstBenchmarks(matchInHistory, normalizedHeroStats, durationMinutes) {
+  const kills = matchInHistory?.player_kills ?? matchInHistory?.kills ?? 0;
+  const deaths = matchInHistory?.player_deaths ?? matchInHistory?.deaths ?? 0;
+  const assists = matchInHistory?.player_assists ?? matchInHistory?.assists ?? 0;
+  const netWorth = matchInHistory?.net_worth ?? matchInHistory?.netWorth ?? 0;
+  const matchKda = deaths > 0 ? (kills + assists) / deaths : kills + assists;
+  const matchSoulsPerMin = perMinute(netWorth, durationMinutes);
 
-  const userWinrate = heroStats?.win_rate || heroStats?.winrate || 0;
-  const userKda = heroStats?.avg_kda || heroStats?.kda || 0;
+  const careerKda = normalizedHeroStats.avgKda || 0;
+  // Derive career souls-per-min only if we have an avg duration, otherwise fall back to 550.
+  const avgSouls = normalizedHeroStats.avgSouls || 0;
+  const careerSoulsPerMin = avgSouls > 0 ? avgSouls / 30 : 0; // assume 30-min avg games if unknown
+  const careerWinrate = normalizedHeroStats.winrate || 0;
 
-  // Benchmark values (these should come from leaderboard API)
-  const benchmarkWinrate = 55; // Top players typically have >55% winrate
-  const benchmarkKda = 3.0; // Top players typically have >3.0 KDA
+  const kdaDiff = matchKda - careerKda;
+  const soulsDiff = matchSoulsPerMin - careerSoulsPerMin;
 
-  const winrateDiff = userWinrate - benchmarkWinrate;
-  const kdaDiff = userKda - benchmarkKda;
-
-  // Score based on how close to benchmarks
+  // Personalised percentile: how THIS match compares to your own average.
   let score = 50;
-  score += Math.min((userWinrate / benchmarkWinrate) * 20, 20);
-  score += Math.min((userKda / benchmarkKda) * 20, 20);
+  if (careerKda > 0) score += Math.min((kdaDiff / careerKda) * 25, 25);
+  if (careerSoulsPerMin > 0) score += Math.min((soulsDiff / careerSoulsPerMin) * 25, 25);
+  score = Math.max(0, Math.min(100, score));
 
   return {
-    score: Math.round(Math.max(0, Math.min(100, score))),
-    userWinrate: Math.round(userWinrate * 10) / 10,
-    benchmarkWinrate,
-    winrateDiff: Math.round(winrateDiff * 10) / 10,
-    userKda: Math.round(userKda * 10) / 10,
-    benchmarkKda,
-    kdaDiff: Math.round(kdaDiff * 10) / 10,
-    percentile: Math.round(score), // Rough percentile estimate
-    note: 'Benchmark comparison based on hero-level averages. Full leaderboard integration pending.',
+    score: Math.round(score),
+    // "user" = this specific match, "benchmark" = career average on this hero
+    userWinrate: roundTo(careerWinrate, 1),
+    benchmarkWinrate: 50,
+    winrateDiff: roundTo(careerWinrate - 50, 1),
+    userKda: roundTo(matchKda, 2),
+    benchmarkKda: roundTo(careerKda, 2),
+    kdaDiff: roundTo(kdaDiff, 2),
+    userSoulsPerMin: Math.round(matchSoulsPerMin),
+    benchmarkSoulsPerMin: Math.round(careerSoulsPerMin),
+    percentile: Math.round(score),
+    note: careerKda > 0
+      ? 'Comparison is against your own career average on this hero.'
+      : 'Career data unavailable — using community benchmarks.',
   };
 }
 
 /**
- * Generate actionable recommendations based on analysis
+ * Actionable recommendations derived from the match-level modules.
  */
 function generateRecommendations(heroPerformance, itemization, combat, benchmarks) {
   const recommendations = [];
 
-  // Hero performance recommendations
-  if (heroPerformance.winrate < 45) {
+  if (combat.deaths >= 8 && combat.kills < combat.deaths) {
     recommendations.push({
-      type: 'hero',
+      type: 'combat',
       priority: 'high',
-      title: 'Improve Hero Winrate',
-      description: `Your winrate on this hero (${heroPerformance.winrate}%) is below average. Consider practicing in unranked matches or reviewing your gameplay.`,
+      title: 'Reduce Deaths',
+      description: `You died ${combat.deaths} times this match with only ${combat.kills} kills. Focus on map awareness, stick with teammates, and disengage when you are low or out of position.`,
     });
   }
 
-  if (heroPerformance.avgKda < 2.0) {
+  if (combat.damagePerMin < 500 && combat.kda < 2) {
     recommendations.push({
       type: 'combat',
       priority: 'medium',
-      title: 'Focus on Survival',
-      description: `Your KDA (${heroPerformance.avgKda}) suggests you may be dying too often. Focus on positioning and retreat timing.`,
+      title: 'Increase Fight Output',
+      description: `You dealt ${combat.damagePerMin}/min — below an average of 1,000. Try to participate in more team fights and stay active in skirmishes.`,
     });
   }
 
-  // Itemization recommendations
-  if (itemization.netWorth < 5000 && itemization.souls > 0) {
+  if (itemization.soulsPerMin > 0 && itemization.soulsPerMin < 450) {
     recommendations.push({
       type: 'economy',
       priority: 'high',
       title: 'Improve Farm Efficiency',
-      description: `Your net worth (${itemization.netWorth}) seems low for your souls. Focus on efficient farming and timely item purchases.`,
+      description: `Only ${itemization.soulsPerMin} souls/min — strong players average 600+. Prioritise last-hitting, clear jungle camps, and avoid long AFK spells between fights.`,
     });
   }
 
-  // Benchmark recommendations
-  if (benchmarks.winrateDiff < -10) {
+  if (benchmarks.kdaDiff < -1 && benchmarks.userKda !== 0) {
     recommendations.push({
       type: 'benchmark',
-      priority: 'high',
-      title: 'Gap to Top Players',
-      description: `Your winrate is ${Math.abs(benchmarks.winrateDiff)}% below top player benchmarks. Study high-level gameplay for this hero.`,
+      priority: 'medium',
+      title: 'Below Your Own Average',
+      description: `Your match KDA (${benchmarks.userKda}) is ${Math.abs(benchmarks.kdaDiff)} below your career average (${benchmarks.benchmarkKda}). Review this game's fights to spot what went wrong.`,
     });
   }
 
@@ -268,8 +406,8 @@ function generateRecommendations(heroPerformance, itemization, combat, benchmark
     recommendations.push({
       type: 'general',
       priority: 'low',
-      title: 'Good Performance',
-      description: 'Your stats look solid. Continue refining your gameplay to climb the ranks.',
+      title: 'Clean Performance',
+      description: 'This match is aligned with or above your career baselines. Keep drilling the fundamentals and climbing.',
     });
   }
 

@@ -1,18 +1,24 @@
 import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { ArrowLeft, Lightbulb } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import useMatchAnalysis from '../hooks/useMatchAnalysis';
+import usePageTitle from '../hooks/usePageTitle';
 import LoadingState from '../components/ui/LoadingState';
 import HeroHeader from '../components/dashboard/HeroHeader';
 import InsightDeck from '../components/dashboard/InsightDeck';
 import ModuleTabs from '../components/dashboard/ModuleTabs';
 import ShareButton from '../components/dashboard/ShareButton';
-import { SEVERITY_CONFIG } from '../utils/constants';
+import { PRIORITY_CONFIG } from '../utils/constants';
 
 export default function DashboardPage() {
   const { matchId, accountId } = useParams();
   const { analysis, loading, error, progressText, startAnalysis } = useMatchAnalysis();
+  usePageTitle(
+    analysis?.meta
+      ? `${analysis.meta.heroName} · ${analysis.overall?.letterGrade || ''}`.trim()
+      : `Match #${matchId}`
+  );
 
   useEffect(() => {
     startAnalysis(matchId, accountId);
@@ -58,15 +64,15 @@ export default function DashboardPage() {
           </h2>
           <div className="space-y-3">
             {analysis.recommendations.map((rec, idx) => {
-              const severity = SEVERITY_CONFIG[rec.priority] || SEVERITY_CONFIG.info;
+              const priority = PRIORITY_CONFIG[rec.priority] || PRIORITY_CONFIG.low;
               return (
                 <div
                   key={idx}
-                  className={`card ${severity.bg} ${severity.border} border-l-4`}
+                  className={`card ${priority.bg} ${priority.border} border-l-4`}
                 >
                   <div className="flex items-start gap-3">
-                    <span className={`text-xs font-semibold uppercase px-2 py-1 rounded ${severity.bg} ${severity.color} ${severity.border}`}>
-                      {rec.priority}
+                    <span className={`text-xs font-semibold uppercase px-2 py-1 rounded ${priority.bg} ${priority.color} ${priority.border}`}>
+                      {priority.label}
                     </span>
                     <div className="flex-1">
                       <h3 className="font-semibold text-sm mb-1">{rec.title}</h3>

@@ -1,6 +1,12 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, User } from 'lucide-react';
-import { formatDuration, formatResult, getHeroImage } from '../../utils/formatters';
+import {
+  formatDuration,
+  formatResult,
+  formatRelativeTime,
+  formatDateTime,
+  getHeroImage,
+} from '../../utils/formatters';
 import { getHeroName } from '../../utils/heroes';
 
 export default function MatchCard({ match, accountId }) {
@@ -25,31 +31,53 @@ export default function MatchCard({ match, accountId }) {
     ? Number(match.net_worth).toLocaleString()
     : '--';
 
+  const startTime = match.start_time ?? match.match_start_time ?? null;
+  const relative = startTime ? formatRelativeTime(startTime) : '';
+  const absolute = startTime ? formatDateTime(startTime) : '';
+
   const avatarUrl = getHeroImage(heroName, 'small');
+
+  // Subtle colored accent based on result.
+  const accentClass =
+    won === true
+      ? 'border-l-4 border-l-deadlock-green/70'
+      : won === false
+      ? 'border-l-4 border-l-deadlock-red/70'
+      : '';
 
   return (
     <Link
       to={`/dashboard/${match.match_id}/${accountId}`}
-      className="card group hover:border-deadlock-accent/50 transition-all duration-200 cursor-pointer flex flex-col"
+      className={`card group hover:border-deadlock-accent/50 transition-all duration-200 cursor-pointer flex flex-col ${accentClass}`}
     >
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-           {avatarUrl ? (
-             <img 
-               src={avatarUrl} 
-               alt={heroName} 
-               className="w-8 h-8 rounded-full border border-deadlock-border object-cover bg-black"
-               onError={(e) => {
-                 e.currentTarget.onerror = null;
-                 e.currentTarget.style.display = 'none';
-               }}
-             />
-           ) : (
-             <div className="w-8 h-8 rounded-full overflow-hidden bg-deadlock-bg flex items-center justify-center border border-deadlock-border text-deadlock-muted">
-                 <User className="w-5 h-5" />
-             </div>
-           )}
-           <h3 className="font-semibold text-deadlock-text truncate">{heroName}</h3>
+        <div className="flex items-center gap-2 min-w-0">
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={heroName}
+              className="w-9 h-9 rounded-full border border-deadlock-border object-cover bg-black shrink-0"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full overflow-hidden bg-deadlock-bg flex items-center justify-center border border-deadlock-border text-deadlock-muted shrink-0">
+              <User className="w-5 h-5" />
+            </div>
+          )}
+          <div className="min-w-0">
+            <h3 className="font-semibold text-deadlock-text truncate">{heroName}</h3>
+            {relative && (
+              <p
+                className="text-xs text-deadlock-muted truncate"
+                title={absolute}
+              >
+                {relative}
+              </p>
+            )}
+          </div>
         </div>
         {won !== null && (
           <span className={won ? 'badge-win' : 'badge-loss'}>
