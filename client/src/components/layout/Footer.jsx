@@ -16,7 +16,7 @@ export default function Footer() {
             </h3>
             <p className="text-base text-white leading-relaxed mb-6">
               A community-driven analytics project for Deadlock. 
-              We extract and interpret the occult-steam signals to help you evolve.
+              We transform match data into actionable insights to help you master your performance.
             </p>
             <p className="text-xs text-white/50 uppercase tracking-[0.1em] leading-loose">
               Not affiliated with Valve Corporation. Data sourced via{' '}

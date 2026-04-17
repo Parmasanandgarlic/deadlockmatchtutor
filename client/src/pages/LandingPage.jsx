@@ -63,8 +63,8 @@ export default function LandingPage() {
           </h1>
 
           <p className="max-w-xl mx-auto text-deadlock-text-dim text-lg leading-relaxed mb-8">
-            The occult-steam analytics engine for the discerning soul. 
-            Analyze your micro-mistakes and macro impacts with surgical precision.
+            The high-precision analytics engine for Deadlock. 
+            Identify macro-mistakes, optimize your economy, and dominate every skirmish with data-driven insights.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-6">
