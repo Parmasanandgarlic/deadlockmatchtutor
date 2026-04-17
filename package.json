@@ -5,14 +5,14 @@
   "private": true,
   "workspaces": [
     "client",
-    "api"
+    "server"
   ],
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:client": "npm run dev --workspace=client",
-    "dev:server": "npm run dev --workspace=api",
+    "dev:server": "npm run dev --workspace=server",
     "build": "npm run build -w client",
-    "start": "npm run start --workspace=api",
+    "start": "npm run start --workspace=server",
     "install:all": "npm install",
     "test": "node tests/run-all.js",
     "test:unit": "node tests/unit/helpers.test.js && node tests/unit/scoring.test.js",
