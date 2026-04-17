@@ -1,4 +1,4 @@
-# Deadlock Match Tutor
+# Deadlock AfterMatch
 
 A comprehensive post-match analytics dashboard for **Deadlock**. Fetches match data directly from the Deadlock API, runs an analysis pipeline evaluating Economy, Itemization, Combat, and Objectives, and surfaces the most critical "Game Losing Mistakes" in plain English.
 

@@ -1,5 +1,5 @@
 {
-  "name": "deadlock-analyzer-client",
+  "name": "deadlock-aftermatch-client",
   "private": true,
   "version": "1.0.0",
   "type": "module",

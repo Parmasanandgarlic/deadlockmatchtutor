@@ -1,5 +1,5 @@
 {
-  "name": "deadlock-analyzer-server",
+  "name": "deadlock-aftermatch-server",
   "version": "1.0.0",
   "description": "Backend parser engine and API for Deadlock post-match analyzer",
   "main": "index.js",

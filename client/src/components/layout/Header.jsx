@@ -9,7 +9,7 @@ export default function Header() {
           <Crosshair className="w-5 h-5 text-deadlock-accent group-hover:rotate-90 transition-transform duration-300" />
           <span className="font-bold text-lg tracking-tight">
             <span className="text-deadlock-accent">DEADLOCK</span>{' '}
-            <span className="text-deadlock-text-dim">Analyzer</span>
+            <span className="text-deadlock-text-dim">AfterMatch</span>
           </span>
         </Link>
         <nav className="flex items-center gap-3 text-sm text-deadlock-text-dim">

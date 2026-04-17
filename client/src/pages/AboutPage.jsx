@@ -39,7 +39,7 @@ export default function AboutPage() {
         <span className="text-deadlock-accent">Open</span> Source
       </h1>
       <p className="text-deadlock-text-dim text-lg mb-8">
-        Deadlock Match Analyzer is a community-built, open-source project. Anyone can contribute.
+        Deadlock AfterMatch is a community-built, open-source project. Anyone can contribute.
       </p>
 
       {/* GitHub CTA */}
