@@ -1,10 +1,10 @@
 {
-  "buildCommand": "npm run build --workspace=client",
+  "buildCommand": "npm run build",
   "outputDirectory": "client/dist",
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/server/index.js"
+      "destination": "server/index.js"
     },
     {
       "source": "/(.*)",
