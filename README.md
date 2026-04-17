@@ -96,6 +96,8 @@ vercel
 
 ```
 deadlock-match-tutor/
+├── api/               # Vercel Serverless entry point (bypasses Hobby limits)
+│   └── index.js       # Bridge exporting the unified Express app
 ├── client/            # React SPA (Vite)
 │   ├── src/
 │   │   ├── api/       # Backend HTTP client
@@ -112,6 +114,8 @@ deadlock-match-tutor/
 │   ├── routes/        # API route definitions
 │   ├── services/      # External API integrations (Steam, Deadlock)
 │   └── utils/         # Helpers, logger, constants
+├── supabase/          # Database definitions and security
+│   └── fix_rls_analyses.sql # RLS bypass security script
 ├── tests/             # Comprehensive test suite
 │   ├── unit/          # Unit tests (helpers, scoring)
 │   ├── component/     # Component tests (validation, error handler)
@@ -123,6 +127,7 @@ deadlock-match-tutor/
 │   ├── security/      # DAST / Penetration tests
 │   ├── failover/      # Disaster Recovery & Failover tests
 │   └── run-all.js     # Master test runner
+├── setup-supabase.js  # Script to initialize Supabase schema
 ├── vercel.json        # Vercel deployment configuration
 └── package.json       # Workspace root
 ```
@@ -220,7 +225,7 @@ npm run test:failover    # Disaster Recovery & Failover tests
 
 - **Max Duration**: 60 seconds per function
 - **Memory**: 1024 MB
-- **API Routes**: Serverless functions under `/api/*`
+- **API Routes**: All `/api/*` routes are consolidated into a single Serverless Function (`api/index.js`) to prevent exceeding the Vercel Hobby plan 12-function limit.
 - **Static Assets**: React build served from root
 - **SPA Routing**: All non-API routes fall back to `/index.html`
 
