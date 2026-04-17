@@ -5,8 +5,11 @@ import { formatDuration, formatResult, getHeroImage } from '../../utils/formatte
 export default function MatchCard({ match, accountId }) {
   const won = match.player_team_won ?? match.won ?? null;
   const heroName = match.hero_name || match.hero || 'Unknown Hero';
-  const kda = match.kills != null
-    ? `${match.kills}/${match.deaths}/${match.assists}`
+  const kills = match.player_kills ?? match.kills ?? 0;
+  const deaths = match.player_deaths ?? match.deaths ?? 0;
+  const assists = match.player_assists ?? match.assists ?? 0;
+  const kda = (kills != null && deaths != null && assists != null)
+    ? `${kills}/${deaths}/${assists}`
     : '--/--/--';
   const duration = formatDuration(match.duration_s || match.duration || 0);
   const netWorth = match.net_worth != null

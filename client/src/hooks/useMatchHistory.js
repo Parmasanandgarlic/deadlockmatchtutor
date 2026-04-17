@@ -3,11 +3,16 @@ import { getPlayerMatches } from '../api/client';
 
 export default function useMatchHistory(accountId) {
   const [matches, setMatches] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const fetchMatches = useCallback(async () => {
-    if (!accountId) return;
+    if (!accountId) {
+      setMatches([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {

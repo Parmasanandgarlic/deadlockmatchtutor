@@ -66,11 +66,11 @@ async function runAnalysis(req, res, next) {
 
     // Find the specific match in history
     const matchInHistory = matchHistory.find(m => m.match_id === Number(matchId));
-    if (!matchInHistory) {
-      throw new Error('Match not found in player history. The player may not have participated in this match.');
+    if (!matchInHistory && !Object.keys(matchInfo).length) {
+      throw new Error('Match not found. The Deadlock API may be experiencing issues — please try again later.');
     }
 
-    const heroId = matchInHistory.hero_id;
+    const heroId = matchInHistory?.hero_id || matchInfo?.players?.find(p => p.account_id === Number(accountId))?.hero_id || 0;
 
     // Step 4: Fetch hero-specific stats
     logger.info(`[Analysis] Fetching hero stats for hero ${heroId}`);

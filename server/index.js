@@ -20,7 +20,18 @@ if (!fs.existsSync(config.tempDir)) {
 
 // --------------- Middleware ---------------
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+      imgSrc: ["'self'", 'data:', 'https://assets-bucket.deadlock-api.com', 'https://deadlock-api.com'],
+      connectSrc: ["'self'", 'https://api.deadlock-api.com', 'https://steamcommunity.com'],
+    },
+  },
+}));
 app.use(compression());
 app.use(cors({ origin: config.cors.origin, credentials: true }));
 app.use(express.json({ limit: '1mb' }));

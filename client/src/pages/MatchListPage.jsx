@@ -1,11 +1,20 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, RefreshCw } from 'lucide-react';
 import useMatchHistory from '../hooks/useMatchHistory';
 import MatchCard from '../components/matches/MatchCard';
 
 export default function MatchListPage() {
   const { accountId } = useParams();
-  const { matches, loading, error } = useMatchHistory(accountId);
+  const { matches, loading, error, refetch } = useMatchHistory(accountId);
+
+  if (!accountId) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-20 text-center">
+        <p className="text-deadlock-red mb-4">No account ID provided.</p>
+        <Link to="/" className="text-deadlock-accent underline">Return to search</Link>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
@@ -25,10 +34,15 @@ export default function MatchListPage() {
         </div>
       )}
 
-      {error && (
+      {error && !loading && (
         <div className="card text-center py-12">
-          <p className="text-deadlock-red mb-2">{error}</p>
-          <Link to="/" className="text-sm text-deadlock-accent underline">Try a different Steam ID</Link>
+          <p className="text-deadlock-red mb-4">{error}</p>
+          <div className="flex items-center justify-center gap-4">
+            <button onClick={refetch} className="btn-secondary flex items-center gap-2 text-sm">
+              <RefreshCw className="w-4 h-4" /> Retry
+            </button>
+            <Link to="/" className="text-sm text-deadlock-accent underline">Try a different Steam ID</Link>
+          </div>
         </div>
       )}
 

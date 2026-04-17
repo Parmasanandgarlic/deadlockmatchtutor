@@ -6,6 +6,30 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+// Detect non-JSON responses (e.g. HTML from SPA fallback when API routes aren't wired)
+api.interceptors.response.use(
+  (response) => {
+    const contentType = response.headers['content-type'] || '';
+    if (response.status === 200 && contentType.includes('text/html')) {
+      throw new Error(
+        'The API server is not reachable. If you are the deployer, ensure the server is configured as a Vercel serverless function and the Root Directory is set to the project root (not client/).'
+      );
+    }
+    return response;
+  },
+  (error) => {
+    // Transform axios errors into cleaner messages
+    if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
+      error.message = 'Cannot connect to the server. Please try again later.';
+    } else if (error.code === 'ECONNABORTED') {
+      error.message = 'Request timed out. The analysis may take longer than expected — please try again.';
+    } else if (!error.response) {
+      error.message = 'Network error. Please check your connection and try again.';
+    }
+    return Promise.reject(error);
+  }
+);
+
 // ---- Player ----
 
 export async function resolvePlayer(steamInput) {

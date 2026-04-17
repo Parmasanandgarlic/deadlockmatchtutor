@@ -16,7 +16,11 @@ export default function LandingPage() {
     setLoading(true);
     setError(null);
     try {
-      const { steam32 } = await resolvePlayer(input.trim());
+      const result = await resolvePlayer(input.trim());
+      const steam32 = result?.steam32;
+      if (!steam32) {
+        throw new Error('Could not resolve Steam ID. The server may not be configured correctly.');
+      }
       navigate(`/matches/${steam32}`);
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Could not resolve Steam ID.');
