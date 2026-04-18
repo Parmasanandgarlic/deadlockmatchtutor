@@ -1,4 +1,5 @@
 import { TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
+import Tooltip from '../ui/Tooltip';
 
 export default function BenchmarksModule({ data }) {
   const {
@@ -16,11 +17,19 @@ export default function BenchmarksModule({ data }) {
     <div className="space-y-6">
       {/* Key Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
-        <StatBox
-          icon={<BarChart3 className="w-4 h-4 text-deadlock-purple" />}
-          label="Match vs Career Score"
-          value={`${percentile}%`}
-        />
+        <Tooltip
+          content={{
+            term: 'Match vs Career Score',
+            definition: 'How your performance in this match compares to your career average with this hero. Higher percentiles indicate above-average performance.',
+            category: 'Comparison'
+          }}
+        >
+          <StatBox
+            icon={<BarChart3 className="w-4 h-4 text-deadlock-purple" />}
+            label="Match vs Career Score"
+            value={`${percentile}%`}
+          />
+        </Tooltip>
         <StatBox
           label="Module Score"
           value={`${data.score}/100`}
@@ -30,8 +39,16 @@ export default function BenchmarksModule({ data }) {
 
       {/* KDA Comparison */}
       <div>
-        <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3">
-          KDA — This Match vs Career Average
+        <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3 flex items-center gap-2">
+          <Tooltip
+            content={{
+              term: 'KDA',
+              definition: 'Kills/Deaths/Assists ratio. In Deadlock, deaths are especially costly as they grant souls to enemies and remove you from map control.',
+              category: 'Combat'
+            }}
+          >
+            <span>KDA — This Match vs Career Average</span>
+          </Tooltip>
         </h3>
         <ComparisonBar
           label="KDA"
@@ -47,8 +64,16 @@ export default function BenchmarksModule({ data }) {
       {/* Souls/min Comparison */}
       {benchmarkSoulsPerMin > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3">
-            Souls / min — This Match vs Career Average
+          <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3 flex items-center gap-2">
+            <Tooltip
+              content={{
+                term: 'Souls Per Minute',
+                definition: 'Average souls collected per minute. Critical for power spike timing and item progression. Higher values indicate better farming efficiency.',
+                category: 'Economy'
+              }}
+            >
+              <span>Souls / min — This Match vs Career Average</span>
+            </Tooltip>
           </h3>
           <ComparisonBar
             label="Souls/min"
