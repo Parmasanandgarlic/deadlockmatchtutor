@@ -1,7 +1,7 @@
 import React from 'react';
 import { Info } from 'lucide-react';
 
-const Tooltip = ({ metric, children }) => {
+const Tooltip = ({ metric, content, children }) => {
   const definitions = {
     // --- CORE ECONOMY & SOULS ---
     soulPerMin: "Souls collected per minute. Primary currency for items/levels. \n\nBenchmark: \n• Laning (0-10m): 400-600 spm\n• Mid Game (10-20m): 600-900 spm\n• Late Game: 900+ spm",
@@ -45,26 +45,37 @@ const Tooltip = ({ metric, children }) => {
     comebackMechanic: "Performance relative to being behind. Soul Urns (spawn 10:00, then every 5:00) favor the losing team."
   };
 
-  if (!definitions[metric]) return children || null;
+  const tooltipTerm = content?.term || (metric ? metric.replace(/([A-Z])/g, ' $1').trim() : '');
+  const tooltipDef = content?.definition || definitions[metric];
+  const tooltipCat = content?.category;
+
+  if (!tooltipDef) return children || null;
 
   return (
     <div className="group relative inline-flex items-center">
       {children ? (
-        <span className="cursor-help border-b border-dotted border-gray-400 hover:border-gray-600 transition-colors">
+        <span className="cursor-help border-b border-dotted border-deadlock-muted hover:border-deadlock-accent transition-colors">
           {children}
         </span>
       ) : (
-        <Info className="w-4 h-4 text-gray-400 cursor-help hover:text-blue-500 transition-colors" />
+        <Info className="w-4 h-4 text-deadlock-muted cursor-help hover:text-deadlock-accent transition-colors" />
       )}
      
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none border border-gray-700">
-        <div className="font-bold mb-1 text-blue-400 uppercase tracking-wider text-[10px]">
-          {metric.replace(/([A-Z])/g, ' $1').trim()}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 p-3 bg-deadlock-bg text-deadlock-text text-xs rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none border border-deadlock-border">
+        <div className="flex justify-between items-start mb-1">
+          <div className="font-bold text-deadlock-accent uppercase tracking-wider text-[10px]">
+            {tooltipTerm}
+          </div>
+          {tooltipCat && (
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-deadlock-surface text-deadlock-muted border border-deadlock-border">
+              {tooltipCat}
+            </span>
+          )}
         </div>
-        <div className="leading-relaxed whitespace-pre-line text-gray-200">
-          {definitions[metric]}
+        <div className="leading-relaxed whitespace-pre-line text-deadlock-text-dim">
+          {tooltipDef}
         </div>
-        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-deadlock-bg"></div>
       </div>
     </div>
   );
