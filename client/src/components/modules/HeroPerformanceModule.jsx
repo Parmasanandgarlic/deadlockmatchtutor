@@ -1,4 +1,4 @@
-import { TrendingUp, Trophy, Target, Sword, Coins, Flame } from 'lucide-react';
+import { TrendingUp, Trophy, Target, Sword, Coins, Flame, Skull } from 'lucide-react';
 import { formatNumber } from '../../utils/formatters';
 
 export default function HeroPerformanceModule({ data }) {
@@ -26,9 +26,9 @@ export default function HeroPerformanceModule({ data }) {
               value={formatNumber(data.damagePerMin)}
             />
             <StatBox
-              label="Module Score"
-              value={`${data.score}/100`}
-              highlight
+              icon={<Skull className="w-4 h-4 text-deadlock-purple" />}
+              label="Deaths"
+              value={data.deaths || 0}
             />
           </div>
         </div>

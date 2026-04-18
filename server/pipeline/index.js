@@ -63,8 +63,14 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
   // ---- Recommendations ----
   const recommendations = generateRecommendations(heroPerformance, itemization, combat, benchmarks);
 
-  // ---- Insights ----
-  const insights = generateInsights(heroPerformance, itemization, combat, benchmarks);
+  // ---- Insights v2 (with meta context for Deadlock-specific intelligence) ----
+  const insights = generateInsights(
+    heroPerformance,
+    itemization,
+    combat,
+    benchmarks,
+    { duration: durationSeconds, won }
+  );
 
   // ---- Overall Score ----
   const overall = computeOverallScore({
@@ -232,6 +238,7 @@ function analyzeMatchPerformance({ matchInHistory, normalizedHeroStats, duration
     matchKda: roundTo(matchKda, 2),
     soulsPerMin: Math.round(soulsPerMin),
     damagePerMin: Math.round(damagePerMin),
+    deaths, // Add deaths for the new UI component
     // Career context
     winrate: roundTo(normalizedHeroStats.winrate, 1),
     matchesPlayed: normalizedHeroStats.matchesPlayed,

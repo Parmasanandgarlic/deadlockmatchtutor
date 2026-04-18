@@ -3,6 +3,7 @@ export const MODULE_LABELS = {
   itemization: 'Itemization & Build',
   combat: 'Combat & KDA',
   benchmarks: 'Benchmark Comparison',
+  economy: 'Economy & Farm',
 };
 
 export const MODULE_KEYS = ['heroPerformance', 'itemization', 'combat', 'benchmarks'];
@@ -11,6 +12,7 @@ export const SEVERITY_CONFIG = {
   critical: { color: 'text-deadlock-red', bg: 'bg-deadlock-red/10', border: 'border-deadlock-red/30', label: 'Critical' },
   warning: { color: 'text-deadlock-amber', bg: 'bg-deadlock-amber/10', border: 'border-deadlock-amber/30', label: 'Warning' },
   info: { color: 'text-deadlock-blue', bg: 'bg-deadlock-blue/10', border: 'border-deadlock-blue/30', label: 'Info' },
+  positive: { color: 'text-deadlock-green', bg: 'bg-deadlock-green/10', border: 'border-deadlock-green/30', label: 'Positive' },
 };
 
 // Recommendation priorities (high/medium/low) — render styling aligned with severity.

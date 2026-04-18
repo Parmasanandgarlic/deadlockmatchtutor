@@ -1,34 +1,77 @@
+```
 # Dependencies
 node_modules/
 
-# Build output
-client/dist/
-server/dist/
+# Build artifacts
+dist/
+build/
+target/
 
-# Environment
-.env
-.env.local
-.env.*.local
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
 
 # Logs
-logs/
 *.log
-npm-debug.log*
 
-# OS files
-.DS_Store
-Thumbs.db
+# Coverage
+.coverage
+coverage/
+htmlcov/
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# Temp replay files
-server/temp/*.dem
-server/temp/*.dem.bz2
+# OS
+.DS_Store
+Thumbs.db
 
-# Cache
-.cache/
+# Testing
+.pytest_cache/
+.mypy_cache/
+.nyc_output/
+coverage/
 
-# Generated API client (keep built copy in server/deadlock_api_client)
-temp-openapi/
+# Environment variables
+.env*
+!.env.example
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Compressed files
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+```
