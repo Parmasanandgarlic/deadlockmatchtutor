@@ -1,4 +1,4 @@
-const { Configuration, PlayersApi, MatchesApi } = require('deadlock-api-client');
+const { Configuration, PlayersApi, MatchesApi } = require('../deadlock_api_client');
 const axios = require('axios');
 const config = require('../config');
 const logger = require('../utils/logger');
