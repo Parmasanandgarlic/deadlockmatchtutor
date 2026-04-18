@@ -9,11 +9,22 @@ const logger = require('../utils/logger');
 async function resolvePlayer(req, res, next) {
   try {
     const { steamInput } = req.body;
+    if (!steamInput) {
+      return res.status(400).json({ error: 'Steam input is required' });
+    }
+    
     const result = await resolveSteamId(steamInput);
     res.json(result);
   } catch (err) {
     const msg = err.message || 'Failed to resolve Steam ID.';
-    const status = msg.includes('Unrecognised') || msg.includes('Could not resolve') ? 400 : 500;
+    // Log full error details for production debugging
+    logger.error('Player resolution failed:', {
+      input: req.body.steamInput,
+      error: msg,
+      stack: err.stack,
+    });
+
+    const status = msg.includes('Unrecognised') || msg.includes('Could not resolve') || msg.includes('Invalid') ? 400 : 500;
     res.status(status).json({ error: msg });
   }
 }

@@ -46,31 +46,47 @@ function safeDivide(numerator, denominator) {
  * Returns the input unchanged if it already looks like a Steam64 ID (17-digit number).
  */
 function normalizeSteamInput(input) {
-  const trimmed = input.trim();
+  if (typeof input !== 'string') return { type: 'unknown', value: String(input) };
+  
+  // 1. Pre-sanitize: trim, remove trailing slashes, and lowercase for URL matching
+  let trimmed = input.trim();
+  // Remove all trailing slashes
+  trimmed = trimmed.replace(/\/+$/, '');
+  
+  if (trimmed.length === 0) return { type: 'unknown', value: '' };
 
-  // Already a Steam64 ID
+  // 2. Direct IDs (Steam64 or Steam32)
+  // Already a Steam64 ID (17 digits)
   if (/^\d{17}$/.test(trimmed)) {
     return { type: 'steam64', value: trimmed };
   }
 
-  // Already a Steam32 ID (Account ID - usually 8-10 digits)
+  // Already a Steam32 ID (e.g., 170839046)
   if (/^\d{8,10}$/.test(trimmed)) {
     return { type: 'steam32', value: trimmed };
   }
 
-  // Full profile URL: https://steamcommunity.com/id/vanityname
-  const vanityMatch = trimmed.match(/steamcommunity\.com\/id\/([^/]+)/);
+  // 3. URL Matching (Case-Insensitive)
+  const lowerInput = trimmed.toLowerCase();
+
+  // Full profile URL: .../id/vanityname
+  const vanityMatch = lowerInput.match(/steamcommunity\.com\/id\/([^/]+)/);
   if (vanityMatch) {
-    return { type: 'vanity', value: vanityMatch[1] };
+    // Note: parsed vanity name should preserve original case? Steam is case-insensitive for IDs, 
+    // but usually vanity names are lowercase in the URL. We'll use the original input segment to be safe.
+    // Re-extract from trimmed using the match position
+    const actualVanity = trimmed.substring(vanityMatch.index + vanityMatch[0].length - vanityMatch[1].length);
+    return { type: 'vanity', value: actualVanity };
   }
 
-  // Full profile URL: https://steamcommunity.com/profiles/76561198xxxxx
-  const profileMatch = trimmed.match(/steamcommunity\.com\/profiles\/(\d{17})/);
+  // Full profile URL: .../profiles/76561198xxxxx
+  const profileMatch = lowerInput.match(/steamcommunity\.com\/profiles\/(\d{17})/);
   if (profileMatch) {
     return { type: 'steam64', value: profileMatch[1] };
   }
 
-  // Assume raw vanity name
+  // 4. Raw Vanity Name fallback
+  // If it's alphanumeric and not a URL, assume it's a raw vanity name
   if (/^[a-zA-Z0-9_-]+$/.test(trimmed)) {
     return { type: 'vanity', value: trimmed };
   }
@@ -82,8 +98,15 @@ function normalizeSteamInput(input) {
  * Convert Steam64 ID to Steam32 (account ID) used by many game APIs.
  */
 function steam64ToSteam32(steam64) {
-  const bigId = BigInt(steam64);
-  return Number(bigId - BigInt('76561197960265728'));
+  try {
+    if (!steam64 || typeof steam64 !== 'string' || !/^\d+$/.test(steam64)) {
+      throw new Error('Invalid Steam64 ID format');
+    }
+    const bigId = BigInt(steam64);
+    return Number(bigId - BigInt('76561197960265728'));
+  } catch (err) {
+    throw new Error(`Steam ID conversion failed: ${err.message}`);
+  }
 }
 
 /**

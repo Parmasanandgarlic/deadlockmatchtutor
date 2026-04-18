@@ -11,8 +11,8 @@ async function resolveSteamId(rawInput) {
 
   if (parsed.type === 'steam32') {
     return {
-      steam64: steam32ToSteam64(parsed.value),
       steam32: Number(parsed.value),
+      steam64: String(BigInt(parsed.value) + BigInt('76561197960265728')),
     };
   }
 
@@ -27,7 +27,7 @@ async function resolveSteamId(rawInput) {
     try {
       const url = `https://steamcommunity.com/id/${parsed.value}/?xml=1`;
       const { data } = await axios.get(url, { timeout: 10000 });
-
+      
       const match = data.match(/<steamID64>(\d{17})<\/steamID64>/);
       if (!match) {
         throw new Error(`Could not resolve vanity name "${parsed.value}" to a Steam ID.`);
@@ -39,11 +39,13 @@ async function resolveSteamId(rawInput) {
         steam32: steam64ToSteam32(steam64),
       };
     } catch (err) {
-      logger.error(`Steam vanity resolution failed for "${parsed.value}": ${err.message}`);
-      throw new Error(`Failed to resolve Steam ID: ${err.message}`);
+      logger.error(`Steam resolution error for "${parsed.value}": ${err.message}`);
+      throw new Error(`Could not resolve Steam ID: ${err.message}`);
     }
   }
 
+  // If we reach here, it's 'unknown' or unhandled
+  logger.warn(`Unrecognised Steam format attempt: "${rawInput}"`);
   throw new Error(`Unrecognised Steam ID format: "${rawInput}"`);
 }
 
