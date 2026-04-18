@@ -1,28 +1,53 @@
 import { formatNumber, getItemImage } from '../../utils/formatters';
 import { ShoppingBag, Coins, Box, TrendingUp, AlertCircle } from 'lucide-react';
+import Tooltip from '../ui/Tooltip';
 
 export default function ItemizationModule({ data }) {
   const { items, netWorth, souls, soulsPerMin } = data;
-
+  
   return (
     <div className="space-y-6">
       {/* Key Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatBox
-          icon={<Coins className="w-4 h-4 text-deadlock-accent" />}
-          label="Net Worth"
-          value={formatNumber(netWorth)}
-        />
-        <StatBox
-          icon={<TrendingUp className="w-4 h-4 text-deadlock-green" />}
-          label="Souls / min"
-          value={formatNumber(soulsPerMin ?? 0)}
-        />
-        <StatBox
-          icon={<ShoppingBag className="w-4 h-4 text-deadlock-purple" />}
-          label="Last Hits"
-          value={formatNumber(souls)}
-        />
+        <Tooltip
+          content={{
+            term: 'Net Worth',
+            definition: 'Total gold value of your items plus unspent gold. Higher net worth enables stronger item spikes.',
+            category: 'Economy'
+          }}
+        >
+          <StatBox
+            icon={<Coins className="w-4 h-4 text-deadlock-accent" />}
+            label="Net Worth"
+            value={formatNumber(netWorth)}
+          />
+        </Tooltip>
+        <Tooltip
+          content={{
+            term: 'Souls Per Minute',
+            definition: 'Average souls collected per minute. Critical for power spike timing and item progression in Deadlock.',
+            category: 'Economy'
+          }}
+        >
+          <StatBox
+            icon={<TrendingUp className="w-4 h-4 text-deadlock-green" />}
+            label="Souls / min"
+            value={formatNumber(soulsPerMin ?? 0)}
+          />
+        </Tooltip>
+        <Tooltip
+          content={{
+            term: 'Last Hits',
+            definition: 'Total souls collected from last-hitting creeps. Foundation of reliable farm and item timing.',
+            category: 'Economy'
+          }}
+        >
+          <StatBox
+            icon={<ShoppingBag className="w-4 h-4 text-deadlock-purple" />}
+            label="Last Hits"
+            value={formatNumber(souls)}
+          />
+        </Tooltip>
         <StatBox
           label="Module Score"
           value={`${data.score}/100`}
@@ -32,31 +57,50 @@ export default function ItemizationModule({ data }) {
 
       {/* Items List */}
       <div>
-        <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3">Item Build</h3>
+        <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3 flex items-center gap-2">
+          <Tooltip
+            content={{
+              term: 'Item Build',
+              definition: 'Items purchased during this match. Item choices should adapt to enemy composition and game state.',
+              category: 'Build'
+            }}
+          >
+            <span>Item Build</span>
+          </Tooltip>
+        </h3>
         {items && items.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {items.map((item, i) => {
               const itemImg = getItemImage(item.name);
               return (
-                <div key={i} className="bg-deadlock-bg rounded-lg p-3 text-center">
-                  {itemImg ? (
-                    <img
-                      src={itemImg}
-                      alt={item.name}
-                      className="w-12 h-12 mx-auto mb-2 object-contain rounded"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <div className="w-12 h-12 mx-auto mb-2 overflow-hidden rounded bg-deadlock-surface border border-deadlock-border flex items-center justify-center text-deadlock-muted">
-                      <Box className="w-6 h-6" />
-                    </div>
-                  )}
-                  <p className="text-xs text-deadlock-muted truncate">{item.name}</p>
-                  <p className="font-mono text-sm">{formatNumber(item.cost)}</p>
-                </div>
+                <Tooltip
+                  key={i}
+                  content={{
+                    term: item.name,
+                    definition: `Item cost: ${formatNumber(item.cost)} gold. Item effectiveness depends on timing and enemy composition.`,
+                    category: 'Build'
+                  }}
+                >
+                  <div className="bg-deadlock-bg rounded-lg p-3 text-center cursor-help hover:bg-deadlock-bg/80 transition-colors">
+                    {itemImg ? (
+                      <img
+                        src={itemImg}
+                        alt={item.name}
+                        className="w-12 h-12 mx-auto mb-2 object-contain rounded"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-12 h-12 mx-auto mb-2 overflow-hidden rounded bg-deadlock-surface border border-deadlock-border flex items-center justify-center text-deadlock-muted">
+                        <Box className="w-6 h-6" />
+                      </div>
+                    )}
+                    <p className="text-xs text-deadlock-muted truncate">{item.name}</p>
+                    <p className="font-mono text-sm">{formatNumber(item.cost)}</p>
+                  </div>
+                </Tooltip>
               );
             })}
           </div>
