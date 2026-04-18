@@ -35,7 +35,7 @@ const sections = [
     title: 'Data Retention & Deletion',
     items: [
       'Cached analyses are retained indefinitely for performance but contain no personal data beyond match statistics',
-      'You may request deletion of cached analyses associated with your account ID by opening an issue on our GitHub repository',
+      'You may request deletion of cached analyses associated with your account ID by emailing contact@aftermath.xyz or opening an issue on our GitHub repository',
       'Steam IDs are not stored independently — they are used only in transit for API resolution',
     ],
   },

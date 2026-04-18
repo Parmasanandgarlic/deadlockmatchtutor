@@ -141,6 +141,13 @@ export default function AboutPage() {
         <p className="mt-4 text-sm text-deadlock-muted">
           Even small contributions — typo fixes, documentation improvements, or bug reports — are valuable.
         </p>
+        <p className="mt-4 text-sm text-deadlock-muted">
+          For questions or concerns, email us at{' '}
+          <a href="mailto:contact@aftermath.xyz" className="text-deadlock-accent hover:underline">
+            contact@aftermath.xyz
+          </a>
+          .
+        </p>
       </section>
       </section>
     </div>

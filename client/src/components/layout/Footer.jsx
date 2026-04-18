@@ -47,6 +47,13 @@ export default function Footer() {
               </a>
             </div>
 
+            <div className="flex flex-col gap-4">
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-white mb-2">Contact</span>
+              <a href="mailto:contact@aftermath.xyz" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors">
+                contact@aftermath.xyz
+              </a>
+            </div>
+
             <div className="flex flex-col items-start gap-5">
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-white mb-2">Status</span>
               <div className="px-4 py-1.5 bg-deadlock-blue/20 border border-deadlock-blue/40 text-xs font-bold uppercase tracking-widest text-deadlock-blue">

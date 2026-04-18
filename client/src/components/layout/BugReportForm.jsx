@@ -58,6 +58,12 @@ export default function BugReportForm({ isOpen, onClose }) {
               </div>
               <h3 className="text-lg font-semibold text-deadlock-green mb-2">Report Submitted!</h3>
               <p className="text-deadlock-muted text-sm">Thanks for helping us improve.</p>
+              <p className="text-deadlock-muted text-xs mt-4">
+                Need immediate help? Contact us at{' '}
+                <a href="mailto:contact@aftermath.xyz" className="text-deadlock-accent hover:underline">
+                  contact@aftermath.xyz
+                </a>
+              </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
