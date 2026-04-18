@@ -6,11 +6,13 @@ const {
   getPlayerRankPredict,
   getPlayerCard,
   getHeroes,
+  getItems,
 } = require('../services/deadlockApi.service');
 const { runPipeline } = require('../pipeline');
 const logger = require('../utils/logger');
 const { supabase } = require('../utils/supabase');
 const { setApiHeroNames } = require('../utils/heroes');
+const { setApiItemNames } = require('../utils/items');
 
 /**
  * In-memory cache fallback for analysis results.
@@ -25,6 +27,14 @@ const fallbackCache = new Map();
 let heroNamesCache = null;
 let heroNamesCacheTime = 0;
 const HERO_NAMES_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+/**
+ * Cache for item names from API.
+ * Refreshed periodically.
+ */
+let itemNamesCache = null;
+let itemNamesCacheTime = 0;
+const ITEM_NAMES_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 /**
  * Fetch and cache hero names from API.
@@ -47,6 +57,29 @@ async function fetchHeroNames() {
     logger.warn(`Failed to fetch hero names: ${err.message}`);
   }
   return heroNamesCache;
+}
+
+/**
+ * Fetch and cache item names from API.
+ */
+async function fetchItemNames() {
+  const now = Date.now();
+  if (itemNamesCache && (now - itemNamesCacheTime) < ITEM_NAMES_CACHE_TTL) {
+    return itemNamesCache;
+  }
+
+  try {
+    const itemMap = await getItems();
+    if (Object.keys(itemMap).length > 0) {
+      itemNamesCache = itemMap;
+      itemNamesCacheTime = now;
+      setApiItemNames(itemMap);
+      logger.info(`Cached ${Object.keys(itemMap).length} item names from API`);
+    }
+  } catch (err) {
+    logger.warn(`Failed to fetch item names: ${err.message}`);
+  }
+  return itemNamesCache;
 }
 
 /**
@@ -89,8 +122,9 @@ async function runAnalysis(req, res, next) {
   }
 
   try {
-    // Ensure hero names are cached
+    // Ensure hero names and item names are cached
     await fetchHeroNames();
+    await fetchItemNames();
 
     // Step 2: Fetch match info from API
     logger.info(`[Analysis] Fetching match info for match ${matchId}`);

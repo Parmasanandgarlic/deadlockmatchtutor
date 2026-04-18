@@ -193,6 +193,30 @@ async function getHeroes() {
   }
 }
 
+/**
+ * Fetch item names from Deadlock Assets API.
+ * @returns {Promise<Object>} Map of item_id to item_name
+ */
+async function getItems() {
+  try {
+    const { data } = await axios.get('https://assets.deadlock-api.com/v2/items');
+    logger.debug('Fetched items from Deadlock Assets API');
+    // Convert array to object: { item_id: item_name }
+    const itemMap = {};
+    if (Array.isArray(data)) {
+      data.forEach(item => {
+        if (item.id && item.name) {
+          itemMap[item.id] = item.name;
+        }
+      });
+    }
+    return itemMap;
+  } catch (err) {
+    logger.warn(`Failed to fetch items from API: ${err.message}. Using static mapping.`);
+    return {};
+  }
+}
+
 module.exports = {
   getMatchHistory,
   getMatchMetadata,
@@ -202,4 +226,5 @@ module.exports = {
   getPlayerAccountStats,
   getPlayerCard,
   getHeroes,
+  getItems,
 };
