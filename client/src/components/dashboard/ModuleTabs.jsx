@@ -5,12 +5,20 @@ import HeroPerformanceModule from '../modules/HeroPerformanceModule';
 import ItemizationModule from '../modules/ItemizationModule';
 import CombatModule from '../modules/CombatModule';
 import BenchmarksModule from '../modules/BenchmarksModule';
+import Tooltip from '../ui/Tooltip';
 
 const MODULE_COMPONENTS = {
   heroPerformance: HeroPerformanceModule,
   itemization: ItemizationModule,
   combat: CombatModule,
   benchmarks: BenchmarksModule,
+};
+
+const MODULE_DESCRIPTIONS = {
+  heroPerformance: 'Your overall performance with this hero, including KDA, farm, and consistency across matches.',
+  itemization: 'Item build efficiency, net worth progression, and soul collection patterns.',
+  combat: 'Damage output, fight participation, and death analysis for teamfight impact.',
+  benchmarks: 'How your performance compares to career averages and hero-specific benchmarks.',
 };
 
 export default function ModuleTabs({ modules }) {
@@ -29,16 +37,24 @@ export default function ModuleTabs({ modules }) {
           const isActive = key === active;
           const score = modules[key]?.score ?? 0;
           return (
-            <button
+            <Tooltip
               key={key}
-              onClick={() => setActive(key)}
-              className={isActive ? 'tab-active' : 'tab'}
+              content={{
+                term: MODULE_LABELS[key],
+                definition: MODULE_DESCRIPTIONS[key] || 'Detailed performance analysis for this category.',
+                category: 'Module'
+              }}
             >
-              <span>{MODULE_LABELS[key]}</span>
-              <span className={`ml-3 px-1.5 py-0.5 bg-black/40 border border-white/5 font-bold text-[10px] ${getScoreColor(score)}`}>
-                {score}
-              </span>
-            </button>
+              <button
+                onClick={() => setActive(key)}
+                className={isActive ? 'tab-active' : 'tab'}
+              >
+                <span>{MODULE_LABELS[key]}</span>
+                <span className={`ml-3 px-1.5 py-0.5 bg-black/40 border border-white/5 font-bold text-[10px] ${getScoreColor(score)}`}>
+                  {score}
+                </span>
+              </button>
+            </Tooltip>
           );
         })}
       </div>
