@@ -1,5 +1,5 @@
 import { formatNumber, getItemImage } from '../../utils/formatters';
-import { ShoppingBag, Coins, Box, TrendingUp } from 'lucide-react';
+import { ShoppingBag, Coins, Box, TrendingUp, AlertCircle } from 'lucide-react';
 
 export default function ItemizationModule({ data }) {
   const { items, netWorth, souls, soulsPerMin } = data;
@@ -65,6 +65,14 @@ export default function ItemizationModule({ data }) {
             No item data available for this match.
           </p>
         )}
+      </div>
+
+      {/* Build Data Disclaimer */}
+      <div className="bg-deadlock-amber/5 border border-deadlock-amber/20 rounded-lg p-3 flex items-start gap-2">
+        <AlertCircle className="w-4 h-4 text-deadlock-amber mt-0.5 flex-shrink-0" />
+        <p className="text-xs text-deadlock-muted">
+          Build data reflects the first build selected at game start and may not reflect build changes during the match.
+        </p>
       </div>
 
       {data.note && (
