@@ -87,8 +87,8 @@ app.use('/', (req, res, next) => {
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-// Start server if not running in Vercel Serverless mode
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+// Start server if this script is executed directly (not required as a module) and not on Vercel
+if (require.main === module && (!process.env.VERCEL)) {
   app.listen(config.port, () => {
     logger.info(`Deadlock Analyzer API running on port ${config.port} [${config.nodeEnv}]`);
   });

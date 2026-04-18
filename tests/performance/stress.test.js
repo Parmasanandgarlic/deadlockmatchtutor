@@ -8,6 +8,9 @@
  *   3. Deeply nested payload: attempts to exhaust JSON parser
  *   4. Rate-limiter trigger: fires 150 requests quickly, expects 429s
  *   5. Recovery check: service still responds after burst
+ *
+ * Requires a running server on localhost:3001.
+ * Exits with code 2 (SKIP) if the server is not reachable.
  */
 const http = require('http');
 
@@ -43,8 +46,14 @@ test.passed = 0; test.failed = 0;
 
 (async () => {
   console.log('\n[Stress]');
-  try { await raw('GET', '/health'); }
-  catch { console.error('  SKIP  Server not reachable.'); process.exitCode = 2; return; }
+
+  // Connectivity check — skip the entire suite if server is not running
+  const probe = await raw('GET', '/health');
+  if (probe.status === 0) {
+    console.log('  SKIP  Server not reachable on :3001 — skipping stress suite.');
+    process.exitCode = 2;
+    return;
+  }
 
   await test('Burst: 200 concurrent GETs do not crash the server', async () => {
     const results = await Promise.all(Array.from({ length: 200 }, () => raw('GET', '/health')));

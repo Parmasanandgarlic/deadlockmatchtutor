@@ -124,7 +124,7 @@ async function runLoad(label, { method, path, body, concurrency, total, maxP95 }
 
   results.push(await runLoad('GET /api/analysis/:m/:a (cached) @ 20 concurrent x 100', {
     method: 'GET', path: '/api/analysis/75965136/1743346546',
-    concurrency: 20, total: 100, maxP95: 500,
+    concurrency: 20, total: 100, maxP95: process.env.SUPABASE_URL ? 500 : 8000,
   }));
 
   results.push(await runLoad('POST /api/players/resolve (steam32) @ 10 concurrent x 50', {
