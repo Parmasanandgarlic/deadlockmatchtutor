@@ -7,9 +7,9 @@ const config = {
   isDev: (process.env.NODE_ENV || 'development') === 'development',
 
   supabase: {
-    url: process.env.SUPABASE_URL,
-    anonKey: process.env.SUPABASE_ANON_KEY,
-    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY, // For bypass RLS
+    url: process.env.SUPABASE_URL || 'https://placeholder.supabase.co',
+    anonKey: process.env.SUPABASE_ANON_KEY || '',
+    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '', // For bypass RLS
   },
 
   deadlockApi: {

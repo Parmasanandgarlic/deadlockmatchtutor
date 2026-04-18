@@ -10,12 +10,28 @@ const logger = require('./utils/logger');
 const routes = require('./routes');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 
+// Global error handling for unhandled rejections and exceptions
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  logger.error('Uncaught Exception:', err);
+  // Give the logger time to write before exiting
+  setTimeout(() => process.exit(1), 100);
+});
+
 const app = express();
 
 // Ensure temp directory exists for .dem file storage
-if (!fs.existsSync(config.tempDir)) {
-  fs.mkdirSync(config.tempDir, { recursive: true });
-  logger.info(`Created temp directory: ${config.tempDir}`);
+try {
+  if (!fs.existsSync(config.tempDir)) {
+    fs.mkdirSync(config.tempDir, { recursive: true });
+    logger.info(`Created temp directory: ${config.tempDir}`);
+  }
+} catch (err) {
+  // On Vercel, the filesystem is read-only. We log but don't crash.
+  logger.warn(`Failed to create temp directory ${config.tempDir}: ${err.message}`);
 }
 
 // --------------- Middleware ---------------
@@ -56,7 +72,15 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', uptime: process.uptime() });
 });
 
+// Mount routes on BOTH /api and / for compatibility with local vs Vercel rewrites
 app.use('/api', routes);
+app.use('/', (req, res, next) => {
+  // Only handle if it looks like an API call and hasn't been handled yet
+  if (req.path.startsWith('/health') || req.path === '/health') return next();
+  // If we reach here and it's not starting with /api, we try the routes anyway
+  // This helps when Vercel strips the /api prefix or when local testing
+  routes(req, res, next);
+});
 
 // --------------- Error Handling ---------------
 
