@@ -1,8 +1,8 @@
 const { generateInsights } = require('./insights.engine');
 const { computeOverallScore } = require('./scoring.engine');
-const { getHeroName } = require('./utils/heroes');
-const { getRankInfo } = require('./utils/ranks');
-const logger = require('./utils/logger');
+const { getHeroName } = require('../utils/heroes');
+const { getRankInfo } = require('../utils/ranks');
+const logger = require('../utils/logger');
 
 /**
  * Master ETL Pipeline (API-based)
