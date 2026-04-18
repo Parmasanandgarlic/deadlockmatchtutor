@@ -1,5 +1,5 @@
 import { Shield, Database, Eye, Lock, Trash2 } from 'lucide-react';
-import usePageTitle from '../hooks/usePageTitle';
+import SEOHead from '../components/seo/SEOHead';
 
 const sections = [
   {
@@ -51,17 +51,32 @@ const sections = [
 ];
 
 export default function PrivacyPage() {
-  usePageTitle('Privacy Policy');
+  const privacySchema = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Privacy Policy - Deadlock AfterMatch",
+      "description": "Privacy policy and data handling practices for the Deadlock AfterMatch analytics tool. Learn how we handle your Steam ID and match data."
+    }
+  ];
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-extrabold mb-2">
-        <span className="text-deadlock-accent">Privacy</span> Policy
-      </h1>
-      <p className="text-deadlock-text-dim mb-8">Last updated: April 2026</p>
+      <SEOHead 
+        title="Privacy Policy"
+        description="Privacy policy and data handling practices for the Deadlock AfterMatch analytics tool. Learn how we handle your Steam ID and match data."
+        schema={privacySchema}
+      />
+      <header className="mb-8">
+        <h1 className="text-3xl font-extrabold mb-2">
+          <span className="text-deadlock-accent">Privacy</span> Policy
+        </h1>
+        <p className="text-deadlock-text-dim">Last updated: April 2026</p>
+      </header>
 
       <div className="space-y-8">
         {sections.map(({ icon: Icon, title, items }) => (
-          <div key={title} className="card">
+          <section key={title} className="card">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-lg bg-deadlock-accent/10 flex items-center justify-center">
                 <Icon className="w-5 h-5 text-deadlock-accent" />
@@ -76,11 +91,11 @@ export default function PrivacyPage() {
                 </li>
               ))}
             </ul>
-          </div>
+          </section>
         ))}
       </div>
 
-      <div className="mt-8 card bg-deadlock-bg border-deadlock-border">
+      <aside className="mt-8 card bg-deadlock-bg border-deadlock-border">
         <p className="text-sm text-deadlock-text-dim leading-relaxed">
           This project is open source. If you have questions or concerns about data practices,
           please open an issue on{' '}
@@ -94,7 +109,7 @@ export default function PrivacyPage() {
           </a>
           .
         </p>
-      </div>
+      </aside>
     </div>
   );
 }

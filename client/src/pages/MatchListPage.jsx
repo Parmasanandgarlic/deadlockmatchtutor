@@ -1,13 +1,22 @@
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Loader2, RefreshCw } from 'lucide-react';
 import useMatchHistory from '../hooks/useMatchHistory';
-import usePageTitle from '../hooks/usePageTitle';
+import SEOHead from '../components/seo/SEOHead';
 import MatchCard from '../components/matches/MatchCard';
 
 export default function MatchListPage() {
   const { accountId } = useParams();
-  usePageTitle(`Matches · ${accountId}`);
   const { matches, loading, error, refetch } = useMatchHistory(accountId);
+
+  const matchListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    "mainEntity": {
+      "@type": "Person",
+      "identifier": accountId,
+      "name": `Player ${accountId}`
+    }
+  };
 
   if (!accountId) {
     return (
@@ -20,6 +29,10 @@ export default function MatchListPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
+      <SEOHead 
+        title={`Matches · ${accountId}`}
+        schema={matchListSchema}
+      />
       <Link to="/" className="inline-flex items-center gap-2 text-deadlock-text-dim hover:text-deadlock-accent mb-6 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to search
       </Link>

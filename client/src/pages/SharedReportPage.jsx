@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useEffect } from 'react';
 import useMatchAnalysis from '../hooks/useMatchAnalysis';
-import usePageTitle from '../hooks/usePageTitle';
+import SEOHead from '../components/seo/SEOHead';
 import LoadingState from '../components/ui/LoadingState';
 import HeroHeader from '../components/dashboard/HeroHeader';
 import InsightDeck from '../components/dashboard/InsightDeck';
@@ -11,11 +11,29 @@ import { Loader2 } from 'lucide-react';
 export default function SharedReportPage() {
   const { matchId, accountId } = useParams();
   const { analysis, loading, error, loadCached } = useMatchAnalysis();
-  usePageTitle(
-    analysis?.meta
-      ? `Shared Report · ${analysis.meta.heroName}`
-      : `Shared Report · #${matchId}`
-  );
+  const dynamicTitle = analysis?.meta
+    ? `Shared Report · ${analysis.meta.heroName} Grade ${analysis.overall?.letterGrade || ''}`.trim()
+    : `Shared Report · #${matchId}`;
+
+  const dynamicDesc = analysis?.meta
+    ? `View the detailed post-match Deadlock report for ${analysis.meta.heroName}. Scored a ${analysis.overall?.letterGrade} with ${analysis.modules?.heroPerformance?.matchKda} KDA.`
+    : `View detailed performance breakdown for Deadlock match ${matchId}.`;
+
+  const reportSchema = analysis ? [
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfilePage",
+      "mainEntity": {
+        "@type": "Person",
+        "name": `Shared Match Profile - ${analysis.meta.heroName}`,
+        "interactionStatistic": {
+          "@type": "InteractionCounter",
+          "interactionType": "https://schema.org/ViewAction",
+          "userInteractionCount": 1
+        }
+      }
+    }
+  ] : null;
 
   useEffect(() => {
     loadCached(matchId, accountId);
@@ -46,6 +64,11 @@ export default function SharedReportPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      <SEOHead 
+        title={dynamicTitle} 
+        description={dynamicDesc}
+        schema={reportSchema}
+      />
       <div className="mb-4 text-center">
         <span className="badge bg-deadlock-accent/15 text-deadlock-accent text-xs">Shared Report</span>
       </div>

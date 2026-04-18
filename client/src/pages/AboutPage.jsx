@@ -1,5 +1,5 @@
 import { Github, GitPullRequest, Code2, Users, Heart, ExternalLink } from 'lucide-react';
-import usePageTitle from '../hooks/usePageTitle';
+import SEOHead from '../components/seo/SEOHead';
 
 const values = [
   {
@@ -34,15 +34,40 @@ const techStack = [
 ];
 
 export default function AboutPage() {
-  usePageTitle('About · Open Source');
+  const aboutSchema = [
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Deadlock AfterMatch",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Deadlock AfterMatch Contributors",
+      "url": "https://github.com/Parmasanandgarlic/deadlockmatchtutor"
+    }
+  ];
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-extrabold mb-2">
-        <span className="text-deadlock-accent">Open</span> Source
-      </h1>
-      <p className="text-deadlock-text-dim text-lg mb-8">
-        Deadlock AfterMatch is a community-built, open-source project. Anyone can contribute.
-      </p>
+      <SEOHead 
+        title="About · Open Source" 
+        schema={aboutSchema}
+      />
+      <section className="mb-12">
+        <h1 className="text-3xl font-extrabold mb-2">
+          <span className="text-deadlock-accent">Open</span> Source
+        </h1>
+        <p className="text-deadlock-text-dim text-lg mb-8">
+          Deadlock AfterMatch is a community-built, open-source project. Anyone can contribute.
+        </p>
 
       {/* GitHub CTA */}
       <a
@@ -64,20 +89,20 @@ export default function AboutPage() {
       </a>
 
       {/* Values */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+      <section className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
         {values.map(({ icon: Icon, title, description }) => (
-          <div key={title} className="card">
+          <article key={title} className="card">
             <div className="flex items-center gap-2 mb-2">
               <Icon className="w-5 h-5 text-deadlock-accent" />
               <h3 className="font-bold text-deadlock-text">{title}</h3>
             </div>
             <p className="text-sm text-deadlock-text-dim leading-relaxed">{description}</p>
-          </div>
+          </article>
         ))}
-      </div>
+      </section>
 
       {/* Tech Stack */}
-      <div className="card mb-8">
+      <section className="card mb-8">
         <h2 className="font-bold text-deadlock-text mb-4">Tech Stack</h2>
         <div className="flex flex-wrap gap-2">
           {techStack.map(({ name, category }) => (
@@ -90,10 +115,10 @@ export default function AboutPage() {
             </span>
           ))}
         </div>
-      </div>
+      </section>
 
       {/* How to Contribute */}
-      <div className="card">
+      <section className="card">
         <h2 className="font-bold text-deadlock-text mb-4">How to Contribute</h2>
         <ol className="space-y-3 text-sm text-deadlock-text-dim">
           <li className="flex items-start gap-3">
@@ -116,7 +141,8 @@ export default function AboutPage() {
         <p className="mt-4 text-sm text-deadlock-muted">
           Even small contributions — typo fixes, documentation improvements, or bug reports — are valuable.
         </p>
-      </div>
+      </section>
+      </section>
     </div>
   );
 }

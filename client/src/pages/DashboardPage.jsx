@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { ArrowLeft, Lightbulb, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import useMatchAnalysis from '../hooks/useMatchAnalysis';
-import usePageTitle from '../hooks/usePageTitle';
+import SEOHead from '../components/seo/SEOHead';
 import LoadingState from '../components/ui/LoadingState';
 import HeroHeader from '../components/dashboard/HeroHeader';
 import InsightDeck from '../components/dashboard/InsightDeck';
@@ -26,11 +26,29 @@ export default function DashboardPage() {
     }
   }, [loading, analysis]);
 
-  usePageTitle(
-    analysis?.meta
-      ? `${analysis.meta.heroName} · ${analysis.overall?.letterGrade || ''}`.trim()
-      : `Match #${matchId}`
-  );
+  const dynamicTitle = analysis?.meta
+    ? `${analysis.meta.heroName} · Grade ${analysis.overall?.letterGrade || ''}`.trim()
+    : `Match #${matchId}`;
+
+  const dynamicDesc = analysis?.meta
+    ? `Deadlock match analysis for ${analysis.meta.heroName}. Scored a ${analysis.overall?.letterGrade} with ${analysis.modules?.heroPerformance?.matchKda} KDA and ${analysis.modules?.itemization?.soulsPerMin} souls/min.`
+    : `Detailed performance breakdown for Deadlock match ${matchId}.`;
+
+  const dashboardSchema = analysis ? [
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfilePage",
+      "mainEntity": {
+        "@type": "Person",
+        "name": `Match Profile - ${analysis.meta.heroName}`,
+        "interactionStatistic": {
+          "@type": "InteractionCounter",
+          "interactionType": "https://schema.org/PlayAction",
+          "userInteractionCount": 1
+        }
+      }
+    }
+  ] : null;
 
   useEffect(() => {
     startAnalysis(matchId, accountId);
@@ -53,6 +71,11 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      <SEOHead 
+        title={dynamicTitle} 
+        description={dynamicDesc}
+        schema={dashboardSchema}
+      />
       <div className="flex items-center justify-between mb-6">
         <Link
           to={`/matches/${accountId}`}
