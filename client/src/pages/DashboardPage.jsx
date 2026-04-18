@@ -9,11 +9,23 @@ import HeroHeader from '../components/dashboard/HeroHeader';
 import InsightDeck from '../components/dashboard/InsightDeck';
 import ModuleTabs from '../components/dashboard/ModuleTabs';
 import ShareButton from '../components/dashboard/ShareButton';
+import GuideModal from '../components/ui/GuideModal';
 import { PRIORITY_CONFIG } from '../utils/constants';
+import { useState } from 'react';
 
 export default function DashboardPage() {
   const { matchId, accountId } = useParams();
   const { analysis, loading, error, progressText, startAnalysis } = useMatchAnalysis();
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
+
+  useEffect(() => {
+    const hasSeenGuide = localStorage.getItem('deadlock_guide_seen');
+    if (!hasSeenGuide && !loading && analysis) {
+      setIsGuideOpen(true);
+      localStorage.setItem('deadlock_guide_seen', 'true');
+    }
+  }, [loading, analysis]);
+
   usePageTitle(
     analysis?.meta
       ? `${analysis.meta.heroName} · ${analysis.overall?.letterGrade || ''}`.trim()
@@ -46,9 +58,18 @@ export default function DashboardPage() {
           to={`/matches/${accountId}`}
           className="inline-flex items-center gap-2 text-deadlock-text-dim hover:text-deadlock-accent transition-colors"
         >
+        >
           <ArrowLeft className="w-4 h-4" /> Back to matches
         </Link>
-        <ShareButton matchId={matchId} accountId={accountId} />
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsGuideOpen(true)}
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-deadlock-amber hover:text-white transition-colors border border-deadlock-amber/20 px-3 py-1.5 bg-deadlock-amber/5"
+          >
+            <Info className="w-4 h-4" /> How to Read
+          </button>
+          <ShareButton matchId={matchId} accountId={accountId} />
+        </div>
       </div>
 
       <HeroHeader meta={analysis.meta} overall={analysis.overall} />
@@ -87,6 +108,8 @@ export default function DashboardPage() {
       )}
 
       <ModuleTabs modules={analysis.modules} />
+
+      <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
     </div>
   );
 }
