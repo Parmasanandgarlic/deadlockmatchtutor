@@ -1,7 +1,12 @@
 import { Link } from 'react-router-dom';
-import { Github, Shield, Code2 } from 'lucide-react';
+import { Github, Shield, Code2, MessageSquare, Bug } from 'lucide-react';
+import { useState } from 'react';
+import FeedbackForm from './FeedbackForm';
+import BugReportForm from './BugReportForm';
 
 export default function Footer() {
+  const [activeForm, setActiveForm] = useState(null); // 'feedback' | 'bug' | null
+
   return (
     <footer className="border-t border-deadlock-border bg-black/40 py-12 mt-20 relative overflow-hidden">
       {/* Decorative Brand Accent */}
@@ -51,6 +56,24 @@ export default function Footer() {
                 <Code2 className="w-4 h-4" /> MIT LICENSED
               </div>
             </div>
+
+            <div className="flex flex-col gap-4">
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-white mb-2">Help Us Improve</span>
+              <button
+                type="button"
+                onClick={() => setActiveForm('feedback')}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-deadlock-accent/10 border border-deadlock-accent/30 text-deadlock-accent text-xs font-bold uppercase tracking-widest hover:bg-deadlock-accent/20 transition-colors"
+              >
+                <MessageSquare className="w-4 h-4" /> Send Feedback
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveForm('bug')}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-deadlock-red/10 border border-deadlock-red/30 text-deadlock-red text-xs font-bold uppercase tracking-widest hover:bg-deadlock-red/20 transition-colors"
+              >
+                <Bug className="w-4 h-4" /> Report Bug
+              </button>
+            </div>
           </div>
         </div>
         
@@ -60,6 +83,10 @@ export default function Footer() {
           </p>
         </div>
       </div>
+
+      {/* Form Modals */}
+      <FeedbackForm isOpen={activeForm === 'feedback'} onClose={() => setActiveForm(null)} />
+      <BugReportForm isOpen={activeForm === 'bug'} onClose={() => setActiveForm(null)} />
     </footer>
   );
 }
