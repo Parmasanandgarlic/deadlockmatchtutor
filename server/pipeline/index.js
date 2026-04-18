@@ -320,14 +320,21 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
   
   if (matchInHistory && (matchInHistory.items || matchInHistory.build)) {
     items = matchInHistory.items || matchInHistory.build;
+    logger.debug(`Extracted items from matchInHistory: ${items.length} items`);
   } else if (matchInfo && Array.isArray(matchInfo.players)) {
     const player = matchInfo.players.find(p => Number(p.account_id) === Number(accountId));
-    if (player && (player.items || player.build)) {
-      items = player.items || player.build;
+    if (player && (player.items || player.build || player.item_ids)) {
+      items = player.items || player.build || player.item_ids || [];
+      logger.debug(`Extracted items from matchInfo player: ${items.length} items`);
+    } else {
+      logger.warn(`No items found in matchInfo for player ${accountId}. Player data:`, player);
     }
+  } else {
+    logger.warn(`No items found. matchInHistory has items/build: ${!!(matchInHistory?.items || matchInHistory?.build)}, matchInfo has players: ${!!matchInfo?.players}`);
   }
 
   if (!Array.isArray(items)) {
+    logger.warn(`Items is not an array, converting to empty array. Type: ${typeof items}, Value:`, items);
     items = [];
   }
 
@@ -348,6 +355,7 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
   return {
     score: Math.round(score),
     items: items.map((item) => {
+      // Handle different item formats from API
       if (typeof item === 'number') {
         return {
           id: item,
@@ -355,11 +363,20 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
           cost: 0,
         };
       }
-      const id = item.id ?? item.item_id ?? null;
+      if (typeof item === 'string') {
+        return {
+          id: null,
+          name: item,
+          cost: 0,
+        };
+      }
+      const id = item.id ?? item.item_id ?? item.item ?? null;
+      const name = item.name ?? item.item_name ?? item.display_name ?? getItemName(id) ?? 'Unknown Item';
+      const cost = item.cost ?? item.item_cost ?? item.price ?? 0;
       return {
         id,
-        name: item.name ?? item.item_name ?? getItemName(id) ?? null,
-        cost: item.cost ?? item.item_cost ?? 0,
+        name,
+        cost,
       };
     }),
     netWorth: Math.round(netWorth),

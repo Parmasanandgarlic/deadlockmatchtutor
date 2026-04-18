@@ -73,6 +73,7 @@ async function getMatchInfo(matchId) {
       params: {
         include_player_stats: true,
         include_player_death_details: true,
+        include_player_items: true,
       },
       timeout: 15000,
     });
