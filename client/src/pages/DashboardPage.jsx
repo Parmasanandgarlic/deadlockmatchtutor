@@ -58,7 +58,6 @@ export default function DashboardPage() {
           to={`/matches/${accountId}`}
           className="inline-flex items-center gap-2 text-deadlock-text-dim hover:text-deadlock-accent transition-colors"
         >
-        >
           <ArrowLeft className="w-4 h-4" /> Back to matches
         </Link>
         <div className="flex items-center gap-3">
