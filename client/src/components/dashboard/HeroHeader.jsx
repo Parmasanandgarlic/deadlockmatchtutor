@@ -4,6 +4,7 @@ import { User, Trophy, XCircle, Award, Copy, Check } from 'lucide-react';
 import { formatDuration, formatRelativeTime, getHeroImage } from '../../utils/formatters';
 import { getScoreColor, getScoreLabel } from '../../utils/grading';
 import { MODULE_LABELS } from '../../utils/constants';
+import { getHeroRole, ROLE_STYLES } from '../../utils/heroes';
 import { useState } from 'react';
 
 export default function HeroHeader({ meta, overall }) {
@@ -13,6 +14,8 @@ export default function HeroHeader({ meta, overall }) {
   const heroAvatar = getHeroImage(meta?.heroName, 'small');
   const won = meta?.won;
   const rank = meta?.rankPredict;
+  const role = getHeroRole(meta?.heroName);
+  const roleStyle = role ? ROLE_STYLES[role] : null;
 
   function handleCopyMatchId() {
     if (meta?.matchId) {
@@ -71,6 +74,14 @@ export default function HeroHeader({ meta, overall }) {
             {won === false && (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-deadlock-red/15 border border-deadlock-red/30 text-deadlock-red text-xs font-semibold uppercase tracking-wider">
                 <XCircle className="w-3.5 h-3.5" /> Defeat
+              </span>
+            )}
+            {role && roleStyle && (
+              <span
+                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full ${roleStyle.bg} border ${roleStyle.border} ${roleStyle.color} text-[10px] font-bold uppercase tracking-[0.2em]`}
+                title={`${meta.heroName} is typically played as a ${role}.`}
+              >
+                {role}
               </span>
             )}
           </div>

@@ -9,6 +9,7 @@ import HeroHeader from '../components/dashboard/HeroHeader';
 import InsightDeck from '../components/dashboard/InsightDeck';
 import ModuleTabs from '../components/dashboard/ModuleTabs';
 import ShareButton from '../components/dashboard/ShareButton';
+import DashboardActions from '../components/dashboard/DashboardActions';
 import GuideModal from '../components/ui/GuideModal';
 import { PRIORITY_CONFIG } from '../utils/constants';
 import { useState } from 'react';
@@ -96,6 +97,8 @@ export default function DashboardPage() {
 
       <HeroHeader meta={analysis.meta} overall={analysis.overall} />
 
+      <DashboardActions matchId={matchId} />
+
       <InsightDeck insights={analysis.insights} />
 
       {/* Recommendations Section */}
@@ -129,7 +132,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <ModuleTabs modules={analysis.modules} />
+      <ModuleTabs modules={analysis.modules} meta={analysis.meta} />
 
       <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
     </div>

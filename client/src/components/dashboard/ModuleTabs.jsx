@@ -21,13 +21,14 @@ const MODULE_DESCRIPTIONS = {
   benchmarks: 'How your performance compares to career averages and hero-specific benchmarks.',
 };
 
-export default function ModuleTabs({ modules }) {
+export default function ModuleTabs({ modules, meta }) {
   const [active, setActive] = useState('heroPerformance');
 
   if (!modules) return null;
 
   const ActiveComponent = MODULE_COMPONENTS[active];
   const activeData = modules[active];
+  const playerStats = meta?.playerStats;
 
   return (
     <div>
@@ -62,7 +63,7 @@ export default function ModuleTabs({ modules }) {
       {/* Active Module Content */}
       <div className="card">
         {ActiveComponent && activeData ? (
-          <ActiveComponent data={activeData} />
+          <ActiveComponent data={activeData} playerStats={playerStats} meta={meta} />
         ) : (
           <p className="text-deadlock-text-dim text-center py-8">No data available.</p>
         )}

@@ -18,12 +18,13 @@ const matchesApi = new MatchesApi(configuration);
 async function getMatchHistory(accountId) {
   try {
     const { data } = await playersApi.matchHistory({ accountId: Number(accountId) });
-    logger.debug(`Fetched ${data.length ?? 0} matches for account ${accountId}`);
-    return data;
+    const matches = Array.isArray(data) ? data : [];
+    logger.debug(`Fetched ${matches.length} matches for account ${accountId}`);
+    return matches;
   } catch (err) {
     logger.error(`Failed to fetch match history for ${accountId}: ${err.message}`);
     if (err.response?.status === 404) {
-      throw new Error('Player not found. Please check the Steam ID and try again.');
+      return []; // Return empty array instead of throwing for 404
     }
     if (err.response?.status === 400) {
       throw new Error('Invalid account ID. Please check the Steam ID and try again.');
@@ -65,19 +66,36 @@ async function getMatchMetadata(matchId) {
  */
 async function getMatchInfo(matchId) {
   try {
-    const { data } = await matchesApi.metadata({ matchId: Number(matchId) });
-    logger.debug(`Fetched match info for ${matchId}`);
+    // Use manual axios call to support granular player stats flags
+    // The generated client might not correctly expose these as parameters
+    const url = `${config.deadlockApi.baseUrl}/v1/matches/${matchId}/metadata`;
+    const { data } = await axios.get(url, {
+      params: {
+        include_player_stats: true,
+        include_player_death_details: true,
+      },
+      timeout: 15000,
+    });
+    
+    logger.debug(`Fetched granular match info for ${matchId}`);
     return data;
   } catch (err) {
-    logger.error(`Failed to fetch match info for ${matchId}: ${err.message}`);
-    if (err.response?.status === 404) {
-      throw new Error('Match not found.');
+    // If the granular request fails, try a basic fallback with the generated client
+    logger.warn(`Granular match info failed for ${matchId}, trying fallback: ${err.message}`);
+    try {
+      const { data } = await matchesApi.metadata({ matchId: Number(matchId) });
+      return data;
+    } catch (fallbackErr) {
+      logger.error(`Failed to fetch match info for ${matchId}: ${fallbackErr.message}`);
+      if (fallbackErr.response?.status === 404) {
+        throw new Error('Match not found.');
+      }
+      if (fallbackErr.response?.status === 500) {
+        logger.warn(`Match info 500 error for match ${matchId}. Continuing without it.`);
+        return {};
+      }
+      throw new Error('Failed to fetch match info from Deadlock API.');
     }
-    if (err.response?.status === 500) {
-      logger.warn(`Match info 500 error for match ${matchId}. Continuing without it.`);
-      return {};
-    }
-    throw new Error('Failed to fetch match info from Deadlock API.');
   }
 }
 

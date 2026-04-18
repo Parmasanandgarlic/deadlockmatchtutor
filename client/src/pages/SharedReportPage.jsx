@@ -74,7 +74,7 @@ export default function SharedReportPage() {
       </div>
       <HeroHeader meta={analysis.meta} overall={analysis.overall} />
       <InsightDeck insights={analysis.insights} />
-      <ModuleTabs modules={analysis.modules} />
+      <ModuleTabs modules={analysis.modules} meta={analysis.meta} />
     </div>
   );
 }

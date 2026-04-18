@@ -44,6 +44,9 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
 
   const normalizedHeroStats = normalizeHeroStats(heroStats);
 
+  // Extract granular player stats from matchInfo (requires include_player_stats=true)
+  const playerStats = extractGranularPlayerStats(matchInfo, accountId, durationMinutes);
+
   // ---- Module 1: Match Performance (this specific match) ----
   const heroPerformance = analyzeMatchPerformance({
     matchInHistory,
@@ -55,8 +58,8 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
   // ---- Module 2: Itemization Analysis ----
   const itemization = analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durationMinutes);
 
-  // ---- Module 3: Combat & KDA Analysis ----
-  const combat = analyzeCombatFromStats(matchInHistory, durationMinutes);
+  // ---- Module 3: Combat & KDA Analysis (enriched with granular playerStats) ----
+  const combat = analyzeCombatFromStats(matchInHistory, durationMinutes, playerStats);
 
   // ---- Module 4: Benchmark Comparison (match vs career) ----
   const benchmarks = compareAgainstBenchmarks(matchInHistory, normalizedHeroStats, durationMinutes);
@@ -94,8 +97,11 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
       won,
       startTime: matchStartTime,
       analyzedAt: new Date().toISOString(),
+      processedAt: new Date().toISOString(),
+      patchVersion: matchInfo?.game_mode_version || matchInfo?.patch_version || matchInfo?.match_version || null,
       pipelineMs: elapsed,
       rankPredict: summarizeRankPrediction(rankPredict),
+      playerStats,
     },
     overall,
     modules: {
@@ -186,6 +192,62 @@ function summarizeRankPrediction(rankPredict) {
 function perMinute(value, durationMinutes) {
   if (!durationMinutes || durationMinutes <= 0) return 0;
   return value / durationMinutes;
+}
+
+/**
+ * Extract Deadlock-specific granular player stats from match metadata.
+ * The Deadlock API returns these only when `include_player_stats=true` is
+ * requested. Fields vary slightly across versions so we try several aliases.
+ */
+function extractGranularPlayerStats(matchInfo, accountId, durationMinutes) {
+  if (!matchInfo || !Array.isArray(matchInfo.players)) return {};
+  const player = matchInfo.players.find(
+    (p) => Number(p.account_id) === Number(accountId)
+  );
+  if (!player) return {};
+
+  const damageDealt = Number(
+    player.net_damage_dealt ?? player.player_damage ?? player.damage ?? player.hero_damage ?? 0
+  );
+  const damageTaken = Number(
+    player.damage_taken ?? player.net_damage_taken ?? player.hero_damage_taken ?? 0
+  );
+  const healing = Number(
+    player.healing ?? player.hero_healing ?? player.self_healing ?? 0
+  );
+  const lastHits = Number(player.last_hits ?? 0);
+  const denies = Number(player.denies ?? 0);
+  const objectiveDamage = Number(
+    player.obj_damage ?? player.objective_damage ?? player.hero_damage_to_objectives ?? 0
+  );
+  const maxHealth = Number(player.max_health ?? 0);
+  const level = Number(player.level ?? player.hero_level ?? 0);
+  const souls = Number(player.souls ?? player.net_worth ?? 0);
+
+  // Positioning Score: damage dealt vs damage taken ratio normalised to 0-100.
+  // Dealing 2x what you take = 85; 1:1 = 50; taking 2x more than dealing = 20.
+  let positioningScore = null;
+  if (damageDealt > 0 && damageTaken > 0) {
+    const ratio = damageDealt / damageTaken;
+    // logarithmic curve: ratio 1 → 50, ratio 2 → ~75, ratio 0.5 → ~25
+    const normalised = 50 + 35 * Math.log2(Math.min(Math.max(ratio, 0.25), 4));
+    positioningScore = Math.round(Math.max(0, Math.min(100, normalised)));
+  }
+
+  return {
+    damageDealt: damageDealt || null,
+    damageTaken: damageTaken || null,
+    damageTakenPerMin: durationMinutes > 0 ? Math.round(damageTaken / durationMinutes) : null,
+    healing: healing || null,
+    healingPerMin: durationMinutes > 0 ? Math.round(healing / durationMinutes) : null,
+    lastHits: lastHits || null,
+    denies: denies || null,
+    objectiveDamage: objectiveDamage || null,
+    maxHealth: maxHealth || null,
+    level: level || null,
+    souls: souls || null,
+    positioningScore,
+  };
 }
 
 function roundTo(value, decimals = 1) {
@@ -311,7 +373,7 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
  * Module 3 – Combat.
  * Grades fight output in THIS match (damage/min, KDA, death rate).
  */
-function analyzeCombatFromStats(matchInHistory, durationMinutes) {
+function analyzeCombatFromStats(matchInHistory, durationMinutes, playerStats = {}) {
   if (!matchInHistory) {
     return {
       score: 50,
@@ -338,6 +400,10 @@ function analyzeCombatFromStats(matchInHistory, durationMinutes) {
   score += Math.min(kda / 5 * 25, 25);                   // KDA component
   score += Math.min(damagePerMin / 1000 * 20, 20);       // damage/min component
   score -= Math.min(deathsPerMin * 25, 15);              // penalty for dying often
+  // Bonus for strong positioning (damage dealt >> damage taken)
+  if (playerStats?.positioningScore != null) {
+    score += (playerStats.positioningScore - 50) * 0.15; // up to +7.5 / -7.5
+  }
   score = Math.max(0, Math.min(100, score));
 
   return {
@@ -349,6 +415,13 @@ function analyzeCombatFromStats(matchInHistory, durationMinutes) {
     damage: Math.round(damage),
     damagePerMin: Math.round(damagePerMin),
     deathsPerMin: roundTo(deathsPerMin, 2),
+    // Enriched granular metrics (nullable — only present with include_player_stats)
+    damageTaken: playerStats?.damageTaken ?? null,
+    damageTakenPerMin: playerStats?.damageTakenPerMin ?? null,
+    healing: playerStats?.healing ?? null,
+    healingPerMin: playerStats?.healingPerMin ?? null,
+    objectiveDamage: playerStats?.objectiveDamage ?? null,
+    positioningScore: playerStats?.positioningScore ?? null,
   };
 }
 
