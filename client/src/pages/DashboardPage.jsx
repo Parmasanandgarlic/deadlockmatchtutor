@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useEffect } from 'react';
-import { ArrowLeft, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Lightbulb, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import useMatchAnalysis from '../hooks/useMatchAnalysis';
 import usePageTitle from '../hooks/usePageTitle';
