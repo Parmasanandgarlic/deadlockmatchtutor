@@ -1,7 +1,8 @@
 const { generateInsights } = require('./insights.engine');
 const { computeOverallScore } = require('./scoring.engine');
-const { getHeroName } = require('../utils/heroes');
-const logger = require('../utils/logger');
+const { getHeroName } = require('./utils/heroes');
+const { getRankInfo } = require('./utils/ranks');
+const logger = require('./utils/logger');
 
 /**
  * Master ETL Pipeline (API-based)
@@ -152,16 +153,26 @@ function summarizeRankPrediction(rankPredict) {
   if (Array.isArray(rankPredict)) {
     const latest = rankPredict[0];
     if (!latest) return null;
+    const badge = latest.rank ?? latest.predicted_rank ?? latest.badge ?? null;
+    const rankInfo = getRankInfo(badge);
     return {
+      badge,
       rank: latest.rank ?? latest.predicted_rank ?? null,
       division: latest.division ?? null,
-      label: latest.rank_name || latest.label || null,
+      label: latest.rank_name || latest.label || rankInfo.name,
+      rankName: rankInfo.name,
+      rankImageUrl: rankInfo.imageUrl,
     };
   }
+  const badge = rankPredict.rank ?? rankPredict.predicted_rank ?? rankPredict.badge ?? null;
+  const rankInfo = getRankInfo(badge);
   return {
+    badge,
     rank: rankPredict.rank ?? rankPredict.predicted_rank ?? null,
     division: rankPredict.division ?? null,
-    label: rankPredict.rank_name || rankPredict.label || null,
+    label: rankPredict.rank_name || rankPredict.label || rankInfo.name,
+    rankName: rankInfo.name,
+    rankImageUrl: rankInfo.imageUrl,
   };
 }
 

@@ -7,12 +7,14 @@ const {
   getPlayerCard,
   getHeroes,
   getItems,
+  getRanks,
 } = require('../services/deadlockApi.service');
 const { runPipeline } = require('../pipeline');
 const logger = require('../utils/logger');
 const { supabase } = require('../utils/supabase');
 const { setApiHeroNames } = require('../utils/heroes');
 const { setApiItemNames } = require('../utils/items');
+const { setApiRanks } = require('../utils/ranks');
 
 /**
  * In-memory cache fallback for analysis results.
@@ -35,6 +37,14 @@ const HERO_NAMES_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 let itemNamesCache = null;
 let itemNamesCacheTime = 0;
 const ITEM_NAMES_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+/**
+ * Cache for rank data from API.
+ * Refreshed periodically.
+ */
+let ranksCache = null;
+let ranksCacheTime = 0;
+const RANKS_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 /**
  * Fetch and cache hero names from API.
@@ -83,6 +93,29 @@ async function fetchItemNames() {
 }
 
 /**
+ * Fetch and cache rank data from API.
+ */
+async function fetchRanks() {
+  const now = Date.now();
+  if (ranksCache && (now - ranksCacheTime) < RANKS_CACHE_TTL) {
+    return ranksCache;
+  }
+
+  try {
+    const ranks = await getRanks();
+    if (ranks.length > 0) {
+      ranksCache = ranks;
+      ranksCacheTime = now;
+      setApiRanks(ranks);
+      logger.info(`Cached ${ranks.length} ranks from API`);
+    }
+  } catch (err) {
+    logger.warn(`Failed to fetch ranks: ${err.message}`);
+  }
+  return ranksCache;
+}
+
+/**
  * POST /api/analysis/run
  * Body: { matchId, accountId }
  */
@@ -122,9 +155,10 @@ async function runAnalysis(req, res, next) {
   }
 
   try {
-    // Ensure hero names and item names are cached
+    // Ensure hero names, item names, and ranks are cached
     await fetchHeroNames();
     await fetchItemNames();
+    await fetchRanks();
 
     // Step 2: Fetch match info from API
     logger.info(`[Analysis] Fetching match info for match ${matchId}`);

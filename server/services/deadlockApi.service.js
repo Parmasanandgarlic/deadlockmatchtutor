@@ -217,6 +217,22 @@ async function getItems() {
   }
 }
 
+/**
+ * Fetch rank data from Deadlock Assets API.
+ * @returns {Promise<Array>} Array of rank objects with tier, name, images
+ */
+async function getRanks() {
+  try {
+    const { data } = await axios.get('https://assets.deadlock-api.com/v2/ranks');
+    logger.debug('Fetched ranks from Deadlock Assets API');
+    // Return as-is (array of { tier, name, images: { small_webp, large_webp, ... } })
+    return Array.isArray(data) ? data : [];
+  } catch (err) {
+    logger.warn(`Failed to fetch ranks from API: ${err.message}. Using empty array.`);
+    return [];
+  }
+}
+
 module.exports = {
   getMatchHistory,
   getMatchMetadata,
@@ -227,4 +243,5 @@ module.exports = {
   getPlayerCard,
   getHeroes,
   getItems,
+  getRanks,
 };

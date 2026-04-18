@@ -102,6 +102,9 @@ export default function HeroHeader({ meta, overall }) {
           </div>
           {rank?.label && (
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-deadlock-accent/10 border border-deadlock-accent/30 text-deadlock-accent text-xs font-medium">
+              {rank.rankImageUrl && (
+                <img src={rank.rankImageUrl} alt={rank.label} className="w-5 h-5 object-contain" />
+              )}
               <Award className="w-3.5 h-3.5" />
               {rank.label}
             </div>
