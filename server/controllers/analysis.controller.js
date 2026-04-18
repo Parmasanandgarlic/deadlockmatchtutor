@@ -156,9 +156,21 @@ async function runAnalysis(req, res, next) {
 
   try {
     // Ensure hero names, item names, and ranks are cached
-    await fetchHeroNames();
-    await fetchItemNames();
-    await fetchRanks();
+    try {
+      await fetchHeroNames();
+    } catch (err) {
+      logger.error(`[Analysis] Failed to fetch hero names: ${err.message}`);
+    }
+    try {
+      await fetchItemNames();
+    } catch (err) {
+      logger.error(`[Analysis] Failed to fetch item names: ${err.message}`);
+    }
+    try {
+      await fetchRanks();
+    } catch (err) {
+      logger.error(`[Analysis] Failed to fetch ranks: ${err.message}`);
+    }
 
     // Step 2: Fetch match info from API
     logger.info(`[Analysis] Fetching match info for match ${matchId}`);
@@ -166,7 +178,13 @@ async function runAnalysis(req, res, next) {
 
     // Step 3: Fetch player match history to get hero played in this match
     logger.info(`[Analysis] Fetching match history for account ${accountId}`);
-    const matchHistory = await getMatchHistory(accountId);
+    let matchHistory;
+    try {
+      matchHistory = await getMatchHistory(accountId);
+    } catch (err) {
+      logger.error(`[Analysis] Failed to fetch match history: ${err.message}`);
+      throw new Error(`Failed to fetch match history: ${err.message}`);
+    }
 
     // Find the specific match in history
     const matchInHistory = matchHistory.find(m => m.match_id === Number(matchId));
@@ -178,19 +196,43 @@ async function runAnalysis(req, res, next) {
 
     // Step 4: Fetch hero-specific stats
     logger.info(`[Analysis] Fetching hero stats for hero ${heroId}`);
-    const heroStats = await getPlayerHeroStats(accountId, heroId);
+    let heroStats;
+    try {
+      heroStats = await getPlayerHeroStats(accountId, heroId);
+    } catch (err) {
+      logger.error(`[Analysis] Failed to fetch hero stats: ${err.message}`);
+      heroStats = null; // Continue without hero stats
+    }
 
     // Step 5: Fetch general account stats
     logger.info(`[Analysis] Fetching account stats for account ${accountId}`);
-    const accountStats = await getPlayerAccountStats(accountId);
+    let accountStats;
+    try {
+      accountStats = await getPlayerAccountStats(accountId);
+    } catch (err) {
+      logger.error(`[Analysis] Failed to fetch account stats: ${err.message}`);
+      accountStats = null; // Continue without account stats
+    }
 
     // Step 6: Fetch rank prediction
     logger.info(`[Analysis] Fetching rank prediction for account ${accountId}`);
-    const rankPredict = await getPlayerRankPredict(accountId);
+    let rankPredict;
+    try {
+      rankPredict = await getPlayerRankPredict(accountId);
+    } catch (err) {
+      logger.error(`[Analysis] Failed to fetch rank prediction: ${err.message}`);
+      rankPredict = null; // Continue without rank prediction
+    }
 
     // Step 7: Fetch player card for additional profile data
     logger.info(`[Analysis] Fetching player card for account ${accountId}`);
-    const playerCard = await getPlayerCard(accountId);
+    let playerCard;
+    try {
+      playerCard = await getPlayerCard(accountId);
+    } catch (err) {
+      logger.error(`[Analysis] Failed to fetch player card: ${err.message}`);
+      playerCard = {}; // Continue without player card
+    }
 
     // Step 8: Build API-based data structure for pipeline
     const apiData = {
@@ -227,8 +269,13 @@ async function runAnalysis(req, res, next) {
 
     res.json({ cached: false, ...result });
   } catch (err) {
-    logger.error(`Analysis failed for match ${matchId}: ${err.message}`);
-    next(err);
+    logger.error(`Analysis failed for match ${matchId}, account ${accountId}: ${err.message}`);
+    logger.error(`Stack trace: ${err.stack}`);
+    res.status(500).json({
+      error: 'Analysis failed',
+      message: err.message,
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    });
   }
 }
 
