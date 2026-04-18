@@ -2,6 +2,7 @@ const { generateInsights } = require('./insights.engine');
 const { computeOverallScore } = require('./scoring.engine');
 const { getHeroName } = require('../utils/heroes');
 const { getRankInfo } = require('../utils/ranks');
+const { getItemName } = require('../utils/items');
 const logger = require('../utils/logger');
 
 /**
@@ -52,7 +53,7 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
   });
 
   // ---- Module 2: Itemization Analysis ----
-  const itemization = analyzeItemizationFromMatch(matchInHistory, durationMinutes);
+  const itemization = analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durationMinutes);
 
   // ---- Module 3: Combat & KDA Analysis ----
   const combat = analyzeCombatFromStats(matchInHistory, durationMinutes);
@@ -252,14 +253,24 @@ function analyzeMatchPerformance({ matchInHistory, normalizedHeroStats, duration
  * Module 2 – Itemization.
  * Grades final build value against an expected souls/minute benchmark.
  */
-function analyzeItemizationFromMatch(matchInHistory, durationMinutes) {
-  if (!matchInHistory) {
-    return { score: 50, items: [], netWorth: 0, souls: 0, soulsPerMin: 0, note: 'Match data not available.' };
+function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durationMinutes) {
+  let items = [];
+  
+  if (matchInHistory && (matchInHistory.items || matchInHistory.build)) {
+    items = matchInHistory.items || matchInHistory.build;
+  } else if (matchInfo && Array.isArray(matchInfo.players)) {
+    const player = matchInfo.players.find(p => Number(p.account_id) === Number(accountId));
+    if (player && (player.items || player.build)) {
+      items = player.items || player.build;
+    }
   }
 
-  const items = matchInHistory.items || matchInHistory.build || [];
-  const netWorth = matchInHistory.net_worth ?? matchInHistory.netWorth ?? 0;
-  const souls = matchInHistory.souls ?? matchInHistory.last_hits ?? 0;
+  if (!Array.isArray(items)) {
+    items = [];
+  }
+
+  const netWorth = matchInHistory?.net_worth ?? matchInHistory?.netWorth ?? 0;
+  const souls = matchInHistory?.souls ?? matchInHistory?.last_hits ?? 0;
   const soulsPerMin = perMinute(netWorth, durationMinutes);
 
   // Strong benchmark: ~700 souls/min (good core hero), weak: ~350.
@@ -274,16 +285,25 @@ function analyzeItemizationFromMatch(matchInHistory, durationMinutes) {
 
   return {
     score: Math.round(score),
-    items: Array.isArray(items)
-      ? items.map((item) => ({
-          id: item.id ?? item.item_id ?? null,
-          name: item.name ?? item.item_name ?? null,
-          cost: item.cost ?? item.item_cost ?? 0,
-        }))
-      : [],
+    items: items.map((item) => {
+      if (typeof item === 'number') {
+        return {
+          id: item,
+          name: getItemName(item),
+          cost: 0,
+        };
+      }
+      const id = item.id ?? item.item_id ?? null;
+      return {
+        id,
+        name: item.name ?? item.item_name ?? getItemName(id) ?? null,
+        cost: item.cost ?? item.item_cost ?? 0,
+      };
+    }),
     netWorth: Math.round(netWorth),
     souls: Math.round(souls),
     soulsPerMin: Math.round(soulsPerMin),
+    note: (!matchInHistory && !matchInfo) ? 'Match data not available.' : undefined
   };
 }
 
