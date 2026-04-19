@@ -24,29 +24,44 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Attach status and method for diagnostics
+    error.status = error.response?.status || 0;
+    error.method = error.config?.method?.toUpperCase() || 'UNKNOWN';
+    error.url = error.config?.url || 'UNKNOWN';
+
     // 1. Handle explicit backend error objects (JSON)
-    if (error.response?.data?.error) {
-      const backendError = error.response.data.error;
-      // If it's a string, use it. If it's an object, try to extract a msg.
-      const msg = typeof backendError === 'string' 
-        ? backendError 
-        : (backendError.message || backendError.code || 'An unexpected server error occurred.');
+    if (error.response?.data) {
+      const { error: errorMsg, code, details } = error.response.data;
       
-      error.message = msg;
-      // Also update the response data to be a string to prevent downstream rendering crashes
-      error.response.data.error = msg;
+      if (errorMsg) {
+        // If it's a string, use it. If it's an object, try to extract a msg.
+        const msg = typeof errorMsg === 'string' 
+          ? errorMsg 
+          : (errorMsg.message || errorMsg.code || 'An unexpected server error occurred.');
+        
+        error.message = msg;
+        // Also update the response data to be a string to prevent downstream rendering crashes
+        error.response.data.error = msg;
+      }
+
+      if (code) error.errorCode = code;
+      if (details) error.details = details;
     }
     // 2. Handle HTTP 500s that didn't return JSON (redundant but safe)
     else if (error.response?.status >= 500) {
       error.message = 'The server encountered an internal error. Please check the logs or try again later.';
+      error.errorCode = 'INTERNAL_SERVER_ERROR';
     }
     // 3. Handle network/connectivity issues
     else if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
       error.message = 'Network connection failed. Ensure the backend server is running and reachable.';
+      error.errorCode = 'NETWORK_FAILURE';
     } else if (error.code === 'ECONNABORTED') {
       error.message = 'The request timed out. The server might be under heavy load or processing a large match.';
+      error.errorCode = 'TIMEOUT';
     } else if (!error.response) {
       error.message = 'A network error occurred and no response was received from the server.';
+      error.errorCode = 'NO_RESPONSE';
     }
 
     return Promise.reject(error);

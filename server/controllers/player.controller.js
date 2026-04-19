@@ -16,33 +16,37 @@ async function resolvePlayer(req, res, next) {
     const result = await resolveSteamId(steamInput);
     res.json(result);
   } catch (err) {
+    let msg = err.message;
+    let code = err.code || 'ERR_STEAM_RESOLVE';
+    let status = 500;
+
     if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
-      err.message = 'Steam resolution timed out. Please try again.';
+      msg = 'Steam resolution timed out. This often happens due to Steam Community rate limits or network congestion.';
+      code = 'ERR_TIMEOUT';
+      status = 504;
     } else if (err.response && err.response.status >= 500) {
-      err.message = 'Steam community servers are currently having issues. Please try again later.';
-    } else if (!err.message.includes('Could not resolve') && !err.message.includes('Invalid')) {
-      logger.error(`Steam resolution error: ${err.message}`);
-      err.message = `Could not resolve Steam ID: ${err.message}`;
+      msg = 'Steam community servers are currently having issues (5xx). Please try again later.';
+      code = 'ERR_STEAM_DOWN';
+      status = 502;
+    } else if (msg.includes('Unrecognised') || msg.includes('Could not resolve') || msg.includes('Invalid')) {
+      code = 'ERR_INVALID_INPUT';
+      status = 400;
     }
 
-    const msg = err.message;
     // Log full error details for production debugging
-    logger.error('Player resolution failed:', {
-      input: req.body.steamInput,
-      error: msg,
+    logger.error(`Player resolution failed [${code}] for input "${req.body.steamInput}":`, {
+      message: msg,
+      raw: err.message,
+      code: err.code,
+      status: err.response?.status,
       stack: err.stack,
     });
 
-    const isClientError = msg.includes('Unrecognised') || msg.includes('Could not resolve') || msg.includes('Invalid');
-    const isTimeout = msg.includes('timed out');
-    const isSteamDown = msg.includes('Steam community servers');
-    
-    let status = 500;
-    if (isClientError) status = 400;
-    if (isTimeout) status = 504;
-    if (isSteamDown) status = 502;
-
-    res.status(status).json({ error: msg });
+    res.status(status).json({ 
+      error: msg,
+      code,
+      details: config.isDev ? err.message : null
+    });
   }
 }
 

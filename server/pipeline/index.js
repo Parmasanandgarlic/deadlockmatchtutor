@@ -51,14 +51,14 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
 
   // ---- Context Building ----
   const heroRole = HERO_ROLES[heroId] || { role: 'brawler', sub_role: 'flex', lane: 'solo' };
-  const benchmarks = ROLE_BENCHMARKS[heroRole.role] || ROLE_BENCHMARKS['brawler'];
+  const roleBenchmarks = ROLE_BENCHMARKS[heroRole.role] || ROLE_BENCHMARKS['brawler'];
   
   /** @type {import('./types').AnalysisContext} */
   const analysisContext = {
     matchId: matchInfo?.match_id || matchInfo?.matchId || matchInHistory?.match_id || null,
     accountId,
     heroRole,
-    benchmarks,
+    benchmarks: roleBenchmarks,
     matchDuration: durationSeconds,
     isRanked: !!(matchInfo?.game_mode === 'ranked' || matchInfo?.lobby_type === 7)
   };

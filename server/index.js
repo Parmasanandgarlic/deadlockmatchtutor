@@ -134,6 +134,7 @@ app.use(errorHandler);
 if (require.main === module && (!process.env.VERCEL)) {
   app.listen(config.port, () => {
     logger.info(`Deadlock Analyzer API running on port ${config.port} [${config.nodeEnv}]`);
+    logger.info(`CORS Origins Allowed: ${Array.isArray(config.cors.origin) ? config.cors.origin.join(', ') : config.cors.origin}`);
   });
 }
 

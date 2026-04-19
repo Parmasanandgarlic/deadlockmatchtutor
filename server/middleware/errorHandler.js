@@ -17,14 +17,18 @@ function notFoundHandler(req, res, _next) {
 function errorHandler(err, req, res, _next) {
   const status = err.status || err.statusCode || 500;
   const message = err.message || 'Internal Server Error';
+  const code = err.code || (status >= 500 ? 'INTERNAL_ERROR' : 'API_ERROR');
 
-  logger.error(`[${status}] ${req.method} ${req.originalUrl} — ${message}`);
+  logger.error(`[${status}] ${req.method} ${req.originalUrl} — ${code}: ${message}`);
   if (status === 500) {
     logger.error(err.stack);
   }
 
   res.status(status).json({
-    error: status >= 500 ? 'Internal Server Error' : message,
+    error: message, // Stop masking with generic "Internal Server Error"
+    code,
+    path: req.originalUrl,
+    timestamp: new Date().toISOString(),
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 }

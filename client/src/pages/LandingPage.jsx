@@ -157,17 +157,51 @@ export default function LandingPage() {
             </div>
           </form>
           {error && (
-            <div className="mt-6 p-4 bg-deadlock-red/5 border-l-4 border-deadlock-red flex gap-4 transition-all animate-in fade-in slide-in-from-top-2">
-              <div className="shrink-0 mt-0.5">
-                <Shield className="w-4 h-4 text-deadlock-red" />
+            <div className="mt-6 p-4 bg-deadlock-red/5 border-l-4 border-deadlock-red flex flex-col gap-4 transition-all animate-in fade-in slide-in-from-top-2">
+              <div className="flex gap-4">
+                <div className="shrink-0 mt-0.5">
+                  <Shield className="w-4 h-4 text-deadlock-red" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-[10px] font-bold text-deadlock-red uppercase tracking-widest mb-1">
+                    System Exception
+                  </h4>
+                  <p className="text-xs text-deadlock-text-dim leading-normal font-medium italic">
+                    "{error.message}"
+                  </p>
+                </div>
               </div>
-              <div>
-                <h4 className="text-[10px] font-bold text-deadlock-red uppercase tracking-widest mb-1">
-                  System Exception
-                </h4>
-                <p className="text-xs text-deadlock-text-dim leading-normal font-medium italic">
-                  "{error}"
-                </p>
+              
+              <div className="border-t border-deadlock-red/10 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowTechnical(!showTechnical)}
+                  className="text-[9px] font-bold text-deadlock-text-dim/50 uppercase tracking-widest hover:text-deadlock-red transition-colors flex items-center gap-1"
+                >
+                  {showTechnical ? 'Hide' : 'View'} System Diagnostics
+                </button>
+                
+                {showTechnical && (
+                  <div className="mt-3 p-3 bg-black/40 border border-deadlock-red/20 text-[10px] font-mono leading-relaxed space-y-1 overflow-x-auto">
+                    <div className="flex justify-between border-b border-white/5 pb-1 mb-1">
+                      <span className="text-deadlock-red/70 uppercase">Error Code</span>
+                      <span className="text-white">{error.code}</span>
+                    </div>
+                    <div className="flex justify-between border-b border-white/5 pb-1 mb-1">
+                      <span className="text-deadlock-red/70 uppercase">HTTP Status</span>
+                      <span className="text-white">{error.status}</span>
+                    </div>
+                    {error.details && (
+                      <div className="pt-1">
+                        <span className="text-deadlock-red/70 uppercase block mb-1">Raw Context</span>
+                        <span className="text-deadlock-text-dim block break-all">{error.details}</span>
+                      </div>
+                    )}
+                    <div className="pt-1 opacity-50 italic">
+                      Check VITE_API_BASE_URL and server CORS configuration if this persists.
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
