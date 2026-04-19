@@ -3,7 +3,7 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "functions": {
-    "client/api/*.js": {
+    "api/*.js": {
       "memory": 1024,
       "maxDuration": 15
     }
@@ -11,11 +11,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "/client/api/index.js"
+      "destination": "/api/index.js"
     },
     {
       "source": "/api",
-      "destination": "/client/api/index.js"
+      "destination": "/api/index.js"
     },
     {
       "source": "/((?!api/).*)",
