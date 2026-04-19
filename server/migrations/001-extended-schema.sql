@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS match_cache (
 
 CREATE INDEX IF NOT EXISTS idx_match_cache_start_time ON match_cache(start_time DESC);
 CREATE INDEX IF NOT EXISTS idx_match_cache_expires ON match_cache(expires_at);
-CREATE INDEX IF NOT EXISTS idx_match_cache_players USING GIN (players jsonb_path_ops);
+CREATE INDEX IF NOT EXISTS idx_match_cache_players ON match_cache USING GIN (players jsonb_path_ops);
 
 -- ============================================
 -- 5. SESSION MANAGEMENT
