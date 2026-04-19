@@ -294,10 +294,47 @@ CREATE INDEX idx_analyses_match_account ON analyses(match_id, account_id);
 - **Private Profiles**: Private player profiles will return partial data (account stats, rank prediction, player card will be empty)
 - **Match History**: Only matches available through the Deadlock API can be analyzed
 
+## Troubleshooting
+
+### COMMON ISSUES
+
+- **Deadlock API (500 Error)**: The community API may occasionally be offline or under heavy load. If analysis fails with a 500 error, check the [Deadlock API Status](https://deadlock-api.com) and try again later.
+- **Match Not Found**: Matches typically take 2-5 minutes to appear in the community API after a game ends. If your recent match is missing, wait a few minutes and refresh.
+- **Supabase Connectivity**: Ensure your `SUPABASE_SERVICE_ROLE_KEY` is correct. If the server logs "Bypassing RLS", the service role key is required for original analysis caching.
+- **Rate Limits**: If you see "Too many requests", your IP has exceeded the 100 requests/15 min limit. This is configurable via `RATE_LIMIT_MAX_REQUESTS`.
+
+### DEBUGGING
+
+To enable detailed debug logs, set the following environment variable:
+```bash
+# In your .env file
+DEBUG=true
+```
+Server logs are handled by `winston` and `morgan`. In development mode, you will see colorized HTTP logs in your terminal. For production (Vercel), logs are accessible via the Vercel Dashboard under **Logs**.
+
 ## Contributing
 
-Contributions are welcome! Please ensure all tests pass before submitting a PR:
+We welcome contributions! To ensure a smooth process, please follow these guidelines:
 
-```bash
-npm test
-```
+### DEVELOPMENT WORKFLOW
+
+1. **Fork & Clone**: Create a personal fork of the repository.
+2. **Feature Branch**: Create a branch for your feature (`git checkout -b feat/my-new-feature`).
+3. **Draft PR**: If your work is in progress, open a Draft PR to get early feedback.
+4. **Tests**: Ensure all tests pass before requesting a review.
+
+### PR CHECKLIST
+
+- [ ] All tests pass (`npm test`)
+- [ ] Code follows existing style (linting)
+- [ ] Documentation updated (if applicable)
+- [ ] PR description clearly explains the "why" behind the change
+- [ ] No sensitive credentials/keys committed
+
+### ARCHITECTURE DECISIONS (ADRs)
+
+Key architectural decisions (such as the choice of Supabase and Vercel) are documented in the [docs/adr/](docs/adr/) directory. Please refer to these before proposing major structural changes.
+
+---
+
+*Deadlock AfterMatch is a community project and is not affiliated with Valve Corporation.*
