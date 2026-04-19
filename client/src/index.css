@@ -127,4 +127,8 @@
       52% 60%, 45% 90%, 39% 55%, 32% 85%, 27% 60%, 21% 95%, 14% 65%, 8% 88%, 4% 60%, 0% 85%
     );
   }
+  .textured-text {
+    filter: url(#distress-filter);
+    text-shadow: 1px 1px 0px rgba(0,0,0,0.2);
+  }
 }

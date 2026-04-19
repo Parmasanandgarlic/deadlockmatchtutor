@@ -12,7 +12,13 @@ import PlayerProfilePage from './pages/PlayerProfilePage';
 
 export default function App() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col relative">
+      <svg className="fixed top-0 left-0 w-0 h-0 pointer-events-none opacity-0">
+        <filter id="distress-filter">
+          <feTurbulence type="fractalNoise" baseFrequency="0.4" numOctaves="4" result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" />
+        </filter>
+      </svg>
       <Header />
       <main className="flex-1">
         <Routes>
