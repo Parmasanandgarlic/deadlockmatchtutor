@@ -11,14 +11,14 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Detect non-JSON responses (e.g. HTML from SPA fallback or Vercel 500 pages)
+// Detect non-JSON responses (e.g. HTML from SPA fallback or Vercel 404 pages)
 api.interceptors.response.use(
   (response) => {
     const contentType = response.headers['content-type'] || '';
     if (contentType.includes('text/html')) {
-      // If we got HTML for an API request, something went wrong (likely routing or 500)
-      const error = new Error('The API server returned an invalid response (HTML). This often indicates a server-side crash or a routing misconfiguration.');
+      const error = new Error('The API server returned an invalid response (HTML). This often indicates a server-side crash or a routing misconfiguration (e.g. Vercel 404 page).');
       error.code = 'ERR_INVALID_RESPONSE';
+      error.status = response.status;
       return Promise.reject(error);
     }
     return response;
@@ -28,6 +28,14 @@ api.interceptors.response.use(
     error.status = error.response?.status || 0;
     error.method = error.config?.method?.toUpperCase() || 'UNKNOWN';
     error.url = error.config?.url || 'UNKNOWN';
+
+    // Handle HTML responses even in the error block (e.g. a 404 that returned HTML)
+    const contentType = error.response?.headers?.['content-type'] || '';
+    if (contentType.includes('text/html')) {
+      error.message = 'The API server returned an invalid response (HTML). This often indicates a server-side crash or a routing misconfiguration (e.g. Vercel 404 page).';
+      error.errorCode = 'ERR_INVALID_RESPONSE';
+      return Promise.reject(error);
+    }
 
     // 1. Handle explicit backend error objects (JSON)
     if (error.response?.data) {

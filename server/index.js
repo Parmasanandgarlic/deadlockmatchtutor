@@ -125,19 +125,29 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
+// Request logging for production debugging
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/health')) {
+    logger.debug(`[API Path Trace] ${req.method} ${req.path}`);
+  }
+  next();
+});
+
 // --------------- Routes ---------------
 
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', uptime: process.uptime() });
+  res.json({ status: 'ok', uptime: process.uptime(), version: process.env.DEPLOYMENT_VERSION || 'local' });
 });
 
-// Mount routes on BOTH /api and / for compatibility with local vs Vercel rewrites
+// Mount routes. Vercel rewrites can sometimes strip or keep the /api prefix.
+// We handle both cases by mounting on /api and using a fallback on /.
 app.use('/api', routes);
+
 app.use('/', (req, res, next) => {
-  // Only handle if it looks like an API call and hasn't been handled yet
-  if (req.path.startsWith('/health') || req.path === '/health') return next();
-  // If we reach here and it's not starting with /api, we try the routes anyway
-  // This helps when Vercel strips the /api prefix or when local testing
+  // Only try to match API routes if we haven't already and it's not the root/health
+  if (req.path === '/' || req.path === '/health') return next();
+  
+  // Forward to routes. If no match is found, it will call next() and hit our 404 handler.
   routes(req, res, next);
 });
 
