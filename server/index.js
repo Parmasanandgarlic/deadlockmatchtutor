@@ -8,10 +8,21 @@ const fs = require('fs');
 const config = require('./config');
 const logger = require('./utils/logger');
 const routes = require('./routes');
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
+const Sentry = require('@sentry/node');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { serviceKeyGuard } = require('./middleware/security.middleware');
-const swaggerJsdoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
+
+// Initializing Sentry
+Sentry.init({
+  dsn: config.sentry?.dsn || process.env.SENTRY_DSN,
+  environment: config.nodeEnv,
+  tracesSampleRate: 1.0,
+  integrations: [
+    // Add any specific Node.js integrations here if needed
+  ],
+});
 
 // Global error handling for unhandled rejections and exceptions
 process.on('unhandledRejection', (reason, promise) => {
@@ -25,6 +36,9 @@ process.on('uncaughtException', (err) => {
 });
 
 const app = express();
+
+// The request handler must be the first middleware on the app
+app.use(Sentry.Handlers.requestHandler());
 
 // Ensure temp directory exists for .dem file storage
 try {
@@ -113,6 +127,9 @@ app.use('/', (req, res, next) => {
 });
 
 // --------------- Error Handling ---------------
+
+// The error handler must be before any other error middleware and after all controllers
+app.use(Sentry.Handlers.errorHandler());
 
 app.use(notFoundHandler);
 app.use(errorHandler);

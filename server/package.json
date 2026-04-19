@@ -6,9 +6,13 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",
-    "start": "node index.js"
+    "start": "node index.js",
+    "migrate:up": "node-pg-migrate up",
+    "migrate:down": "node-pg-migrate down",
+    "migrate:create": "node-pg-migrate create"
   },
   "dependencies": {
+    "@sentry/node": "^10.49.0",
     "@supabase/supabase-js": "^2.103.2",
     "axios": "^1.7.2",
     "compression": "^1.7.4",
@@ -19,6 +23,7 @@
     "express-rate-limit": "^7.3.1",
     "helmet": "^7.1.0",
     "morgan": "^1.10.0",
+    "node-pg-migrate": "^8.0.4",
     "pg": "^8.20.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
