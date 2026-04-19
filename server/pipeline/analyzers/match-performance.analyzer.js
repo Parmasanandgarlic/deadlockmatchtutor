@@ -53,6 +53,14 @@ function analyzeMatchPerformance(data, context) {
   return {
     score: Math.round(finalScore),
     grade,
+    kills: stats.kills || 0,
+    deaths: stats.deaths || 0,
+    assists: stats.assists || 0,
+    matchKda: roundKda(stats.kills || 0, stats.deaths || 0, stats.assists || 0),
+    soulsPerMin: Math.round(spm),
+    damagePerMin: Math.round(safeDivide(stats.damageDealt || 0, durationMins)),
+    objectiveDamage: stats.objectiveDamage || 0,
+    positioningScore: stats.positioningScore ?? null,
     metrics: {
       spm: Math.round(spm),
       spmScore: Math.round(spmScore),
@@ -69,6 +77,11 @@ function analyzeMatchPerformance(data, context) {
       dominantStat: context.heroRole.role === 'support' ? 'Assists' : 'Souls'
     }
   };
+}
+
+function roundKda(kills, deaths, assists) {
+  const value = deaths > 0 ? (kills + assists) / deaths : kills + assists;
+  return Math.round(value * 100) / 100;
 }
 
 function calculateGrade(score) {
