@@ -16,7 +16,16 @@ async function resolvePlayer(req, res, next) {
     const result = await resolveSteamId(steamInput);
     res.json(result);
   } catch (err) {
-    const msg = err.message || 'Failed to resolve Steam ID.';
+    if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
+      err.message = 'Steam resolution timed out. Please try again.';
+    } else if (err.response && err.response.status >= 500) {
+      err.message = 'Steam community servers are currently having issues. Please try again later.';
+    } else if (!err.message.includes('Could not resolve') && !err.message.includes('Invalid')) {
+      logger.error(`Steam resolution error: ${err.message}`);
+      err.message = `Could not resolve Steam ID: ${err.message}`;
+    }
+
+    const msg = err.message;
     // Log full error details for production debugging
     logger.error('Player resolution failed:', {
       input: req.body.steamInput,
@@ -24,7 +33,15 @@ async function resolvePlayer(req, res, next) {
       stack: err.stack,
     });
 
-    const status = msg.includes('Unrecognised') || msg.includes('Could not resolve') || msg.includes('Invalid') ? 400 : 500;
+    const isClientError = msg.includes('Unrecognised') || msg.includes('Could not resolve') || msg.includes('Invalid');
+    const isTimeout = msg.includes('timed out');
+    const isSteamDown = msg.includes('Steam community servers');
+    
+    let status = 500;
+    if (isClientError) status = 400;
+    if (isTimeout) status = 504;
+    if (isSteamDown) status = 502;
+
     res.status(status).json({ error: msg });
   }
 }

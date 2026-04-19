@@ -157,8 +157,18 @@ export default function LandingPage() {
             </div>
           </form>
           {error && (
-            <div className="mt-4 px-4 py-2 bg-deadlock-red/10 border-l-2 border-deadlock-red text-deadlock-red text-xs font-bold uppercase tracking-widest">
-              {error}
+            <div className="mt-6 p-4 bg-deadlock-red/5 border-l-4 border-deadlock-red flex gap-4 transition-all animate-in fade-in slide-in-from-top-2">
+              <div className="shrink-0 mt-0.5">
+                <Shield className="w-4 h-4 text-deadlock-red" />
+              </div>
+              <div>
+                <h4 className="text-[10px] font-bold text-deadlock-red uppercase tracking-widest mb-1">
+                  System Exception
+                </h4>
+                <p className="text-xs text-deadlock-text-dim leading-normal font-medium italic">
+                  "{error}"
+                </p>
+              </div>
             </div>
           )}
         </div>

@@ -11,33 +11,40 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Detect non-JSON responses (e.g. HTML from SPA fallback when API routes aren't wired)
+// Detect non-JSON responses (e.g. HTML from SPA fallback or Vercel 500 pages)
 api.interceptors.response.use(
   (response) => {
     const contentType = response.headers['content-type'] || '';
-    if (response.status === 200 && contentType.includes('text/html')) {
-      throw new Error(
-        'The API server is not reachable. If you are the deployer, ensure the server is configured as a Vercel serverless function and the Root Directory is set to the project root (not client/).'
-      );
+    if (contentType.includes('text/html')) {
+      // If we got HTML for an API request, something went wrong (likely routing or 500)
+      const error = new Error('The API server returned an invalid response (HTML). This often indicates a server-side crash or a routing misconfiguration.');
+      error.code = 'ERR_INVALID_RESPONSE';
+      return Promise.reject(error);
     }
     return response;
   },
   (error) => {
-    // Sanitize non-string errors from backend (e.g. Vercel 500 error objects)
-    // to prevent React from crashing (Invariant 31) when rendering err.response.data.error
-    if (error.response?.data?.error && typeof error.response.data.error === 'object') {
-      const errObj = error.response.data.error;
-      error.response.data.error = errObj.message || errObj.code || 'An unexpected server error occurred.';
+    // 1. Handle explicit backend error objects (JSON)
+    if (error.response?.data?.error) {
+      const backendError = error.response.data.error;
+      // If it's a string, use it. If it's an object, try to extract a msg.
+      error.message = typeof backendError === 'string' 
+        ? backendError 
+        : (backendError.message || backendError.code || 'An unexpected server error occurred.');
+    }
+    // 2. Handle HTTP 500s that didn't return JSON (redundant but safe)
+    else if (error.response?.status >= 500) {
+      error.message = 'The server encountered an internal error. Please check the logs or try again later.';
+    }
+    // 3. Handle network/connectivity issues
+    else if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
+      error.message = 'Network connection failed. Ensure the backend server is running and reachable.';
+    } else if (error.code === 'ECONNABORTED') {
+      error.message = 'The request timed out. The server might be under heavy load or processing a large match.';
+    } else if (!error.response) {
+      error.message = 'A network error occurred and no response was received from the server.';
     }
 
-    // Transform axios errors into cleaner messages
-    if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-      error.message = 'Cannot connect to the server. Please try again later.';
-    } else if (error.code === 'ECONNABORTED') {
-      error.message = 'Request timed out. The analysis may take longer than expected — please try again.';
-    } else if (!error.response) {
-      error.message = 'Network error. Please check your connection and try again.';
-    }
     return Promise.reject(error);
   }
 );

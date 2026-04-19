@@ -14,14 +14,11 @@ const Sentry = require('@sentry/node');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { serviceKeyGuard } = require('./middleware/security.middleware');
 
-// Initializing Sentry
+// Initializing Sentry (v8+ structure)
 Sentry.init({
   dsn: config.sentry?.dsn || process.env.SENTRY_DSN,
   environment: config.nodeEnv,
   tracesSampleRate: 1.0,
-  integrations: [
-    // Add any specific Node.js integrations here if needed
-  ],
 });
 
 // Global error handling for unhandled rejections and exceptions
@@ -37,8 +34,7 @@ process.on('uncaughtException', (err) => {
 
 const app = express();
 
-// The request handler must be the first middleware on the app
-app.use(Sentry.Handlers.requestHandler());
+// (Note: In Sentry v8+, Handlers.requestHandler is no longer required for basic tracking)
 
 // Ensure temp directory exists for .dem file storage
 try {
@@ -129,7 +125,7 @@ app.use('/', (req, res, next) => {
 // --------------- Error Handling ---------------
 
 // The error handler must be before any other error middleware and after all controllers
-app.use(Sentry.Handlers.errorHandler());
+Sentry.setupExpressErrorHandler(app);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

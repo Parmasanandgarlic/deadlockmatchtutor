@@ -66,11 +66,13 @@ test('safeDivide: zero returns 0', () => {
 test('normalizeSteamInput: 17-digit steam64', () => {
   const r = normalizeSteamInput('76561198000000000');
   assert.strictEqual(r.type, 'steam64');
+  assert.strictEqual(r.value, '76561198000000000');
 });
 
 test('normalizeSteamInput: 9-digit steam32', () => {
   const r = normalizeSteamInput('123456789');
   assert.strictEqual(r.type, 'steam32');
+  assert.strictEqual(r.value, '123456789');
 });
 
 test('normalizeSteamInput: profile URL', () => {
@@ -79,15 +81,34 @@ test('normalizeSteamInput: profile URL', () => {
   assert.strictEqual(r.value, '76561198000000000');
 });
 
+test('normalizeSteamInput: profile URL with trailing slash/query', () => {
+  const r = normalizeSteamInput('https://steamcommunity.com/profiles/76561198123456789/?l=en/');
+  assert.strictEqual(r.type, 'steam64');
+  assert.strictEqual(r.value, '76561198123456789');
+});
+
 test('normalizeSteamInput: vanity URL', () => {
   const r = normalizeSteamInput('https://steamcommunity.com/id/gaben');
   assert.strictEqual(r.type, 'vanity');
   assert.strictEqual(r.value, 'gaben');
 });
 
+test('normalizeSteamInput: vanity URL with trailing slash', () => {
+  const r = normalizeSteamInput('https://steamcommunity.com/id/parma_garlic/');
+  assert.strictEqual(r.type, 'vanity');
+  assert.strictEqual(r.value, 'parma_garlic');
+});
+
 test('normalizeSteamInput: raw vanity name', () => {
   const r = normalizeSteamInput('gaben');
   assert.strictEqual(r.type, 'vanity');
+  assert.strictEqual(r.value, 'gaben');
+});
+
+test('normalizeSteamInput: raw vanity with special chars', () => {
+  const r = normalizeSteamInput('player.name_123');
+  assert.strictEqual(r.type, 'vanity');
+  assert.strictEqual(r.value, 'player.name_123');
 });
 
 test('normalizeSteamInput: unknown input', () => {

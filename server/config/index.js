@@ -31,11 +31,18 @@ const config = {
     url: process.env.REDIS_URL || null,
   },
 
+  sentry: {
+    dsn: process.env.SENTRY_DSN || null,
+  },
+
   cors: {
-    // If not set, allow all origins in production for Vercel, or localhost in dev
+    // Whitelist production domains and local development
     origin: process.env.CORS_ORIGIN 
       ? process.env.CORS_ORIGIN.split(',')
-      : (process.env.NODE_ENV === 'production' ? true : 'http://localhost:5173'),
+      : (process.env.NODE_ENV === 'production' 
+          ? ['https://aftermatch.xyz', 'https://www.aftermatch.xyz'] 
+          : 'http://localhost:5173'),
+    credentials: true,
   },
 };
 

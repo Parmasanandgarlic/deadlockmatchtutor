@@ -48,46 +48,38 @@ function safeDivide(numerator, denominator) {
 function normalizeSteamInput(input) {
   if (typeof input !== 'string') return { type: 'unknown', value: String(input) };
   
-  // 1. Pre-sanitize: trim, remove trailing slashes, and lowercase for URL matching
-  let trimmed = input.trim();
+  // 1. Pre-sanitize: trim and remove query params/hash
+  let trimmed = input.trim().split('?')[0].split('#')[0];
   // Remove all trailing slashes
   trimmed = trimmed.replace(/\/+$/, '');
   
   if (trimmed.length === 0) return { type: 'unknown', value: '' };
 
   // 2. Direct IDs (Steam64 or Steam32)
-  // Already a Steam64 ID (17 digits)
   if (/^\d{17}$/.test(trimmed)) {
     return { type: 'steam64', value: trimmed };
   }
 
-  // Already a Steam32 ID (e.g., 170839046)
   if (/^\d{8,10}$/.test(trimmed)) {
     return { type: 'steam32', value: trimmed };
   }
 
-  // 3. URL Matching (Case-Insensitive)
-  const lowerInput = trimmed.toLowerCase();
-
-  // Full profile URL: .../id/vanityname
-  const vanityMatch = lowerInput.match(/steamcommunity\.com\/id\/([^/]+)/);
+  // 3. URL Matching (Case-Insensitive for domain)
+  // vanity URL: .../id/vanityname[/]
+  const vanityMatch = trimmed.match(/steamcommunity\.com\/id\/([^/]+)/i);
   if (vanityMatch) {
-    // Note: parsed vanity name should preserve original case? Steam is case-insensitive for IDs, 
-    // but usually vanity names are lowercase in the URL. We'll use the original input segment to be safe.
-    // Re-extract from trimmed using the match position
-    const actualVanity = trimmed.substring(vanityMatch.index + vanityMatch[0].length - vanityMatch[1].length);
-    return { type: 'vanity', value: actualVanity };
+    return { type: 'vanity', value: vanityMatch[1] };
   }
 
-  // Full profile URL: .../profiles/76561198xxxxx
-  const profileMatch = lowerInput.match(/steamcommunity\.com\/profiles\/(\d{17})/);
+  // profile URL: .../profiles/76561198xxxxx[/]
+  const profileMatch = trimmed.match(/steamcommunity\.com\/profiles\/(\d{17})/i);
   if (profileMatch) {
     return { type: 'steam64', value: profileMatch[1] };
   }
 
   // 4. Raw Vanity Name fallback
-  // If it's alphanumeric and not a URL, assume it's a raw vanity name
-  if (/^[a-zA-Z0-9_-]+$/.test(trimmed)) {
+  // If it's alphanumeric (with ._-) and not a URL, assume it's a raw vanity name
+  if (/^[a-zA-Z0-9._-]+$/.test(trimmed)) {
     return { type: 'vanity', value: trimmed };
   }
 

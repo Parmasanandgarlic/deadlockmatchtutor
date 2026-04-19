@@ -37,7 +37,7 @@ function requireNumericParam(paramName, source = 'params') {
 }
 
 const MAX_INPUT_LENGTH = 256;
-const STEAM_URL_REGEX = /^https:\/\/steamcommunity\.com\/(id|profiles)\/[a-zA-Z0-9_-]+$/;
+const STEAM_URL_REGEX = /^https?:\/\/(?:www\.)?steamcommunity\.com\/(?:id|profiles)\/[a-zA-Z0-9_-]+(?:\/.*)?$/;
 
 /**
  * Validate Steam ID input — must be a vanity name, profile URL, or 17-digit number.
@@ -62,8 +62,13 @@ function validateSteamInput(req, res, next) {
     });
   }
 
-  // If the input appears to be a URL, validate against the official Steam format
-  if (trimmedInput.includes('steamcommunity.com')) {
+  // 1. Check if it's a pure numeric ID (SteamID64) — this should always pass
+  if (/^\d{17}$/.test(trimmedInput)) {
+    return next();
+  }
+
+  // 2. If it appears to be a URL, validate against a permissive Steam format
+  if (trimmedInput.toLowerCase().includes('steamcommunity.com')) {
     if (!STEAM_URL_REGEX.test(trimmedInput)) {
       return res.status(400).json({ 
         error: 'Invalid Steam input format', 
@@ -71,11 +76,11 @@ function validateSteamInput(req, res, next) {
       });
     }
   } else {
-    // If not a URL, ensure it only contains allowed characters (vanity names/numeric IDs)
-    if (!/^[a-zA-Z0-9_-]+$/.test(trimmedInput)) {
+    // 3. Otherwise, ensure it only contains allowed characters for vanity names / account IDs
+    if (!/^[a-zA-Z0-9._-]+$/.test(trimmedInput)) {
       return res.status(400).json({
         error: 'Invalid Steam input format',
-        message: 'Vanity names or IDs must only contain alphanumeric characters, underscores, or hyphens.'
+        message: 'Vanity names or IDs must only contain alphanumeric characters, dots, underscores, or hyphens.'
       });
     }
   }
