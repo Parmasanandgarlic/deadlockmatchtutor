@@ -10,6 +10,8 @@ const logger = require('./utils/logger');
 const routes = require('./routes');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { serviceKeyGuard } = require('./middleware/security.middleware');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 
 // Global error handling for unhandled rejections and exceptions
 process.on('unhandledRejection', (reason, promise) => {
@@ -58,6 +60,32 @@ app.use(express.urlencoded({ extended: true }));
 if (config.isDev) {
   app.use(morgan('dev', { stream: { write: (msg) => logger.http(msg.trim()) } }));
 }
+
+// Swagger configuration
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Deadlock AfterMatch API',
+      version: '1.0.0',
+      description: 'REST API documentation for the Deadlock match analysis and player tracking tool.',
+      contact: {
+        name: 'Support',
+        email: 'contact@aftermatch.xyz'
+      }
+    },
+    servers: [
+      {
+        url: config.isDev ? `http://localhost:${config.port}` : 'https://api.aftermatch.xyz',
+        description: config.isDev ? 'Local Development Server' : 'Production API Server'
+      }
+    ]
+  },
+  apis: ['./routes/*.js'], // Scan route files for JSDoc annotations
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 const limiter = rateLimit({
   windowMs: config.rateLimit.windowMs,
