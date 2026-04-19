@@ -50,10 +50,19 @@ export default function MatchListPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      <SEOHead title={`Matches · ${accountId}`} schema={matchListSchema} />
+    <div className="relative min-h-[90vh]">
+      {/* Background with heavily darkened overlay for readability */}
+      <div 
+        className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center bg-fixed"
+        style={{ 
+          backgroundImage: 'url("/images/bg-scene.png")',
+          opacity: 0.15 
+        }}
+      />
+      <div className="relative z-10 max-w-5xl mx-auto px-4 py-8">
+        <SEOHead title={`Matches · ${accountId}`} schema={matchListSchema} />
 
-      <Link
+        <Link
         to="/"
         className="inline-flex items-center gap-2 text-deadlock-text-dim hover:text-deadlock-accent mb-6 transition-colors"
       >
@@ -145,6 +154,7 @@ export default function MatchListPage() {
           )}
         </>
       )}
+      </div>
     </div>
   );
 }
