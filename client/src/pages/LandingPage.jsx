@@ -31,7 +31,7 @@ export default function LandingPage() {
       }
       navigate(`/matches/${steam32}`);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Could not resolve Steam ID.');
+      setError(err.message || 'Could not resolve Steam ID.');
     } finally {
       setLoading(false);
     }

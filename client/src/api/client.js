@@ -28,9 +28,13 @@ api.interceptors.response.use(
     if (error.response?.data?.error) {
       const backendError = error.response.data.error;
       // If it's a string, use it. If it's an object, try to extract a msg.
-      error.message = typeof backendError === 'string' 
+      const msg = typeof backendError === 'string' 
         ? backendError 
         : (backendError.message || backendError.code || 'An unexpected server error occurred.');
+      
+      error.message = msg;
+      // Also update the response data to be a string to prevent downstream rendering crashes
+      error.response.data.error = msg;
     }
     // 2. Handle HTTP 500s that didn't return JSON (redundant but safe)
     else if (error.response?.status >= 500) {

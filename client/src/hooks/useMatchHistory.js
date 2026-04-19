@@ -19,7 +19,7 @@ export default function useMatchHistory(accountId) {
       const data = await getPlayerMatches(accountId);
       setMatches(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to load matches.');
+      setError(err.message || 'Failed to load matches.');
       setMatches([]);
     } finally {
       setLoading(false);

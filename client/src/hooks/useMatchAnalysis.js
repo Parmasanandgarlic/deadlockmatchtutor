@@ -40,7 +40,7 @@ export default function useMatchAnalysis() {
       const result = await runAnalysis(matchId, accountId);
       setAnalysis(result);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Analysis failed.');
+      setError(err.message || 'Analysis failed.');
     } finally {
       clearInterval(interval);
       setLoading(false);
@@ -55,7 +55,7 @@ export default function useMatchAnalysis() {
       const result = await getCachedAnalysis(matchId, accountId);
       setAnalysis(result);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Report not found.');
+      setError(err.message || 'Report not found.');
     } finally {
       setLoading(false);
     }
