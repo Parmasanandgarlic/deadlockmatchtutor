@@ -1,7 +1,6 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Crosshair, Search, ArrowRight, Github, Shield, BarChart3, Swords, Target, Zap } from 'lucide-react';
+import { Crosshair, Search, ArrowRight, Github, Shield, BarChart3, Swords, Target, Zap, History, User, X, Trash2 } from 'lucide-react';
 import { resolvePlayer } from '../api/client';
+import { useEffect, useRef } from 'react';
 import SEOHead from '../components/seo/SEOHead';
 
 const features = [
@@ -16,6 +15,48 @@ export default function LandingPage() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('deadlock_search_history');
+    if (saved) {
+      try {
+        setHistory(JSON.parse(saved));
+      } catch (e) {
+        setHistory([]);
+      }
+    }
+
+    // Click away to close dropdown
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowHistory(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const saveToHistory = (id) => {
+    if (!id) return;
+    const newHistory = [id, ...history.filter(h => h !== id)].slice(0, 3);
+    setHistory(newHistory);
+    localStorage.setItem('deadlock_search_history', JSON.stringify(newHistory));
+  };
+
+  const removeFromHistory = (id) => {
+    const newHistory = history.filter(h => h !== id);
+    setHistory(newHistory);
+    localStorage.setItem('deadlock_search_history', JSON.stringify(newHistory));
+  };
+
+  const clearHistory = () => {
+    setHistory([]);
+    localStorage.removeItem('deadlock_search_history');
+    setShowHistory(false);
+  };
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -29,6 +70,7 @@ export default function LandingPage() {
       if (!steam32) {
         throw new Error('Could not resolve Steam ID. The server may not be configured correctly.');
       }
+      saveToHistory(input.trim());
       navigate(`/matches/${steam32}`);
     } catch (err) {
       setError(err.message || 'Could not resolve Steam ID.');
@@ -137,10 +179,61 @@ export default function LandingPage() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onFocus={() => history.length > 0 && setShowHistory(true)}
                 placeholder="PROCEED TO ANALYSIS (STEAM ID/URL)..."
                 className="input-field pl-12 pr-40 text-sm font-bold tracking-widest"
                 disabled={loading}
               />
+              
+              {/* Search History Dropdown */}
+              {showHistory && history.length > 0 && (
+                <div 
+                  ref={dropdownRef}
+                  className="absolute top-[calc(100%+8px)] left-0 right-0 bg-deadlock-bg border border-deadlock-blue/30 shadow-[0_10px_40px_rgba(0,0,0,0.8)] z-50 animate-in fade-in slide-in-from-top-2"
+                >
+                  <div className="p-2 border-b border-deadlock-border bg-deadlock-blue/5 flex items-center justify-between">
+                    <span className="text-[9px] font-bold text-deadlock-blue uppercase tracking-widest pl-2">Recent Searches</span>
+                    <button 
+                      onClick={clearHistory}
+                      className="text-[9px] font-bold text-deadlock-text-dim/50 hover:text-deadlock-red uppercase tracking-widest px-2 py-1 transition-colors"
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                  <ul>
+                    {history.map((id, index) => (
+                      <li key={index} className="group relative">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setInput(id);
+                            setShowHistory(false);
+                          }}
+                          className="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-deadlock-blue/10 transition-colors"
+                        >
+                          <History className="w-3.5 h-3.5 text-deadlock-blue/50" />
+                          <span className="text-xs text-deadlock-text-dim group-hover:text-white transition-colors truncate pr-8">
+                            {id}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFromHistory(id);
+                          }}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-deadlock-text-dim/30 hover:text-deadlock-red hover:bg-deadlock-red/10 rounded transition-all opacity-0 group-hover:opacity-100"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="p-2 border-t border-deadlock-border/50 text-center">
+                     <p className="text-[8px] text-deadlock-text-dim/30 italic uppercase tracking-widest">Select to analyze</p>
+                  </div>
+                </div>
+              )}
               <button
                 type="submit"
                 disabled={loading || !input.trim()}
