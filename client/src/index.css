@@ -39,7 +39,7 @@
 
 @layer components {
   .card {
-    @apply bg-deadlock-surface/80 backdrop-blur-sm border border-deadlock-border rounded-none p-6 relative overflow-hidden;
+    @apply bg-deadlock-surface border border-deadlock-border rounded-none p-6 relative overflow-hidden;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   }
 

@@ -133,26 +133,23 @@ export default function LandingPage() {
         title={null} 
         schema={landingSchema} 
       />
-      {/* Dynamic Brand Glows */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none -z-10">
-        <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-deadlock-blue/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-deadlock-amber/5 rounded-full blur-[100px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-px bg-gradient-to-r from-transparent via-deadlock-border to-transparent opacity-50" />
-      </div>
+      {/* Background context (Minimal) */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none -z-10 bg-deadlock-bg" />
 
       <div className="max-w-4xl w-full px-6 flex flex-col items-center">
         {/* Themed Hero */}
         <div className="text-center mb-16 relative">
-          <div className="inline-flex items-center gap-3 px-4 py-1.5 border border-deadlock-blue/30 bg-deadlock-blue/5 mb-8 animate-pulse-slow">
+          <div className="inline-flex items-center gap-3 px-4 py-1.5 border border-deadlock-blue/30 bg-deadlock-blue/5 mb-8">
             <Target className="w-4 h-4 text-deadlock-blue" />
             <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-deadlock-blue">
               Post-Match Combat Intelligence
             </span>
           </div>
 
-          <h1 className="text-5xl sm:text-7xl md:text-8xl font-serif font-black tracking-tighter mb-6 leading-none">
-            <span className="block text-white">Deadlock</span>
-            <span className="block text-deadlock-amber drop-shadow-[0_0_15px_rgba(255,173,28,0.3)]">
+          <h1 className="flex flex-col items-center text-5xl sm:text-7xl md:text-8xl font-serif font-black tracking-tighter mb-6 leading-none">
+            <span className="text-white">Deadlock</span>
+            <div className="h-3 w-32 bg-deadlock-amber my-4 shadow-none" />
+            <span className="text-deadlock-amber">
               AfterMatch
             </span>
           </h1>
@@ -177,8 +174,6 @@ export default function LandingPage() {
         {/* Search Engine */}
         <div className="w-full max-w-xl mb-24">
           <form onSubmit={handleSubmit} className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-deadlock-blue/20 to-deadlock-amber/20 opacity-30 group-focus-within:opacity-100 transition-opacity blur-lg" />
-            
             <div className="relative flex">
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-deadlock-text-dim/50">
                 <Search className="w-5 h-5" />
