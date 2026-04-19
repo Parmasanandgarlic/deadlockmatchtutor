@@ -18,12 +18,15 @@ async function resolveSteamId(rawInput) {
 
   // Handle direct Steam64 or IDs found in /profiles/ URLs
   if (parsed.type === 'steam64') {
-    if (parsed.value.length === 17) {
+    const steam64 = parsed.value;
+    if (steam64.length === 17 && /^\d{17}$/.test(steam64)) {
       return {
-        steam64: parsed.value,
-        steam32: steam64ToSteam32(parsed.value),
+        steam64,
+        steam32: steam64ToSteam32(steam64),
       };
-    } else if (parsed.value.length >= 7 && parsed.value.length <= 10) {
+    }
+    // Handle short IDs (8-10 digits) if passed as type steam64 (unlikely but safe)
+    if (steam64.length >= 7 && steam64.length <= 10) {
       // Fallback: If it's 7-10 digits, treat it as a Steam32 ID
       const steam32 = Number(parsed.value);
       return {

@@ -135,29 +135,34 @@ app.use((req, res, next) => {
 
 // --------------- Routes ---------------
 
+// 1. Critical Health Check (Must be at the very top)
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', uptime: process.uptime(), version: process.env.DEPLOYMENT_VERSION || 'local' });
+  res.json({ 
+    status: 'ok', 
+    uptime: Math.floor(process.uptime()), 
+    version: process.env.DEPLOYMENT_VERSION || '1.0.1-radar-timeline',
+    timestamp: new Date().toISOString()
+  });
 });
 
-// Mount routes. Vercel rewrites can sometimes strip or keep the /api prefix.
-// We handle both cases by mounting on /api and using a fallback on /.
+// 2. API Mounting
+// Vercel rewrites can be inconsistent with prefix stripping. 
+// Mounting on both ensures we catch all variations safely.
 app.use('/api', routes);
+app.use('/', routes); 
 
-app.use('/', (req, res, next) => {
-  // Only try to match API routes if we haven't already and it's not the root/health
-  if (req.path === '/' || req.path === '/health') return next();
-  
-  // Forward to routes. If no match is found, it will call next() and hit our 404 handler.
-  routes(req, res, next);
-});
+// 3. Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// 4. Global Fallbacks
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 // --------------- Error Handling ---------------
 
 // The error handler must be before any other error middleware and after all controllers
 Sentry.setupExpressErrorHandler(app);
 
-app.use(notFoundHandler);
-app.use(errorHandler);
 
 // Start server if this script is executed directly (not required as a module) and not on Vercel
 if (require.main === module && (!process.env.VERCEL)) {
