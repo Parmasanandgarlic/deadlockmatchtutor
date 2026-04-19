@@ -75,7 +75,13 @@ export default function LandingPage() {
       saveToHistory(input.trim());
       navigate(`/matches/${steam32}`);
     } catch (err) {
-      setError(err.message || 'Could not resolve Steam ID.');
+      if (err.message) {
+        setError(err);
+      } else {
+        const fallback = new Error(typeof err === 'string' ? err : 'Could not resolve Steam ID.');
+        fallback.code = 'UNKNOWN';
+        setError(fallback);
+      }
     } finally {
       setLoading(false);
     }
