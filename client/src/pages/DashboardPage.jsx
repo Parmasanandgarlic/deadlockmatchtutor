@@ -7,6 +7,7 @@ import SEOHead from '../components/seo/SEOHead';
 import LoadingState from '../components/ui/LoadingState';
 import HeroHeader from '../components/dashboard/HeroHeader';
 import InsightDeck from '../components/dashboard/InsightDeck';
+import PerformanceRadar from '../components/dashboard/PerformanceRadar';
 import ModuleTabs from '../components/dashboard/ModuleTabs';
 import ShareButton from '../components/dashboard/ShareButton';
 import DashboardActions from '../components/dashboard/DashboardActions';
@@ -99,7 +100,14 @@ export default function DashboardPage() {
 
       <DashboardActions matchId={matchId} />
 
-      <InsightDeck insights={analysis.insights} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="lg:col-span-1 h-full">
+          <PerformanceRadar modules={analysis.modules} />
+        </div>
+        <div className="lg:col-span-2">
+          <InsightDeck insights={analysis.insights} />
+        </div>
+      </div>
 
       {/* Recommendations Section */}
       {analysis.recommendations && analysis.recommendations.length > 0 && (
