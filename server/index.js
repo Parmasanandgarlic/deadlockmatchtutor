@@ -9,6 +9,7 @@ const config = require('./config');
 const logger = require('./utils/logger');
 const routes = require('./routes');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
+const { serviceKeyGuard } = require('./middleware/security.middleware');
 
 // Global error handling for unhandled rejections and exceptions
 process.on('unhandledRejection', (reason, promise) => {
@@ -48,6 +49,7 @@ app.use(helmet({
     },
   },
 }));
+app.use(serviceKeyGuard);
 app.use(compression());
 app.use(cors({ origin: config.cors.origin, credentials: true }));
 app.use(express.json({ limit: '1mb' }));

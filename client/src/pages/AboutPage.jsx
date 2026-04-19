@@ -143,8 +143,8 @@ export default function AboutPage() {
         </p>
         <p className="mt-4 text-sm text-deadlock-muted">
           For questions or concerns, email us at{' '}
-          <a href="mailto:contact@aftermath.xyz" className="text-deadlock-accent hover:underline">
-            contact@aftermath.xyz
+          <a href="mailto:contact@aftermatch.xyz" className="text-deadlock-accent hover:underline">
+            contact@aftermatch.xyz
           </a>
           .
         </p>

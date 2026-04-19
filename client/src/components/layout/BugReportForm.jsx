@@ -60,8 +60,8 @@ export default function BugReportForm({ isOpen, onClose }) {
               <p className="text-deadlock-muted text-sm">Thanks for helping us improve.</p>
               <p className="text-deadlock-muted text-xs mt-4">
                 Need immediate help? Contact us at{' '}
-                <a href="mailto:contact@aftermath.xyz" className="text-deadlock-accent hover:underline">
-                  contact@aftermath.xyz
+                <a href="mailto:contact@aftermatch.xyz" className="text-deadlock-accent hover:underline">
+                  contact@aftermatch.xyz
                 </a>
               </p>
             </div>
