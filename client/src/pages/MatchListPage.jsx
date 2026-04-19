@@ -68,14 +68,25 @@ export default function MatchListPage() {
           </p>
         </div>
         
-        <button
-          onClick={sync}
-          disabled={loading || isSyncing}
-          className={`btn-secondary flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 h-fit ${isSyncing ? 'opacity-70' : ''}`}
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-          {isSyncing ? 'Syncing...' : 'Sync with API'}
-        </button>
+        <div className="flex gap-2">
+          <Link
+            to={`/player/${accountId}`}
+            className="btn-primary flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 h-fit"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+            View Trends
+          </Link>
+          <button
+            onClick={sync}
+            disabled={loading || isSyncing}
+            className={`btn-secondary flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 h-fit ${isSyncing ? 'opacity-70' : ''}`}
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+            {isSyncing ? 'Syncing...' : 'Sync with API'}
+          </button>
+        </div>
       </div>
 
       {loading && (

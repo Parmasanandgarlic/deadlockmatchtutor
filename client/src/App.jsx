@@ -8,6 +8,7 @@ import DashboardPage from './pages/DashboardPage';
 import SharedReportPage from './pages/SharedReportPage';
 import PrivacyPage from './pages/PrivacyPage';
 import AboutPage from './pages/AboutPage';
+import PlayerProfilePage from './pages/PlayerProfilePage';
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/matches/:accountId" element={<MatchListPage />} />
+          <Route path="/player/:accountId" element={<PlayerProfilePage />} />
           <Route path="/dashboard/:matchId/:accountId" element={<DashboardPage />} />
           <Route path="/report/:matchId/:accountId" element={<SharedReportPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />

@@ -109,4 +109,11 @@ export async function getCachedAnalysis(matchId, accountId) {
   return data;
 }
 
+// ---- Trends ----
+
+export async function getPlayerTrends(accountId, limit = 10) {
+  const { data } = await api.get(`/trends/${accountId}?limit=${limit}`);
+  return data;
+}
+
 export default api;

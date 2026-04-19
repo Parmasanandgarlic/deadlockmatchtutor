@@ -4,6 +4,7 @@ const matchRoutes = require('./match.routes');
 const analysisRoutes = require('./analysis.routes');
 const authRoutes = require('./auth.routes');
 const cronRoutes = require('./cron.routes');
+const trendsRoutes = require('./trends.routes');
 
 const router = Router();
 
@@ -13,5 +14,6 @@ router.use('/players', playerRoutes);
 router.use('/matches', matchRoutes);
 router.use('/analysis', analysisRoutes);
 router.use('/cron', cronRoutes);
+router.use('/trends', trendsRoutes);
 
 module.exports = router;
