@@ -2,6 +2,7 @@ const { Configuration, PlayersApi, MatchesApi } = require('../deadlock_api_clien
 const axios = require('axios');
 const config = require('../config');
 const logger = require('../utils/logger');
+const redisClient = require('./redis.service');
 
 const configuration = new Configuration({
   basePath: config.deadlockApi.baseUrl,
@@ -16,10 +17,26 @@ const matchesApi = new MatchesApi(configuration);
  * @returns {Promise<Array>} Array of match summary objects
  */
 async function getMatchHistory(accountId) {
+  const cacheKey = redisClient.cacheKeys.playerMatches(accountId);
+  
   try {
+    // 1. Check Redis Cache
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      logger.debug(`[Redis] Cache hit for match history: ${accountId}`);
+      return cached;
+    }
+
+    // 2. Fetch from API
     const { data } = await playersApi.matchHistory({ accountId: Number(accountId) });
     const matches = Array.isArray(data) ? data : [];
     logger.debug(`Fetched ${matches.length} matches for account ${accountId}`);
+
+    // 3. Save to Redis (5 minute TTL)
+    if (matches.length > 0) {
+      await redisClient.set(cacheKey, matches, 300);
+    }
+
     return matches;
   } catch (err) {
     logger.error(`Failed to fetch match history for ${accountId}: ${err.message}`);
@@ -65,7 +82,16 @@ async function getMatchMetadata(matchId) {
  * @returns {Promise<Object>}
  */
 async function getMatchInfo(matchId) {
+  const cacheKey = redisClient.cacheKeys.matchDetails(matchId);
+  
   try {
+    // 1. Check Redis Cache
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      logger.debug(`[Redis] Cache hit for match info: ${matchId}`);
+      return cached;
+    }
+
     // Use manual axios call to support granular player stats flags
     // The generated client might not correctly expose these as parameters
     const url = `${config.deadlockApi.baseUrl}/v1/matches/${matchId}/metadata`;
@@ -79,6 +105,12 @@ async function getMatchInfo(matchId) {
     });
     
     logger.debug(`Fetched granular match info for ${matchId}`);
+    
+    // 3. Save to Redis (1 hour TTL)
+    if (data && Object.keys(data).length > 0) {
+      await redisClient.set(cacheKey, data, 3600);
+    }
+
     return data;
   } catch (err) {
     // If the granular request fails, try a basic fallback with the generated client
@@ -173,9 +205,24 @@ async function getPlayerAccountStats(accountId) {
  * @returns {Promise<Object>} Player card data
  */
 async function getPlayerCard(accountId) {
+  const cacheKey = redisClient.cacheKeys.userProfile(accountId);
+  
   try {
+    // 1. Check Redis Cache
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      logger.debug(`[Redis] Cache hit for player card: ${accountId}`);
+      return cached;
+    }
+
     const { data } = await playersApi.card({ accountId: Number(accountId) });
     logger.debug(`Fetched player card for account ${accountId}`);
+
+    // 3. Save to Redis (1 hour TTL)
+    if (data && Object.keys(data).length > 0) {
+      await redisClient.set(cacheKey, data, 3600);
+    }
+
     return data;
   } catch (err) {
     if (err.response?.status === 403 || err.response?.status === 500) {

@@ -7,8 +7,14 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 120000,
+  timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
+});
+
+// Request interceptor for diagnostic headers
+api.interceptors.request.use((config) => {
+  config.headers['X-Client-Timestamp'] = new Date().toISOString();
+  return config;
 });
 
 // Detect non-JSON responses (e.g. HTML from SPA fallback or Vercel 404 pages)

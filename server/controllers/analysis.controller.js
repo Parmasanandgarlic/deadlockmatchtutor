@@ -15,6 +15,7 @@ const { supabase } = require('../utils/supabase');
 const { setApiHeroNames } = require('../utils/heroes');
 const { setApiItemNames } = require('../utils/items');
 const { setApiRanks } = require('../utils/ranks');
+const redisClient = require('../services/redis.service');
 
 /**
  * In-memory cache fallback for analysis results.
@@ -131,31 +132,48 @@ async function runAnalysis(req, res, next) {
   }
 
   const cacheKey = `${matchId}_${accountId}`;
+  const lockKey = `lock:analysis:${cacheKey}`;
 
-  // 1. Check Supabase (stateless cache)
+  // 1. Check for active processing lock (Distributed Lock)
+  const isProcessing = await redisClient.get(lockKey);
+  if (isProcessing) {
+    logger.info(`[Analysis] Analysis for ${cacheKey} is already in progress (Locked)`);
+    return res.status(202).json({ 
+      error: 'Analysis is currently in progress. Please check back in a few moments.',
+      code: 'PROCESSING' 
+    });
+  }
+
+  // 2. Check Supabase (stateless cache)
   try {
-    const { data: existingRecord, error } = await supabase
+    const { data: existingRecord } = await supabase
       .from('analyses')
       .select('data')
-      .eq('match_id', Number(matchId))
-      .eq('account_id', Number(accountId))
+      .eq('match_id', mId)
+      .eq('account_id', aId)
       .maybeSingle();
 
     if (existingRecord?.data) {
       logger.info(`[Supabase] Cache hit for ${cacheKey}`);
+      res.setHeader('X-Cache', 'HIT (Supabase)');
       return res.json({ cached: true, ...existingRecord.data });
     }
   } catch (err) {
-    logger.warn(`[Supabase] Check failed, falling back to memory cache: ${err.message}`);
+    logger.warn(`[Supabase] Check failed, falling back to identity: ${err.message}`);
   }
 
-  // 1b. Check local fallback cache (for Vercel local dev / temporary)
-  if (fallbackCache.has(cacheKey)) {
-    logger.info(`[FallbackCache] Cache hit for ${cacheKey}`);
-    return res.json({ cached: true, ...fallbackCache.get(cacheKey) });
-  }
+  // Set processing lock
+  await redisClient.set(lockKey, 'true', 300); // 5-minute safety lock
 
   try {
+    // 1b. Check local fallback cache (for Vercel local dev / temporary)
+    if (fallbackCache.has(cacheKey)) {
+      logger.info(`[FallbackCache] Cache hit for ${cacheKey}`);
+      res.setHeader('X-Cache', 'HIT (Fallback)');
+      await redisClient.del(lockKey);
+      return res.json({ cached: true, ...fallbackCache.get(cacheKey) });
+    }
+
     // Ensure hero names, item names, and ranks are cached
     try {
       await fetchHeroNames();
@@ -247,8 +265,11 @@ async function runAnalysis(req, res, next) {
       if (fallbackCache.size > 100) fallbackCache.delete(fallbackCache.keys().next().value);
     }
 
+    res.setHeader('X-Cache', 'MISS');
+    await redisClient.del(lockKey);
     res.json({ cached: false, ...result });
   } catch (err) {
+    await redisClient.del(lockKey);
     logger.error(`Analysis failed for match ${matchId}, account ${accountId}: ${err.message}`);
     logger.error(`Stack trace: ${err.stack}`);
     res.status(500).json({

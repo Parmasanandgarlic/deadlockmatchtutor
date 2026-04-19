@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { runAnalysis, getCachedAnalysis } from '../api/client';
 
 const PROGRESS_STAGES = [
@@ -15,19 +16,23 @@ const PROGRESS_STAGES = [
 ];
 
 export default function useMatchAnalysis() {
-  const [analysis, setAnalysis] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [progressStage, setProgressStage] = useState(0);
   const [progressText, setProgressText] = useState('');
+  const queryClient = useQueryClient();
+
+  const analysisMutation = useMutation({
+    mutationFn: ({ matchId, accountId }) => runAnalysis(matchId, accountId),
+    onSuccess: (data, { matchId, accountId }) => {
+      // Globally cache result
+      queryClient.setQueryData(['analysis', matchId, accountId], data);
+    },
+  });
 
   const startAnalysis = useCallback(async (matchId, accountId) => {
-    setLoading(true);
-    setError(null);
-    setAnalysis(null);
     setProgressStage(0);
+    setProgressText(PROGRESS_STAGES[0]);
 
-    // Simulate progressive loading text while the request is in-flight
+    // Simulate progressive loading text
     const interval = setInterval(() => {
       setProgressStage((prev) => {
         const next = Math.min(prev + 1, PROGRESS_STAGES.length - 1);
@@ -37,37 +42,21 @@ export default function useMatchAnalysis() {
     }, 2500);
 
     try {
-      const result = await runAnalysis(matchId, accountId);
-      setAnalysis(result);
+      await analysisMutation.mutateAsync({ matchId, accountId });
     } catch (err) {
-      setError(err.message || 'Analysis failed.');
+      // Error is handled by mutation state
     } finally {
       clearInterval(interval);
-      setLoading(false);
       setProgressText('');
     }
-  }, []);
-
-  const loadCached = useCallback(async (matchId, accountId) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await getCachedAnalysis(matchId, accountId);
-      setAnalysis(result);
-    } catch (err) {
-      setError(err.message || 'Report not found.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  }, [analysisMutation]);
 
   return {
-    analysis,
-    loading,
-    error,
+    analysis: analysisMutation.data,
+    loading: analysisMutation.isPending,
+    error: analysisMutation.error?.message,
     progressText,
     progressStage,
     startAnalysis,
-    loadCached,
   };
 }

@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import LandingPage from './pages/LandingPage';
@@ -10,9 +11,21 @@ import PrivacyPage from './pages/PrivacyPage';
 import AboutPage from './pages/AboutPage';
 import PlayerProfilePage from './pages/PlayerProfilePage';
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 30, // 30 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 export default function App() {
   return (
-    <div className="min-h-screen flex flex-col relative">
+    <QueryClientProvider client={queryClient}>
+      <div className="min-h-screen flex flex-col relative">
       <svg className="fixed top-0 left-0 w-0 h-0 pointer-events-none opacity-0">
         <filter id="distress-filter">
           <feTurbulence type="fractalNoise" baseFrequency="0.4" numOctaves="4" result="noise" />
@@ -34,5 +47,6 @@ export default function App() {
       <Footer />
       <Analytics />
     </div>
+    </QueryClientProvider>
   );
 }

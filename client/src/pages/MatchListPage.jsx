@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import { ArrowLeft, Loader2, RefreshCw } from 'lucide-react';
-import useMatchHistory from '../hooks/useMatchHistory';
+import { usePlayerMatches, useSyncPlayerMatches } from '../hooks/usePlayer';
 import SEOHead from '../components/seo/SEOHead';
 import MatchCard from '../components/matches/MatchCard';
 import MatchListToolbar from '../components/matches/MatchListToolbar';
@@ -17,7 +17,9 @@ const DEFAULT_FILTERS = {
 
 export default function MatchListPage() {
   const { accountId } = useParams();
-  const { matches, loading, error, refetch, sync, isSyncing } = useMatchHistory(accountId);
+  const { data: matches = [], isLoading: loading, error, refetch } = usePlayerMatches(accountId);
+  const syncMutation = useSyncPlayerMatches();
+  const isSyncing = syncMutation.isPending;
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
 
   const heroOptions = useMemo(
@@ -88,7 +90,7 @@ export default function MatchListPage() {
             View Trends
           </Link>
           <button
-            onClick={sync}
+            onClick={() => syncMutation.mutate(accountId)}
             disabled={loading || isSyncing}
             className={`btn-secondary flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 h-fit ${isSyncing ? 'opacity-70' : ''}`}
           >
