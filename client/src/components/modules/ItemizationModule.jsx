@@ -1,8 +1,9 @@
 import { formatNumber, getItemImage } from '../../utils/formatters';
 import { ShoppingBag, Coins, Box, TrendingUp, AlertCircle } from 'lucide-react';
 import Tooltip from '../ui/Tooltip';
+import TimelineGraph from '../dashboard/TimelineGraph';
 
-export default function ItemizationModule({ data }) {
+export default function ItemizationModule({ data, meta }) {
   const { items, netWorth, souls, soulsPerMin } = data;
   
   return (
@@ -54,6 +55,9 @@ export default function ItemizationModule({ data }) {
           highlight
         />
       </div>
+
+      {/* Soul Progression Timeline */}
+      <TimelineGraph netWorth={netWorth} durationSeconds={meta?.duration} />
 
       {/* Items List */}
       <div>
