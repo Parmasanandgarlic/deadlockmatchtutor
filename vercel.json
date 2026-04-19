@@ -1,6 +1,11 @@
 {
+  "version": 2,
+  "name": "deadlock-aftermatch",
+  "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "client/dist",
+  "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -16,5 +21,8 @@
       "path": "/api/cron/sync",
       "schedule": "*/30 * * * *"
     }
-  ]
+  ],
+  "env": {
+    "DEPLOYMENT_VERSION": "1.0.1-radar-timeline"
+  }
 }

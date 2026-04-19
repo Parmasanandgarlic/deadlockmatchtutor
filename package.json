@@ -1,6 +1,6 @@
 {
   "name": "deadlock-aftermatch",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Comprehensive post-match analyzer for Deadlock",
   "homepage": "https://www.aftermatch.xyz",
   "repository": {
