@@ -4,6 +4,8 @@ const { getHeroName, getHeroData } = require('../utils/heroes');
 const { getRankInfo } = require('../utils/ranks');
 const { getItemName, getItemData } = require('../utils/items');
 const logger = require('../utils/logger');
+const { HERO_ROLES, ROLE_BENCHMARKS } = require('../data/hero-roles');
+const { analyzeMatchPerformance } = require('./analyzers/match-performance.analyzer');
 
 /**
  * Master ETL Pipeline (API-based)
@@ -47,13 +49,25 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
   // Extract granular player stats from matchInfo (requires include_player_stats=true)
   const playerStats = extractGranularPlayerStats(matchInfo, accountId, durationMinutes);
 
-  // ---- Module 1: Match Performance (this specific match) ----
+  // ---- Context Building ----
+  const heroRole = HERO_ROLES[heroId] || { role: 'brawler', sub_role: 'flex', lane: 'solo' };
+  const benchmarks = ROLE_BENCHMARKS[heroRole.role] || ROLE_BENCHMARKS['brawler'];
+  
+  /** @type {import('./types').AnalysisContext} */
+  const analysisContext = {
+    matchId: matchInfo?.match_id || matchInfo?.matchId || matchInHistory?.match_id || null,
+    accountId,
+    heroRole,
+    benchmarks,
+    matchDuration: durationSeconds,
+    isRanked: !!(matchInfo?.game_mode === 'ranked' || matchInfo?.lobby_type === 7)
+  };
+
+  // ---- Module 1: Match Performance (Context-Aware) ----
   const heroPerformance = analyzeMatchPerformance({
-    matchInHistory,
-    normalizedHeroStats,
-    durationMinutes,
-    won,
-  });
+    playerStats,
+    matchInHistory, // for fallback
+  }, analysisContext);
 
   // ---- Module 2: Itemization Analysis ----
   const itemization = analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durationMinutes);
@@ -262,55 +276,8 @@ function roundTo(value, decimals = 1) {
 
 /**
  * Module 1 – Match Performance.
- * Grades the specific match using: kill participation, match KDA, souls/min,
- * damage/min. Career stats are included for context but do NOT drive the score.
+ * (Deprecated inline version — now using ./analyzers/match-performance.analyzer.js)
  */
-function analyzeMatchPerformance({ matchInHistory, normalizedHeroStats, durationMinutes, won }) {
-  if (!matchInHistory) {
-    return {
-      score: 50,
-      winrate: normalizedHeroStats.winrate,
-      matchesPlayed: normalizedHeroStats.matchesPlayed,
-      avgKda: normalizedHeroStats.avgKda,
-      avgSouls: normalizedHeroStats.avgSouls,
-      avgDamage: normalizedHeroStats.avgDamage,
-      note: 'Match-level data unavailable — showing career averages only.',
-    };
-  }
-
-  const kills = matchInHistory.player_kills ?? matchInHistory.kills ?? 0;
-  const deaths = matchInHistory.player_deaths ?? matchInHistory.deaths ?? 0;
-  const assists = matchInHistory.player_assists ?? matchInHistory.assists ?? 0;
-  const netWorth = matchInHistory.net_worth ?? matchInHistory.netWorth ?? 0;
-  const damage = matchInHistory.player_damage ?? matchInHistory.damage ?? matchInHistory.hero_damage ?? 0;
-
-  const matchKda = deaths > 0 ? (kills + assists) / deaths : kills + assists;
-  const soulsPerMin = perMinute(netWorth, durationMinutes);
-  const damagePerMin = perMinute(damage, durationMinutes);
-
-  // --- Scoring -------------------------------------------------
-  // Baseline 50, up to +35 KDA, +10 economy, +10 damage, +5 victory bonus.
-  let score = 50;
-  score += Math.min(matchKda / 5 * 35, 35);              // 5.0 KDA = max
-  score += Math.min(soulsPerMin / 700 * 10, 10);         // 700 souls/min = strong
-  score += Math.min(damagePerMin / 1000 * 10, 10);       // 1000 dmg/min = strong
-  if (won === true) score += 5;
-
-  return {
-    score: Math.round(Math.max(0, Math.min(100, score))),
-    // Match-level numbers
-    matchKda: roundTo(matchKda, 2),
-    soulsPerMin: Math.round(soulsPerMin),
-    damagePerMin: Math.round(damagePerMin),
-    deaths, // Add deaths for the new UI component
-    // Career context
-    winrate: roundTo(normalizedHeroStats.winrate, 1),
-    matchesPlayed: normalizedHeroStats.matchesPlayed,
-    avgKda: roundTo(normalizedHeroStats.avgKda, 2),
-    avgSouls: Math.round(normalizedHeroStats.avgSouls),
-    avgDamage: Math.round(normalizedHeroStats.avgDamage),
-  };
-}
 
 /**
  * Module 2 – Itemization.
