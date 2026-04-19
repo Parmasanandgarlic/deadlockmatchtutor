@@ -20,7 +20,7 @@
     "start": "npm run start --workspace=server",
     "install:all": "npm install",
     "test": "node tests/run-all.js",
-    "test:unit": "node tests/unit/helpers.test.js && node tests/unit/scoring.test.js && node tests/unit/insights.test.js && node tests/unit/constants.test.js",
+    "test:unit": "node tests/unit/helpers.test.js && node tests/unit/scoring.test.js && node tests/unit/insights.test.js && node tests/unit/constants.test.js && node tests/unit/trends.test.js",
     "test:component": "node tests/component/validation.test.js && node tests/component/errorHandler.test.js",
     "test:sast": "node tests/sast/sast-scan.js",
     "test:integration": "node tests/integration/pipeline.test.js",
