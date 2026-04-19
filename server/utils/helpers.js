@@ -72,7 +72,7 @@ function normalizeSteamInput(input) {
   }
 
   // profile URL: .../profiles/76561198xxxxx[/]
-  const profileMatch = trimmed.match(/steamcommunity\.com\/profiles\/(\d{17})/i);
+  const profileMatch = trimmed.match(/steamcommunity\.com\/profiles\/(\d+)/i);
   if (profileMatch) {
     return { type: 'steam64', value: profileMatch[1] };
   }

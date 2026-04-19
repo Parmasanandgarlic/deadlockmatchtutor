@@ -16,21 +16,53 @@ async function resolveSteamId(rawInput) {
     };
   }
 
+  // Handle direct Steam64 or IDs found in /profiles/ URLs
   if (parsed.type === 'steam64') {
-    return {
-      steam64: parsed.value,
-      steam32: steam64ToSteam32(parsed.value),
-    };
+    if (parsed.value.length === 17) {
+      return {
+        steam64: parsed.value,
+        steam32: steam64ToSteam32(parsed.value),
+      };
+    } else if (parsed.value.length >= 7 && parsed.value.length <= 10) {
+      // Fallback: If it's 7-10 digits, treat it as a Steam32 ID
+      const steam32 = Number(parsed.value);
+      return {
+        steam32,
+        steam64: steam32ToSteam64(steam32),
+      };
+    }
   }
 
-  if (parsed.type === 'vanity') {
+  // Handle Vanity URLs or ambiguous profile segments
+  if (parsed.type === 'vanity' || parsed.type === 'steam64' || parsed.type === 'unknown') {
     try {
-      const url = `https://steamcommunity.com/id/${parsed.value}/?xml=1`;
-      const { data } = await axios.get(url, { timeout: 10000 });
+      const vanityName = parsed.value;
+      const url = `https://steamcommunity.com/id/${vanityName}/?xml=1`;
       
-      const match = data.match(/<steamID64>(\d{17})<\/steamID64>/);
+      logger.debug(`Attempting Steam XML resolution for: ${vanityName}`);
+      const { data, status } = await axios.get(url, { 
+        timeout: 10000,
+        validateStatus: false // Allow us to handle 404 manually for better errors
+      });
+
+      if (status === 404) {
+        throw new Error('The profile could not be found on Steam.');
+      }
+      
+      const match = typeof data === 'string' ? data.match(/<steamID64>(\d{17})<\/steamID64>/) : null;
+      
       if (!match) {
-        throw new Error(`Could not resolve vanity name "${parsed.value}" to a Steam ID.`);
+        // One final fallback: search the raw input for a 17-digit ID if the URL was complex
+        const fallbackMatch = rawInput.match(/\/profiles\/(\d{17})/);
+        if (fallbackMatch) {
+          const steam64 = fallbackMatch[1];
+          return {
+            steam64,
+            steam32: steam64ToSteam32(steam64),
+          };
+        }
+        
+        throw new Error(`Could not resolve Steam identifier "${rawInput}". Please ensure the profile is public and correctly formatted.`);
       }
 
       const steam64 = match[1];
@@ -40,7 +72,12 @@ async function resolveSteamId(rawInput) {
       };
     } catch (err) {
       logger.error(`Steam resolution error for "${parsed.value}": ${err.message}`);
-      throw new Error(`Could not resolve Steam ID: ${err.message}`);
+      // Don't leak raw axios error messages if they aren't helpful
+      const msg = err.message.includes('not be found') || err.message.includes('resolve')
+        ? err.message
+        : `Steam resolution failed: ${err.message}`;
+      
+      throw new Error(msg);
     }
   }
 
