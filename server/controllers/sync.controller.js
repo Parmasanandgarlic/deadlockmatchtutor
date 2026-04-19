@@ -10,10 +10,15 @@ const config = require('../config');
  */
 async function handleCronSync(req, res) {
   const authHeader = req.headers['authorization'];
+  const vercelCronHeader = req.headers['x-vercel-cron'];
   const cronSecret = process.env.CRON_SECRET;
 
-  // Simple secret check for Vercel Cron protection
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  // Vercel Cron requests do not support custom auth headers.
+  // Accept either Vercel's cron signal header or a bearer token (used by GitHub Actions).
+  const isVercelCron = vercelCronHeader === '1' || vercelCronHeader === 'true';
+  const isAuthorizedManualTrigger = cronSecret && authHeader === `Bearer ${cronSecret}`;
+
+  if (cronSecret && !isVercelCron && !isAuthorizedManualTrigger) {
     return res.status(401).json({ error: 'Unauthorized cron trigger' });
   }
 
