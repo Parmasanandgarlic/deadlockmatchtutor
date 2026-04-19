@@ -119,7 +119,7 @@
     to { opacity: 1; }
   }
   .sketchy-line {
-    @apply h-[2px] sm:h-[3px] bg-white my-8 relative opacity-90;
+    @apply h-[2px] sm:h-[3px] bg-white my-3 relative opacity-90;
     clip-path: polygon(
       0% 15%, 3% 35%, 8% 10%, 12% 40%, 18% 5%, 22% 30%, 28% 12%, 33% 45%, 38% 15%, 
       44% 35%, 50% 10%, 56% 40%, 62% 15%, 68% 30%, 75% 5%, 82% 45%, 88% 10%, 94% 35%, 100% 15%,
