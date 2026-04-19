@@ -154,14 +154,14 @@ app.use('/', routes);
 // 3. Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// 4. Global Fallbacks
-app.use(notFoundHandler);
-app.use(errorHandler);
-
 // --------------- Error Handling ---------------
 
 // The error handler must be before any other error middleware and after all controllers
 Sentry.setupExpressErrorHandler(app);
+
+// 4. Global Fallbacks
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 
 // Start server if this script is executed directly (not required as a module) and not on Vercel

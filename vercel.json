@@ -1,10 +1,9 @@
 {
   "version": 2,
-  "outputDirectory": "dist",
   "cleanUrls": true,
   "trailingSlash": false,
   "functions": {
-    "api/*.js": {
+    "client/api/*.js": {
       "memory": 1024,
       "maxDuration": 15
     }
@@ -12,11 +11,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "/api/index.js"
+      "destination": "/client/api/index.js"
     },
     {
       "source": "/api",
-      "destination": "/api/index.js"
+      "destination": "/client/api/index.js"
     },
     {
       "source": "/((?!api/).*)",
