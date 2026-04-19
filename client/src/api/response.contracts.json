@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": 1,
+  "analysis": {
+    "type": "object",
+    "required": ["meta", "overall", "modules", "recommendations", "insights"],
+    "properties": {
+      "cached": { "type": "boolean" },
+      "meta": {
+        "type": "object",
+        "required": ["matchId", "accountId", "heroId", "heroName", "duration", "won", "analyzedAt", "processedAt", "pipelineMs", "playerStats"],
+        "properties": {
+          "matchId": { "type": ["integer", "null"] },
+          "accountId": { "type": ["string", "integer"] },
+          "heroId": { "type": ["integer", "null"] },
+          "heroName": { "type": "string" },
+          "heroData": { "type": ["object", "null"] },
+          "duration": { "type": "number" },
+          "won": { "type": ["boolean", "null"] },
+          "startTime": { "type": ["string", "number", "null"] },
+          "analyzedAt": { "type": "string" },
+          "processedAt": { "type": "string" },
+          "patchVersion": { "type": ["string", "null"] },
+          "pipelineMs": { "type": "number" },
+          "rankPredict": { "type": ["object", "null"] },
+          "playerStats": { "type": ["object", "null"] }
+        },
+        "additionalProperties": true
+      },
+      "overall": {
+        "type": "object",
+        "required": ["impactScore", "letterGrade", "breakdown"],
+        "properties": {
+          "impactScore": { "type": "number" },
+          "letterGrade": { "type": "string" },
+          "breakdown": { "type": "object" }
+        },
+        "additionalProperties": true
+      },
+      "modules": {
+        "type": "object",
+        "required": ["heroPerformance", "itemization", "combat", "benchmarks"],
+        "properties": {
+          "heroPerformance": { "$ref": "#/moduleSchemas/heroPerformance" },
+          "itemization": { "type": "object" },
+          "combat": { "type": "object" },
+          "benchmarks": { "$ref": "#/moduleSchemas/benchmarks" }
+        },
+        "additionalProperties": true
+      },
+      "recommendations": {
+        "type": "array",
+        "items": { "type": "object" }
+      },
+      "insights": {
+        "type": "array",
+        "items": { "type": "object" }
+      }
+    },
+    "additionalProperties": true
+  },
+  "moduleSchemas": {
+    "heroPerformance": {
+      "type": "object",
+      "required": ["score", "grade", "kills", "deaths", "assists", "matchKda", "soulsPerMin", "damagePerMin", "objectiveDamage", "positioningScore", "metrics", "winrate", "avgKda", "matchesPlayed", "avgSouls", "roleContext"],
+      "properties": {
+        "score": { "type": "number" },
+        "grade": { "type": "string" },
+        "kills": { "type": "number" },
+        "deaths": { "type": "number" },
+        "assists": { "type": "number" },
+        "matchKda": { "type": "number" },
+        "soulsPerMin": { "type": "number" },
+        "damagePerMin": { "type": "number" },
+        "objectiveDamage": { "type": "number" },
+        "positioningScore": { "type": ["number", "null"] },
+        "metrics": {
+          "type": "object",
+          "required": ["spm", "spmScore", "combatScore", "objectiveScore"],
+          "properties": {
+            "spm": { "type": "number" },
+            "spmScore": { "type": "number" },
+            "combatScore": { "type": "number" },
+            "objectiveScore": { "type": "number" }
+          },
+          "additionalProperties": true
+        },
+        "winrate": { "type": "number" },
+        "avgKda": { "type": "number" },
+        "matchesPlayed": { "type": "number" },
+        "avgSouls": { "type": "number" },
+        "roleContext": {
+          "type": "object",
+          "required": ["role", "subRole", "dominantStat"],
+          "properties": {
+            "role": { "type": "string" },
+            "subRole": { "type": "string" },
+            "dominantStat": { "type": "string" }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "benchmarks": {
+      "type": "object",
+      "required": ["score", "userWinrate", "benchmarkWinrate", "winrateDiff", "userKda", "benchmarkKda", "kdaDiff", "userSoulsPerMin", "benchmarkSoulsPerMin", "percentile"],
+      "properties": {
+        "score": { "type": "number" },
+        "userWinrate": { "type": "number" },
+        "benchmarkWinrate": { "type": "number" },
+        "winrateDiff": { "type": "number" },
+        "userKda": { "type": "number" },
+        "benchmarkKda": { "type": "number" },
+        "kdaDiff": { "type": "number" },
+        "userSoulsPerMin": { "type": "number" },
+        "benchmarkSoulsPerMin": { "type": "number" },
+        "percentile": { "type": "number" },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "matchHistory": {
+    "type": "array",
+    "items": {
+      "type": "object",
+      "required": ["match_id"],
+      "properties": {
+        "match_id": { "type": "number" },
+        "hero_id": { "type": ["number", "null"] },
+        "hero_name": { "type": ["string", "null"] },
+        "player_kills": { "type": ["number", "null"] },
+        "player_deaths": { "type": ["number", "null"] },
+        "player_assists": { "type": ["number", "null"] },
+        "match_duration_s": { "type": ["number", "null"] },
+        "duration_s": { "type": ["number", "null"] },
+        "net_worth": { "type": ["number", "null"] },
+        "start_time": { "type": ["number", "string", "null"] },
+        "match_start_time": { "type": ["number", "string", "null"] },
+        "match_result": { "type": ["number", "string", "boolean", "null"] },
+        "player_team": { "type": ["number", "string", "null"] },
+        "player_team_won": { "type": ["boolean", "null"] },
+        "won": { "type": ["boolean", "null"] }
+      },
+      "additionalProperties": true
+    }
+  }
+}

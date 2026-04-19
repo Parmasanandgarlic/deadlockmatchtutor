@@ -3,6 +3,7 @@ const axios = require('axios');
 const config = require('../config');
 const logger = require('../utils/logger');
 const redisClient = require('./redis.service');
+const { warnOnContractMismatch, MATCH_HISTORY_SCHEMA } = require('../utils/responseContracts');
 
 const configuration = new Configuration({
   basePath: config.deadlockApi.baseUrl,
@@ -33,12 +34,15 @@ async function getMatchHistory(accountId) {
     const cached = cacheKey ? await redisClient.get(cacheKey) : null;
     if (cached) {
       logger.debug(`[Redis] Cache hit for match history: ${accountId}`);
-      return normalizeMatchHistory(cached);
+      const matches = normalizeMatchHistory(cached);
+      warnOnContractMismatch(`matchHistory.cached.${accountId}`, matches, MATCH_HISTORY_SCHEMA);
+      return matches;
     }
 
     // 2. Fetch from API
     const { data } = await playersApi.matchHistory({ accountId: Number(accountId) });
     const matches = normalizeMatchHistory(data);
+    warnOnContractMismatch(`matchHistory.${accountId}`, matches, MATCH_HISTORY_SCHEMA);
     logger.debug(`Fetched ${matches.length} matches for account ${accountId}`);
 
     // 3. Save to Redis (5 minute TTL)

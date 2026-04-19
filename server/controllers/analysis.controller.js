@@ -16,6 +16,7 @@ const { setApiHeroNames } = require('../utils/heroes');
 const { setApiItemNames } = require('../utils/items');
 const { setApiRanks } = require('../utils/ranks');
 const redisClient = require('../services/redis.service');
+const { warnOnContractMismatch, ANALYSIS_RESPONSE_SCHEMA } = require('../utils/responseContracts');
 
 /**
  * In-memory cache fallback for analysis results.
@@ -155,6 +156,7 @@ async function runAnalysis(req, res, next) {
 
     if (existingRecord?.data) {
       logger.info(`[Supabase] Cache hit for ${cacheKey}`);
+      warnOnContractMismatch('analysis.cached', existingRecord.data, ANALYSIS_RESPONSE_SCHEMA);
       res.setHeader('X-Cache', 'HIT (Supabase)');
       return res.json({ cached: true, ...existingRecord.data });
     }
@@ -249,6 +251,7 @@ async function runAnalysis(req, res, next) {
 
     // Cache result persistently to Supabase
     try {
+      warnOnContractMismatch('analysis.result', result, ANALYSIS_RESPONSE_SCHEMA);
       const { error } = await supabase.from('analyses').upsert(
         {
           match_id: Number(matchId),

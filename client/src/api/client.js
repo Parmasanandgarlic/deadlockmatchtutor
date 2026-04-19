@@ -1,4 +1,5 @@
 import axios from 'axios';
+import responseContracts from './response.contracts.json';
 
 // Allow overriding the API base URL via environment variable.
 // This enables deploying the client separately from the server (e.g. client on Vercel,
@@ -10,6 +11,63 @@ const api = axios.create({
   timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 });
+
+function warnOnContractMismatch(name, payload, contract) {
+  if (!import.meta.env.DEV) return;
+  const issues = [];
+
+  const visit = (value, schema, path) => {
+    if (!schema || typeof schema !== 'object') return;
+
+    if (schema.$ref === '#/moduleSchemas/heroPerformance') {
+      return visit(value, responseContracts.moduleSchemas.heroPerformance, path);
+    }
+    if (schema.$ref === '#/moduleSchemas/benchmarks') {
+      return visit(value, responseContracts.moduleSchemas.benchmarks, path);
+    }
+
+    const expectedTypes = Array.isArray(schema.type) ? schema.type : [schema.type].filter(Boolean);
+    if (expectedTypes.length > 0) {
+      const valid = expectedTypes.some((type) => {
+        if (type === 'array') return Array.isArray(value);
+        if (type === 'object') return value !== null && typeof value === 'object' && !Array.isArray(value);
+        if (type === 'number') return typeof value === 'number' && Number.isFinite(value);
+        if (type === 'integer') return Number.isInteger(value);
+        if (type === 'string') return typeof value === 'string';
+        if (type === 'boolean') return typeof value === 'boolean';
+        if (type === 'null') return value === null;
+        return true;
+      });
+      if (!valid) {
+        issues.push(`${path} expected ${expectedTypes.join('|')}`);
+        return;
+      }
+    }
+
+    if (Array.isArray(schema.required) && value && typeof value === 'object' && !Array.isArray(value)) {
+      for (const key of schema.required) {
+        if (value[key] === undefined) issues.push(`${path}.${key} is missing`);
+      }
+    }
+
+    if (schema.type === 'array' && Array.isArray(value) && schema.items) {
+      value.forEach((item, index) => visit(item, schema.items, `${path}[${index}]`));
+      return;
+    }
+
+    if (schema.type === 'object' && value && typeof value === 'object' && !Array.isArray(value) && schema.properties) {
+      for (const [key, childSchema] of Object.entries(schema.properties)) {
+        if (value[key] !== undefined) visit(value[key], childSchema, `${path}.${key}`);
+      }
+    }
+  };
+
+  visit(payload, contract, name);
+
+  if (issues.length > 0) {
+    console.warn(`[Contract] ${name} mismatch:\n- ${issues.join('\n- ')}`, payload);
+  }
+}
 
 // Request interceptor for diagnostic headers
 api.interceptors.request.use((config) => {
@@ -91,6 +149,7 @@ export async function resolvePlayer(steamInput) {
 
 export async function getPlayerMatches(accountId) {
   const { data } = await api.get(`/players/${accountId}/matches`);
+  warnOnContractMismatch('matchHistory', data, responseContracts.matchHistory);
   return data;
 }
 
@@ -115,6 +174,7 @@ export async function getMatchMetadata(matchId) {
 
 export async function runAnalysis(matchId, accountId) {
   const { data } = await api.post('/analysis/run', { matchId, accountId });
+  warnOnContractMismatch('analysis', data, responseContracts.analysis);
   return data;
 }
 
