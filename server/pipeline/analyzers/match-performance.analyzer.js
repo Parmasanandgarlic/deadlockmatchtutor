@@ -9,6 +9,7 @@ const { safeDivide, clamp } = require('../../utils/helpers');
 function analyzeMatchPerformance(data, context) {
   const { benchmarks, matchDuration } = context;
   const stats = data.playerStats || {};
+  const heroStats = data.normalizedHeroStats || {};
   
   // 1. Economy Scoring (SPM)
   const durationMins = matchDuration / 60;
@@ -58,6 +59,10 @@ function analyzeMatchPerformance(data, context) {
       combatScore: Math.round(combatScore),
       objectiveScore: Math.round(objectiveScore)
     },
+    winrate: Math.round((heroStats.winrate || 0) * 10) / 10,
+    avgKda: Math.round((heroStats.avgKda || 0) * 100) / 100,
+    matchesPlayed: heroStats.matchesPlayed || 0,
+    avgSouls: Math.round(heroStats.avgSouls || 0),
     roleContext: {
       role: context.heroRole.role,
       subRole: context.heroRole.sub_role,

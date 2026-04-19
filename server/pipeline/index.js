@@ -67,6 +67,7 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
   const heroPerformance = analyzeMatchPerformance({
     playerStats,
     matchInHistory, // for fallback
+    normalizedHeroStats,
   }, analysisContext);
 
   // ---- Module 2: Itemization Analysis ----

@@ -4,6 +4,10 @@ import Tooltip from '../ui/Tooltip';
 
 export default function HeroPerformanceModule({ data }) {
   const hasMatchStats = data.matchKda != null;
+  const winrate = data.winrate ?? 0;
+  const avgKda = data.avgKda ?? 0;
+  const matchesPlayed = data.matchesPlayed ?? 0;
+  const avgSouls = data.avgSouls ?? 0;
   
   return (
     <div className="space-y-6">
@@ -82,7 +86,7 @@ export default function HeroPerformanceModule({ data }) {
             <StatBox
               icon={<Trophy className="w-4 h-4 text-deadlock-green" />}
               label="Win Rate"
-              value={`${data.winrate}%`}
+              value={`${winrate}%`}
             />
           </Tooltip>
           <Tooltip
@@ -95,7 +99,7 @@ export default function HeroPerformanceModule({ data }) {
             <StatBox
               icon={<Sword className="w-4 h-4 text-deadlock-accent" />}
               label="Avg KDA"
-              value={data.avgKda}
+              value={avgKda}
             />
           </Tooltip>
           <Tooltip
@@ -108,7 +112,7 @@ export default function HeroPerformanceModule({ data }) {
             <StatBox
               icon={<TrendingUp className="w-4 h-4 text-deadlock-purple" />}
               label="Matches Played"
-              value={data.matchesPlayed}
+              value={matchesPlayed}
             />
           </Tooltip>
           <Tooltip
@@ -121,7 +125,7 @@ export default function HeroPerformanceModule({ data }) {
             <StatBox
               icon={<Target className="w-4 h-4 text-deadlock-blue" />}
               label="Avg Souls"
-              value={formatNumber(data.avgSouls)}
+              value={formatNumber(avgSouls)}
             />
           </Tooltip>
         </div>
