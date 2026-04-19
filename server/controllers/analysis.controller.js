@@ -122,11 +122,12 @@ async function fetchRanks() {
 async function runAnalysis(req, res, next) {
   const { matchId, accountId } = req.body;
 
-  if (!matchId || !accountId) {
-    return res.status(400).json({ error: 'matchId and accountId are required.' });
-  }
-  if (!/^\d+$/.test(String(matchId)) || !/^\d+$/.test(String(accountId))) {
-    return res.status(400).json({ error: 'matchId and accountId must be strictly numeric.' });
+  const mId = Number(matchId);
+  const aId = Number(accountId);
+
+  if (!Number.isInteger(mId) || mId < 0 || mId > Number.MAX_SAFE_INTEGER ||
+      !Number.isInteger(aId) || aId < 0 || aId > Number.MAX_SAFE_INTEGER) {
+    return res.status(400).json({ error: 'Invalid matchId or accountId format.' });
   }
 
   const cacheKey = `${matchId}_${accountId}`;
@@ -286,6 +287,14 @@ async function runAnalysis(req, res, next) {
 async function getCachedAnalysis(req, res, next) {
   try {
     const { matchId, accountId } = req.params;
+    
+    const mId = Number(matchId);
+    const aId = Number(accountId);
+
+    if (!Number.isInteger(mId) || mId < 0 || mId > Number.MAX_SAFE_INTEGER ||
+        !Number.isInteger(aId) || aId < 0 || aId > Number.MAX_SAFE_INTEGER) {
+      return res.status(400).json({ error: 'Invalid matchId or accountId format.' });
+    }
     
     // 1. Check Supabase
     try {
