@@ -5,6 +5,7 @@ const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const fs = require('fs');
+const cookieParser = require('cookie-parser');
 const config = require('./config');
 const logger = require('./utils/logger');
 const routes = require('./routes');
@@ -13,6 +14,8 @@ const swaggerJsdoc = require('swagger-jsdoc');
 const Sentry = require('@sentry/node');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { serviceKeyGuard } = require('./middleware/security.middleware');
+const authService = require('./services/auth.service');
+const redisClient = require('./services/redis.service');
 
 // Initializing Sentry (v8+ structure)
 Sentry.init({
@@ -66,9 +69,25 @@ app.use(compression());
 app.use(cors({ origin: config.cors.origin, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 if (config.isDev) {
   app.use(morgan('dev', { stream: { write: (msg) => logger.http(msg.trim()) } }));
+}
+
+// Initialize Redis connection
+redisClient.connect().catch(err => logger.error('Redis connection failed:', err.message));
+
+// Initialize authentication service
+const authConfigured = authService.initialize();
+if (authConfigured) {
+  const { sessionMiddleware, passportInitialize, passportSession } = authService.getMiddlewares();
+  app.use(sessionMiddleware);
+  app.use(passportInitialize);
+  app.use(passportSession);
+  logger.info('Authentication middleware initialized');
+} else {
+  logger.warn('Authentication not configured - Steam API key missing');
 }
 
 // Swagger configuration
