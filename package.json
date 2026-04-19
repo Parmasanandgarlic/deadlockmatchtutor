@@ -17,7 +17,7 @@
     "dev:client": "npm run dev --workspace=client",
     "dev:server": "npm run dev --workspace=server",
     "build": "npm run build -w client",
-    "vercel-build": "npm run build -w client && mkdir -p dist && cp -rv client/dist/* dist/ && cp -rv api dist/",
+    "vercel-build": "npm run build -w client && mkdir -p dist && cp -rv client/dist/* dist/",
     "start": "npm run start --workspace=server",
     "install:all": "npm install",
     "test": "node tests/run-all.js",
