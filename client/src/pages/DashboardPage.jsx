@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { ArrowLeft, Lightbulb, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import useMatchAnalysis from '../hooks/useMatchAnalysis';
@@ -20,6 +20,7 @@ export default function DashboardPage() {
   const { matchId, accountId } = useParams();
   const { analysis, loading, error, progressText, startAnalysis } = useMatchAnalysis();
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const startedAnalysisKeyRef = useRef(null);
 
   useEffect(() => {
     const hasSeenGuide = localStorage.getItem('deadlock_guide_seen');
@@ -54,6 +55,12 @@ export default function DashboardPage() {
   ] : null;
 
   useEffect(() => {
+    const routeKey = `${matchId}:${accountId}`;
+    if (startedAnalysisKeyRef.current === routeKey) {
+      return;
+    }
+
+    startedAnalysisKeyRef.current = routeKey;
     startAnalysis(matchId, accountId);
   }, [matchId, accountId, startAnalysis]);
 
