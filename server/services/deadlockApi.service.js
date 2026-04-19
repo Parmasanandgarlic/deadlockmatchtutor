@@ -196,19 +196,10 @@ async function getHeroes() {
   try {
     const { data } = await axios.get('https://assets.deadlock-api.com/v2/heroes');
     logger.debug('Fetched heroes from Deadlock Assets API');
-    // Convert array to object: { hero_id: hero_name }
-    const heroMap = {};
-    if (Array.isArray(data)) {
-      data.forEach(hero => {
-        if (hero.id && hero.name) {
-          heroMap[hero.id] = hero.name;
-        }
-      });
-    }
-    return heroMap;
+    return Array.isArray(data) ? data : [];
   } catch (err) {
     logger.warn(`Failed to fetch heroes from API: ${err.message}. Using static mapping.`);
-    return {};
+    return [];
   }
 }
 
@@ -220,19 +211,10 @@ async function getItems() {
   try {
     const { data } = await axios.get('https://assets.deadlock-api.com/v2/items');
     logger.debug('Fetched items from Deadlock Assets API');
-    // Convert array to object: { item_id: item_name }
-    const itemMap = {};
-    if (Array.isArray(data)) {
-      data.forEach(item => {
-        if (item.id && item.name) {
-          itemMap[item.id] = item.name;
-        }
-      });
-    }
-    return itemMap;
+    return Array.isArray(data) ? data : [];
   } catch (err) {
     logger.warn(`Failed to fetch items from API: ${err.message}. Using static mapping.`);
-    return {};
+    return [];
   }
 }
 

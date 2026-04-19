@@ -1,8 +1,8 @@
 const { generateInsights } = require('./insights.engine');
 const { computeOverallScore } = require('./scoring.engine');
-const { getHeroName } = require('../utils/heroes');
+const { getHeroName, getHeroData } = require('../utils/heroes');
 const { getRankInfo } = require('../utils/ranks');
-const { getItemName } = require('../utils/items');
+const { getItemName, getItemData } = require('../utils/items');
 const logger = require('../utils/logger');
 
 /**
@@ -93,6 +93,7 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
       accountId,
       heroId,
       heroName: getHeroName(heroId),
+      heroData: getHeroData(heroId),
       duration: durationSeconds,
       won,
       startTime: matchStartTime,
@@ -357,10 +358,13 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
     items: items.map((item) => {
       // Handle different item formats from API
       if (typeof item === 'number') {
+        const apiItem = getItemData(item);
         return {
           id: item,
-          name: getItemName(item),
-          cost: 0,
+          name: apiItem?.name ?? getItemName(item),
+          cost: apiItem?.item_cost ?? 0,
+          image: apiItem?.image || null,
+          image_webp: apiItem?.image_webp || null
         };
       }
       if (typeof item === 'string') {
@@ -368,15 +372,21 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
           id: null,
           name: item,
           cost: 0,
+          image: null,
+          image_webp: null
         };
       }
       const id = item.id ?? item.item_id ?? item.item ?? null;
-      const name = item.name ?? item.item_name ?? item.display_name ?? getItemName(id) ?? 'Unknown Item';
-      const cost = item.cost ?? item.item_cost ?? item.price ?? 0;
+      const apiItem = getItemData(id);
+      const name = item.name ?? item.item_name ?? item.display_name ?? apiItem?.name ?? getItemName(id) ?? 'Unknown Item';
+      const cost = item.cost ?? item.item_cost ?? item.price ?? apiItem?.item_cost ?? 0;
+      
       return {
         id,
         name,
         cost,
+        image: apiItem?.image || null,
+        image_webp: apiItem?.image_webp || null
       };
     }),
     netWorth: Math.round(netWorth),

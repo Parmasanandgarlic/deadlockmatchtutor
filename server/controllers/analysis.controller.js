@@ -56,15 +56,15 @@ async function fetchHeroNames() {
   }
 
   try {
-    const heroMap = await getHeroes();
-    if (Object.keys(heroMap).length > 0) {
-      heroNamesCache = heroMap;
+    const heroes = await getHeroes();
+    if (heroes.length > 0) {
+      heroNamesCache = heroes;
       heroNamesCacheTime = now;
-      setApiHeroNames(heroMap);
-      logger.info(`Cached ${Object.keys(heroMap).length} hero names from API`);
+      setApiHeroNames(heroes);
+      logger.info(`Cached ${heroes.length} heroes with full metadata from API`);
     }
   } catch (err) {
-    logger.warn(`Failed to fetch hero names: ${err.message}`);
+    logger.warn(`Failed to fetch hero metadata: ${err.message}`);
   }
   return heroNamesCache;
 }
@@ -79,15 +79,15 @@ async function fetchItemNames() {
   }
 
   try {
-    const itemMap = await getItems();
-    if (Object.keys(itemMap).length > 0) {
-      itemNamesCache = itemMap;
+    const items = await getItems();
+    if (items.length > 0) {
+      itemNamesCache = items;
       itemNamesCacheTime = now;
-      setApiItemNames(itemMap);
-      logger.info(`Cached ${Object.keys(itemMap).length} item names from API`);
+      setApiItemNames(items);
+      logger.info(`Cached ${items.length} items with full metadata from API`);
     }
   } catch (err) {
-    logger.warn(`Failed to fetch item names: ${err.message}`);
+    logger.warn(`Failed to fetch item metadata: ${err.message}`);
   }
   return itemNamesCache;
 }

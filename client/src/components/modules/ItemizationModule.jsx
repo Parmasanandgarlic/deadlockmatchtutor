@@ -71,7 +71,7 @@ export default function ItemizationModule({ data }) {
         {items && items.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {items.map((item, i) => {
-              const itemImg = getItemImage(item.name);
+              const itemImg = getItemImage(item);
               return (
                 <Tooltip
                   key={i}

@@ -10,8 +10,8 @@ import { useState } from 'react';
 export default function HeroHeader({ meta, overall }) {
   const [copiedMatchId, setCopiedMatchId] = useState(false);
   const scoreColor = getScoreColor(overall?.impactScore ?? 0);
-  const heroBg = getHeroImage(meta?.heroName, 'card');
-  const heroAvatar = getHeroImage(meta?.heroName, 'small');
+  const heroBg = getHeroImage(meta, 'card');
+  const heroAvatar = getHeroImage(meta, 'small');
   const won = meta?.won;
   const rank = meta?.rankPredict;
   const role = getHeroRole(meta?.heroName);

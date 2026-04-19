@@ -47,10 +47,16 @@ let apiHeroNames = null;
 
 /**
  * Set the API-provided hero names map.
- * @param {Object} heroMap - Map of hero_id to hero_name from API
+ * @param {Array} heroes - Array of hero objects from API
  */
-function setApiHeroNames(heroMap) {
-  if (heroMap && typeof heroMap === 'object') {
+function setApiHeroNames(heroes) {
+  if (Array.isArray(heroes)) {
+    const heroMap = {};
+    heroes.forEach(hero => {
+      if (hero.id) {
+        heroMap[hero.id] = hero;
+      }
+    });
     apiHeroNames = heroMap;
   }
 }
@@ -66,11 +72,22 @@ function getHeroName(heroId) {
   
   // First check API-provided names
   if (apiHeroNames && apiHeroNames[heroId]) {
-    return apiHeroNames[heroId];
+    const hero = apiHeroNames[heroId];
+    return hero.name || hero; // Handle both full object and legacy string mapping
   }
   
   // Fall back to static mapping
   return HERO_NAMES[heroId] || `Hero #${heroId}`;
 }
 
-module.exports = { HERO_NAMES, getHeroName, setApiHeroNames };
+/**
+ * Get full hero data from its numeric ID.
+ * @param {number} heroId
+ * @returns {Object|null} Hero data object or null
+ */
+function getHeroData(heroId) {
+  if (heroId == null || !apiHeroNames) return null;
+  return apiHeroNames[heroId] || null;
+}
+
+module.exports = { HERO_NAMES, getHeroName, getHeroData, setApiHeroNames };

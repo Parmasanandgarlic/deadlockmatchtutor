@@ -10,10 +10,17 @@ let apiItemNames = null;
 
 /**
  * Set the API-provided item names map.
- * @param {Object} itemMap - Map of item_id to item_name from API
+ * @param {Array} items - Array of item objects from API
  */
-function setApiItemNames(itemMap) {
-  if (itemMap && typeof itemMap === 'object') {
+function setApiItemNames(items) {
+  if (Array.isArray(items)) {
+    const itemMap = {};
+    items.forEach(item => {
+      const id = item.id || item.item_id;
+      if (id) {
+        itemMap[id] = item;
+      }
+    });
     apiItemNames = itemMap;
   }
 }
@@ -29,11 +36,22 @@ function getItemName(itemId) {
   
   // First check API-provided names
   if (apiItemNames && apiItemNames[itemId]) {
-    return apiItemNames[itemId];
+    const item = apiItemNames[itemId];
+    return item.name || item.item_name || item; // Handle objects or legacy names
   }
   
   // Fall back to static mapping
   return ITEM_NAMES[itemId] || `Item #${itemId}`;
 }
 
-module.exports = { ITEM_NAMES, getItemName, setApiItemNames };
+/**
+ * Get full item data from its numeric ID.
+ * @param {number} itemId
+ * @returns {Object|null} Item data object or null
+ */
+function getItemData(itemId) {
+  if (itemId == null || !apiItemNames) return null;
+  return apiItemNames[itemId] || null;
+}
+
+module.exports = { ITEM_NAMES, getItemName, getItemData, setApiItemNames };

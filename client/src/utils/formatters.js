@@ -93,7 +93,21 @@ export function formatDateTime(input) {
 /**
  * Get official Deadlock API hero image URL.
  */
-export function getHeroImage(heroName, type = 'small') {
+export function getHeroImage(hero, type = 'small') {
+  // If 'hero' is an object with heroData, use that
+  const data = hero?.heroData || (typeof hero === 'object' ? hero : null);
+  
+  if (data?.images) {
+    const imgType = {
+      small: data.images.icon_image_small_webp || data.images.icon_image_small,
+      card: data.images.icon_hero_card_webp || data.images.icon_hero_card,
+      minimap: data.images.icon_minimap_webp || data.images.icon_minimap,
+      icon: data.images.top_bar_icon_webp || data.images.top_bar_icon
+    };
+    if (imgType[type]) return imgType[type];
+  }
+
+  const heroName = typeof hero === 'string' ? hero : data?.name || 'Unknown Hero';
   if (!heroName || heroName === 'Unknown Hero') return null;
   const safeName = heroName.toLowerCase().replace(/[^a-z0-9]/g, '');
   
@@ -110,8 +124,18 @@ export function getHeroImage(heroName, type = 'small') {
 /**
  * Get official Deadlock API item/mod image URL.
  */
-export function getItemImage(itemName) {
+export function getItemImage(item) {
+  if (!item) return null;
+  
+  // Use API image if available
+  if (typeof item === 'object') {
+    const apiImg = item.image_webp || item.image;
+    if (apiImg) return apiImg;
+  }
+
+  const itemName = typeof item === 'string' ? item : item.name;
   if (!itemName) return null;
+  
   // Basic normalization — exact mapping might require a dictionary if names don't map cleanly
   const safeName = itemName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
   return `https://assets-bucket.deadlock-api.com/assets-api-res/images/mods/${safeName}.png`;
