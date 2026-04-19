@@ -18,6 +18,7 @@ export default function LandingPage() {
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [showTechnical, setShowTechnical] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
