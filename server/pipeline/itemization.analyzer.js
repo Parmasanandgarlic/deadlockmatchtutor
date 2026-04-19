@@ -73,27 +73,31 @@ function detectFloatingSouls(playerTicks, itemLog, steamId) {
  */
 function extractCoreItemTimings(itemLog, steamId) {
   const playerItems = (itemLog || [])
-    .filter((e) => e.steamId === steamId)
-    .sort((a, b) => a.timeSeconds - b.timeSeconds);
+    .filter((e) => matchesSteamId(e, steamId))
+    .sort((a, b) => getItemTimeSeconds(a) - getItemTimeSeconds(b));
 
   let first3k = null;
   let first6k = null;
 
   for (const item of playerItems) {
-    if (!first3k && item.cost >= ITEM_COST_TIERS.HIGH) {
+    const itemCost = getItemCost(item);
+    const itemId = getItemId(item);
+    const itemTimeSeconds = getItemTimeSeconds(item);
+
+    if (!first3k && itemCost >= ITEM_COST_TIERS.HIGH) {
       first3k = {
-        item: item.item,
-        cost: item.cost,
-        timeSeconds: item.timeSeconds,
-        timeFormatted: formatTime(item.timeSeconds),
+        item: itemId,
+        cost: itemCost,
+        timeSeconds: itemTimeSeconds,
+        timeFormatted: formatTime(itemTimeSeconds),
       };
     }
-    if (!first6k && item.cost >= ITEM_COST_TIERS.ULTRA) {
+    if (!first6k && itemCost >= ITEM_COST_TIERS.ULTRA) {
       first6k = {
-        item: item.item,
-        cost: item.cost,
-        timeSeconds: item.timeSeconds,
-        timeFormatted: formatTime(item.timeSeconds),
+        item: itemId,
+        cost: itemCost,
+        timeSeconds: itemTimeSeconds,
+        timeFormatted: formatTime(itemTimeSeconds),
       };
     }
     if (first3k && first6k) break;
@@ -103,10 +107,10 @@ function extractCoreItemTimings(itemLog, steamId) {
     first3k,
     first6k,
     allPurchases: playerItems.map((i) => ({
-      item: i.item,
-      cost: i.cost,
-      timeSeconds: i.timeSeconds,
-      timeFormatted: formatTime(i.timeSeconds),
+      item: getItemId(i),
+      cost: getItemCost(i),
+      timeSeconds: getItemTimeSeconds(i),
+      timeFormatted: formatTime(getItemTimeSeconds(i)),
     })),
   };
 }
@@ -121,6 +125,23 @@ function analyzeActiveItemUsage(parsedData, steamId) {
     items: [],
     overallEfficiency: 0,
   };
+}
+
+function matchesSteamId(entry, steamId) {
+  const entrySteamId = entry?.steamId ?? entry?.steam_id ?? entry?.account_id ?? entry?.accountId;
+  return entrySteamId != null && String(entrySteamId) === String(steamId);
+}
+
+function getItemId(entry) {
+  return entry?.item ?? entry?.item_id ?? entry?.itemId ?? entry?.id ?? null;
+}
+
+function getItemCost(entry) {
+  return entry?.cost ?? entry?.item_cost ?? entry?.price ?? 0;
+}
+
+function getItemTimeSeconds(entry) {
+  return entry?.timeSeconds ?? entry?.time_seconds ?? entry?.timestampSeconds ?? entry?.time ?? 0;
 }
 
 /**
