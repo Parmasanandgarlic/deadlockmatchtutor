@@ -34,6 +34,18 @@ async function setupDatabase() {
     `);
     console.log('✓ Created analyses table');
 
+    // Create tracked_accounts table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS tracked_accounts (
+        account_id BIGINT PRIMARY KEY,
+        last_synced_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+        search_count INTEGER DEFAULT 1,
+        is_active BOOLEAN DEFAULT true,
+        metadata JSONB DEFAULT '{}'::jsonb
+      )
+    `);
+    console.log('✓ Created tracked_accounts table');
+
     // Create index
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_analyses_updated_at ON analyses(updated_at DESC)

@@ -80,6 +80,11 @@ export async function getPlayerMatches(accountId) {
   return data;
 }
 
+export async function syncPlayerMatches(accountId) {
+  const { data } = await api.post(`/players/${accountId}/sync`);
+  return data;
+}
+
 // ---- Match ----
 
 export async function getMatchInfo(matchId) {

@@ -17,7 +17,7 @@ const DEFAULT_FILTERS = {
 
 export default function MatchListPage() {
   const { accountId } = useParams();
-  const { matches, loading, error, refetch } = useMatchHistory(accountId);
+  const { matches, loading, error, refetch, sync, isSyncing } = useMatchHistory(accountId);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
 
   const heroOptions = useMemo(
@@ -60,10 +60,23 @@ export default function MatchListPage() {
         <ArrowLeft className="w-4 h-4" /> Back to search
       </Link>
 
-      <h2 className="text-2xl font-bold mb-1">Recent Matches</h2>
-      <p className="text-deadlock-text-dim mb-6">
-        Account ID: <span className="font-mono text-deadlock-accent">{accountId}</span>
-      </p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+        <div>
+          <h2 className="text-2xl font-bold mb-1">Recent Matches</h2>
+          <p className="text-deadlock-text-dim">
+            Account ID: <span className="font-mono text-deadlock-accent">{accountId}</span>
+          </p>
+        </div>
+        
+        <button
+          onClick={sync}
+          disabled={loading || isSyncing}
+          className={`btn-secondary flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 h-fit ${isSyncing ? 'opacity-70' : ''}`}
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+          {isSyncing ? 'Syncing...' : 'Sync with API'}
+        </button>
+      </div>
 
       {loading && (
         <div className="flex items-center justify-center py-20">
