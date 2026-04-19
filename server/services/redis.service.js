@@ -8,6 +8,7 @@ class RedisClient {
   constructor() {
     this.client = null;
     this.isConnected = false;
+    this.cacheKeys = RedisClient.cacheKeys;
   }
 
   async connect() {

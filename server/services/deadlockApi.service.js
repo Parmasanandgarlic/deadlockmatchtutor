@@ -11,29 +11,38 @@ const configuration = new Configuration({
 const playersApi = new PlayersApi(configuration);
 const matchesApi = new MatchesApi(configuration);
 
+function normalizeMatchHistory(data) {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.matches)) return data.matches;
+  if (Array.isArray(data?.results)) return data.results;
+  if (Array.isArray(data?.items)) return data.items;
+  if (Array.isArray(data?.data)) return data.data;
+  return [];
+}
+
 /**
  * Fetch a player's recent match history.
  * @param {string|number} accountId  Steam32 account ID
  * @returns {Promise<Array>} Array of match summary objects
  */
 async function getMatchHistory(accountId) {
-  const cacheKey = redisClient.cacheKeys.playerMatches(accountId);
+  const cacheKey = redisClient.cacheKeys?.playerMatches?.(accountId);
   
   try {
     // 1. Check Redis Cache
-    const cached = await redisClient.get(cacheKey);
+    const cached = cacheKey ? await redisClient.get(cacheKey) : null;
     if (cached) {
       logger.debug(`[Redis] Cache hit for match history: ${accountId}`);
-      return cached;
+      return normalizeMatchHistory(cached);
     }
 
     // 2. Fetch from API
     const { data } = await playersApi.matchHistory({ accountId: Number(accountId) });
-    const matches = Array.isArray(data) ? data : [];
+    const matches = normalizeMatchHistory(data);
     logger.debug(`Fetched ${matches.length} matches for account ${accountId}`);
 
     // 3. Save to Redis (5 minute TTL)
-    if (matches.length > 0) {
+    if (cacheKey && matches.length > 0) {
       await redisClient.set(cacheKey, matches, 300);
     }
 
@@ -82,11 +91,11 @@ async function getMatchMetadata(matchId) {
  * @returns {Promise<Object>}
  */
 async function getMatchInfo(matchId) {
-  const cacheKey = redisClient.cacheKeys.matchDetails(matchId);
+  const cacheKey = redisClient.cacheKeys?.matchDetails?.(matchId);
   
   try {
     // 1. Check Redis Cache
-    const cached = await redisClient.get(cacheKey);
+    const cached = cacheKey ? await redisClient.get(cacheKey) : null;
     if (cached) {
       logger.debug(`[Redis] Cache hit for match info: ${matchId}`);
       return cached;
@@ -107,7 +116,7 @@ async function getMatchInfo(matchId) {
     logger.debug(`Fetched granular match info for ${matchId}`);
     
     // 3. Save to Redis (1 hour TTL)
-    if (data && Object.keys(data).length > 0) {
+    if (cacheKey && data && Object.keys(data).length > 0) {
       await redisClient.set(cacheKey, data, 3600);
     }
 
@@ -205,11 +214,11 @@ async function getPlayerAccountStats(accountId) {
  * @returns {Promise<Object>} Player card data
  */
 async function getPlayerCard(accountId) {
-  const cacheKey = redisClient.cacheKeys.userProfile(accountId);
+  const cacheKey = redisClient.cacheKeys?.userProfile?.(accountId);
   
   try {
     // 1. Check Redis Cache
-    const cached = await redisClient.get(cacheKey);
+    const cached = cacheKey ? await redisClient.get(cacheKey) : null;
     if (cached) {
       logger.debug(`[Redis] Cache hit for player card: ${accountId}`);
       return cached;
@@ -219,7 +228,7 @@ async function getPlayerCard(accountId) {
     logger.debug(`Fetched player card for account ${accountId}`);
 
     // 3. Save to Redis (1 hour TTL)
-    if (data && Object.keys(data).length > 0) {
+    if (cacheKey && data && Object.keys(data).length > 0) {
       await redisClient.set(cacheKey, data, 3600);
     }
 
