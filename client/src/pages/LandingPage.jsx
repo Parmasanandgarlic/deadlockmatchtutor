@@ -1,6 +1,7 @@
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { Crosshair, Search, ArrowRight, Github, Shield, BarChart3, Swords, Target, Zap, History, User, X, Trash2 } from 'lucide-react';
 import { resolvePlayer } from '../api/client';
-import { useEffect, useRef } from 'react';
 import SEOHead from '../components/seo/SEOHead';
 
 const features = [
