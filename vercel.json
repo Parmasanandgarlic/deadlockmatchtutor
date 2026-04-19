@@ -1,28 +1,18 @@
 {
   "version": 2,
-  "buildCommand": "npm run vercel-build",
-  "outputDirectory": "dist",
+  "buildCommand": "npm run build -w client",
+  "outputDirectory": "client/dist",
   "cleanUrls": true,
   "trailingSlash": false,
   "functions": {
-    "api/*.js": {
+    "api/index.js": {
       "memory": 1024,
-      "maxDuration": 15
+      "maxDuration": 60
     }
   },
   "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "/api/index.js"
-    },
-    {
-      "source": "/api",
-      "destination": "/api/index.js"
-    },
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
-    }
+    { "source": "/api/(.*)", "destination": "/api/index" },
+    { "source": "/((?!api).*)", "destination": "/index.html" }
   ],
   "crons": [
     {
@@ -31,6 +21,6 @@
     }
   ],
   "env": {
-    "DEPLOYMENT_VERSION": "1.0.1-radar-timeline"
+    "DEPLOYMENT_VERSION": "1.0.2-canonical-layout"
   }
 }
