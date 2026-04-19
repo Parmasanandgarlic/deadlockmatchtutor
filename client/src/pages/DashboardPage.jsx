@@ -13,6 +13,7 @@ import ShareButton from '../components/dashboard/ShareButton';
 import DashboardActions from '../components/dashboard/DashboardActions';
 import GuideModal from '../components/ui/GuideModal';
 import { PRIORITY_CONFIG } from '../utils/constants';
+import { toErrorMessage } from '../utils/errorMessage';
 import { useState } from 'react';
 
 export default function DashboardPage() {
@@ -63,7 +64,7 @@ export default function DashboardPage() {
   if (error) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-20 text-center">
-        <p className="text-deadlock-red text-lg mb-4">{error}</p>
+        <p className="text-deadlock-red text-lg mb-4">{toErrorMessage(error)}</p>
         <Link to="/" className="text-deadlock-accent underline">Return home</Link>
       </div>
     );

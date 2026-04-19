@@ -1,5 +1,6 @@
 import { Inbox, Search, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { toErrorMessage } from '../../utils/errorMessage';
 
 export default function EmptyState({ type = 'default', title, description, action }) {
   const configs = {
@@ -74,7 +75,7 @@ export function ErrorEmptyState({ message, onRetry }) {
     <EmptyState
       type="error"
       title="Something Went Wrong"
-      description={message || 'An unexpected error occurred while loading your data.'}
+      description={toErrorMessage(message, 'An unexpected error occurred while loading your data.')}
       action={
         onRetry ? (
           <button onClick={onRetry} className="btn-secondary text-sm">

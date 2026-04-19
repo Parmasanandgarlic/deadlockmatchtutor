@@ -7,6 +7,7 @@ import HeroHeader from '../components/dashboard/HeroHeader';
 import InsightDeck from '../components/dashboard/InsightDeck';
 import ModuleTabs from '../components/dashboard/ModuleTabs';
 import { Loader2 } from 'lucide-react';
+import { toErrorMessage } from '../utils/errorMessage';
 
 export default function SharedReportPage() {
   const { matchId, accountId } = useParams();
@@ -51,7 +52,7 @@ export default function SharedReportPage() {
   if (error) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-20 text-center">
-        <p className="text-deadlock-red text-lg mb-2">{error}</p>
+        <p className="text-deadlock-red text-lg mb-2">{toErrorMessage(error)}</p>
         <p className="text-deadlock-text-dim text-sm mb-4">
           This report may not have been generated yet, or the server cache has been cleared.
         </p>
