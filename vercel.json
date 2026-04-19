@@ -10,5 +10,11 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/sync",
+      "schedule": "*/30 * * * *"
+    }
   ]
 }

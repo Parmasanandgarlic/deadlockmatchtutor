@@ -1,6 +1,8 @@
 const { resolveSteamId } = require('../services/steam.service');
 const { getMatchHistory } = require('../services/deadlockApi.service');
+const { trackAccount } = require('../services/sync.service');
 const logger = require('../utils/logger');
+const config = require('../config');
 
 /**
  * POST /api/players/resolve
@@ -57,6 +59,10 @@ async function resolvePlayer(req, res, next) {
 async function getPlayerMatches(req, res, next) {
   try {
     const { accountId } = req.params;
+    
+    // Background track this account
+    trackAccount(accountId);
+
     const matches = await getMatchHistory(accountId);
     res.json(matches);
   } catch (err) {

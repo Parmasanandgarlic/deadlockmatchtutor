@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const { resolvePlayer, getPlayerMatches } = require('../controllers/player.controller');
+const { handleManualSync } = require('../controllers/sync.controller');
 const { validateSteamInput, requireNumericParam } = require('../middleware/validation');
 
 const router = Router();
@@ -47,5 +48,14 @@ router.post('/resolve', validateSteamInput, resolvePlayer);
  *         description: List of recent matches
  */
 router.get('/:accountId/matches', requireNumericParam('accountId'), getPlayerMatches);
+
+/**
+ * @swagger
+ * /api/players/{accountId}/sync:
+ *   post:
+ *     summary: Trigger manual match history refresh from API
+ *     tags: [Players]
+ */
+router.post('/:accountId/sync', requireNumericParam('accountId'), handleManualSync);
 
 module.exports = router;
