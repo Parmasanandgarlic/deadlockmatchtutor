@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS analyses (
 
 -- Create index for faster lookups
 CREATE INDEX IF NOT EXISTS idx_analyses_updated_at ON analyses(updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_analyses_match_account ON analyses(match_id, account_id);
 
 -- Enable Row Level Security (optional, can be disabled for server-side use)
 ALTER TABLE analyses ENABLE ROW LEVEL SECURITY;

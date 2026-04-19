@@ -173,21 +173,33 @@ async function runAnalysis(req, res, next) {
       logger.error(`[Analysis] Failed to fetch ranks: ${err.message}`);
     }
 
-    // Step 2: Fetch match info from API
-    logger.info(`[Analysis] Fetching match info for match ${matchId}`);
-    const matchInfo = await getMatchInfo(matchId);
+    // Step 2-7: Parallelize independent API calls for match and player data
+    logger.info(`[Analysis] Fetching data for match ${matchId} and account ${accountId} in parallel`);
+    
+    const [matchInfo, matchHistory, accountStats, rankPredict, playerCard] = await Promise.all([
+      getMatchInfo(matchId).catch(err => {
+        logger.error(`[Analysis] Failed to fetch match info: ${err.message}`);
+        return {};
+      }),
+      getMatchHistory(accountId).catch(err => {
+        logger.error(`[Analysis] Failed to fetch match history: ${err.message}`);
+        throw new Error(`Failed to fetch match history: ${err.message}`);
+      }),
+      getPlayerAccountStats(accountId).catch(err => {
+        logger.error(`[Analysis] Failed to fetch account stats: ${err.message}`);
+        return null;
+      }),
+      getPlayerRankPredict(accountId).catch(err => {
+        logger.error(`[Analysis] Failed to fetch rank prediction: ${err.message}`);
+        return null;
+      }),
+      getPlayerCard(accountId).catch(err => {
+        logger.error(`[Analysis] Failed to fetch player card: ${err.message}`);
+        return {};
+      })
+    ]);
 
-    // Step 3: Fetch player match history to get hero played in this match
-    logger.info(`[Analysis] Fetching match history for account ${accountId}`);
-    let matchHistory;
-    try {
-      matchHistory = await getMatchHistory(accountId);
-    } catch (err) {
-      logger.error(`[Analysis] Failed to fetch match history: ${err.message}`);
-      throw new Error(`Failed to fetch match history: ${err.message}`);
-    }
-
-    // Find the specific match in history
+    // Step 8: Resolve heroId from parallel results
     const matchInHistory = matchHistory.find(m => m.match_id === Number(matchId));
     if (!matchInHistory && !Object.keys(matchInfo).length) {
       throw new Error('Match not found. The Deadlock API may be experiencing issues — please try again later.');
@@ -195,47 +207,14 @@ async function runAnalysis(req, res, next) {
 
     const heroId = matchInHistory?.hero_id || matchInfo?.players?.find(p => p.account_id === Number(accountId))?.hero_id || 0;
 
-    // Step 4: Fetch hero-specific stats
+    // Step 9: Fetch hero-specific stats (depends on heroId)
     logger.info(`[Analysis] Fetching hero stats for hero ${heroId}`);
-    let heroStats;
-    try {
-      heroStats = await getPlayerHeroStats(accountId, heroId);
-    } catch (err) {
+    const heroStats = await getPlayerHeroStats(accountId, heroId).catch(err => {
       logger.error(`[Analysis] Failed to fetch hero stats: ${err.message}`);
-      heroStats = null; // Continue without hero stats
-    }
+      return null;
+    });
 
-    // Step 5: Fetch general account stats
-    logger.info(`[Analysis] Fetching account stats for account ${accountId}`);
-    let accountStats;
-    try {
-      accountStats = await getPlayerAccountStats(accountId);
-    } catch (err) {
-      logger.error(`[Analysis] Failed to fetch account stats: ${err.message}`);
-      accountStats = null; // Continue without account stats
-    }
-
-    // Step 6: Fetch rank prediction
-    logger.info(`[Analysis] Fetching rank prediction for account ${accountId}`);
-    let rankPredict;
-    try {
-      rankPredict = await getPlayerRankPredict(accountId);
-    } catch (err) {
-      logger.error(`[Analysis] Failed to fetch rank prediction: ${err.message}`);
-      rankPredict = null; // Continue without rank prediction
-    }
-
-    // Step 7: Fetch player card for additional profile data
-    logger.info(`[Analysis] Fetching player card for account ${accountId}`);
-    let playerCard;
-    try {
-      playerCard = await getPlayerCard(accountId);
-    } catch (err) {
-      logger.error(`[Analysis] Failed to fetch player card: ${err.message}`);
-      playerCard = {}; // Continue without player card
-    }
-
-    // Step 8: Build API-based data structure for pipeline
+    // Step 10: Build API-based data structure for pipeline
     const apiData = {
       matchInfo,
       matchInHistory,
