@@ -42,6 +42,14 @@ function safeDivide(numerator, denominator) {
 }
 
 /**
+ * Compare two identifiers while tolerating numeric/string aliasing.
+ */
+function idsMatch(left, right) {
+  if (left == null || right == null) return false;
+  return String(left) === String(right);
+}
+
+/**
  * Resolve a Steam vanity URL component to a potential SteamID64 format.
  * Returns the input unchanged if it already looks like a Steam64 ID (17-digit number).
  */
@@ -136,6 +144,7 @@ module.exports = {
   distance3D,
   clamp,
   safeDivide,
+  idsMatch,
   normalizeSteamInput,
   steam64ToSteam32,
   steam32ToSteam64,

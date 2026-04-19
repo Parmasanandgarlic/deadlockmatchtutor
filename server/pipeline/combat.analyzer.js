@@ -1,5 +1,5 @@
 const { TEAMFIGHT, PHASES } = require('../utils/constants');
-const { safeDivide, formatTime, clusterEvents, distance3D } = require('../utils/helpers');
+const { safeDivide, formatTime, clusterEvents, distance3D, idsMatch } = require('../utils/helpers');
 const logger = require('../utils/logger');
 
 /**
@@ -115,9 +115,9 @@ function computeTeamfightParticipation(combatLog, teamfights, steamId) {
   const totalTeamKills = kills.length;
 
   // Player's involvement: kills + assists
-  const playerKills = kills.filter((k) => k.attacker === steamId).length;
+  const playerKills = kills.filter((k) => idsMatch(k.attacker, steamId)).length;
   const playerAssists = kills.filter(
-    (k) => k.attacker !== steamId && (k.assisters || []).includes(steamId)
+    (k) => !idsMatch(k.attacker, steamId) && (k.assisters || []).some((a) => idsMatch(a, steamId))
   ).length;
 
   const participation = safeDivide(playerKills + playerAssists, totalTeamKills) * 100;
@@ -128,7 +128,7 @@ function computeTeamfightParticipation(combatLog, teamfights, steamId) {
     playerAssists,
     participationPercent: Math.round(participation * 10) / 10,
     teamfightsPresent: teamfights.filter((tf) =>
-      tf.participants.includes(steamId)
+      (tf.participants || []).some((id) => idsMatch(id, steamId))
     ).length,
     teamfightsTotal: teamfights.length,
   };
@@ -138,7 +138,7 @@ function computeTeamfightParticipation(combatLog, teamfights, steamId) {
  * Analyze damage taken: separate pre-fight poke from in-fight damage.
  */
 function analyzeDamageTaken(combatLog, teamfights, steamId) {
-  const damageEvents = (combatLog?.damage || []).filter((d) => d.victim === steamId);
+  const damageEvents = (combatLog?.damage || []).filter((d) => idsMatch(d.victim, steamId));
   let pokeDamage = 0;
   let fightDamage = 0;
 
@@ -174,7 +174,7 @@ function computeDeadTimePenalty(playerTicks, steamId, duration) {
     };
   }
 
-  const playerData = playerTicks.filter((t) => t.steamId === steamId);
+  const playerData = playerTicks.filter((t) => idsMatch(t.steamId, steamId));
   let totalDeadSeconds = 0;
   let deathCount = 0;
   let wasAlive = true;

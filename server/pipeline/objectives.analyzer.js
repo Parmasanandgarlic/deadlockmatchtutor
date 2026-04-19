@@ -1,5 +1,5 @@
 const { OBJECTIVES, MID_BOSS_PROXIMITY_RADIUS } = require('../utils/constants');
-const { safeDivide, formatTime, distance3D } = require('../utils/helpers');
+const { safeDivide, formatTime, distance3D, idsMatch } = require('../utils/helpers');
 const logger = require('../utils/logger');
 
 /**
@@ -65,7 +65,7 @@ function computeObjectiveDamageShare(objectiveLog, steamId) {
     teamDamage += event.damage || 0;
     byObjective[objType].team += event.damage || 0;
 
-    if (event.steamId === steamId || event.attacker === steamId) {
+    if (idsMatch(event.steamId, steamId) || idsMatch(event.attacker, steamId)) {
       playerDamage += event.damage || 0;
       byObjective[objType].player += event.damage || 0;
     }
@@ -98,7 +98,7 @@ function checkMidBossPresence(objectiveLog, playerTicks, steamId) {
     return { events: [], wasPresent: false };
   }
 
-  const playerData = (playerTicks || []).filter((t) => t.steamId === steamId);
+  const playerData = (playerTicks || []).filter((t) => idsMatch(t.steamId, steamId));
 
   const events = midBossEvents.map((mb) => {
     // Find the player's position at the time of the mid boss event

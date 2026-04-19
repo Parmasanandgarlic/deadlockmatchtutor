@@ -1,5 +1,5 @@
 const { PHASES, FLOATING_SOULS_THRESHOLD, NEUTRAL_BASELINES } = require('../utils/constants');
-const { safeDivide, formatTime } = require('../utils/helpers');
+const { safeDivide, formatTime, idsMatch } = require('../utils/helpers');
 const logger = require('../utils/logger');
 
 /**
@@ -79,7 +79,7 @@ function buildSpmTimeline(playerTicks, steamId, duration) {
     return timeline;
   }
 
-  const playerData = playerTicks.filter((t) => t.steamId === steamId);
+  const playerData = playerTicks.filter((t) => idsMatch(t.steamId, steamId));
   let lastSouls = 0;
 
   for (let i = 0; i < buckets; i++) {
@@ -153,7 +153,7 @@ function computeNeutralEfficiency(neutralLog, steamId, role, durationSeconds) {
   const baseline = NEUTRAL_BASELINES[role] || NEUTRAL_BASELINES.flex;
   const periodsPer10Min = durationSeconds / 600;
 
-  const playerClears = (neutralLog || []).filter((e) => e.steamId === steamId);
+  const playerClears = (neutralLog || []).filter((e) => idsMatch(e.steamId, steamId));
 
   const tier1 = playerClears.filter((e) => e.tier === 1).length;
   const tier2 = playerClears.filter((e) => e.tier === 2).length;
