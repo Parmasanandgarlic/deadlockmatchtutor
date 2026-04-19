@@ -148,7 +148,7 @@ export default function LandingPage() {
 
           <h1 className="flex flex-col items-center text-5xl sm:text-7xl md:text-8xl font-serif font-black tracking-tighter mb-6 leading-none">
             <span className="text-white">Deadlock</span>
-            <div className="h-3 w-32 bg-deadlock-amber my-4 shadow-none" />
+            <div className="sketchy-line w-full max-w-[0.9em] sm:max-w-full" />
             <span className="text-deadlock-amber">
               AfterMatch
             </span>
