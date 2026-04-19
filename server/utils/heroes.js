@@ -53,8 +53,11 @@ function setApiHeroNames(heroes) {
   if (Array.isArray(heroes)) {
     const heroMap = {};
     heroes.forEach(hero => {
-      if (hero.id) {
-        heroMap[hero.id] = hero;
+      const id = hero?.id ?? hero?.hero_id ?? hero?.heroId;
+      if (id != null) {
+        heroMap[id] = hero;
+        // Also index by string form to avoid numeric/string key drift.
+        heroMap[String(id)] = hero;
       }
     });
     apiHeroNames = heroMap;
@@ -71,8 +74,8 @@ function getHeroName(heroId) {
   if (heroId == null) return 'Unknown Hero';
   
   // First check API-provided names
-  if (apiHeroNames && apiHeroNames[heroId]) {
-    const hero = apiHeroNames[heroId];
+  if (apiHeroNames && (apiHeroNames[heroId] || apiHeroNames[String(heroId)])) {
+    const hero = apiHeroNames[heroId] || apiHeroNames[String(heroId)];
     return hero.name || hero; // Handle both full object and legacy string mapping
   }
   
@@ -87,7 +90,7 @@ function getHeroName(heroId) {
  */
 function getHeroData(heroId) {
   if (heroId == null || !apiHeroNames) return null;
-  return apiHeroNames[heroId] || null;
+  return apiHeroNames[heroId] || apiHeroNames[String(heroId)] || null;
 }
 
 module.exports = { HERO_NAMES, getHeroName, getHeroData, setApiHeroNames };

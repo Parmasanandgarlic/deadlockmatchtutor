@@ -16,9 +16,10 @@ function setApiItemNames(items) {
   if (Array.isArray(items)) {
     const itemMap = {};
     items.forEach(item => {
-      const id = item.id || item.item_id;
-      if (id) {
+      const id = item?.id ?? item?.item_id ?? item?.itemId;
+      if (id != null) {
         itemMap[id] = item;
+        itemMap[String(id)] = item;
       }
     });
     apiItemNames = itemMap;
@@ -35,8 +36,8 @@ function getItemName(itemId) {
   if (itemId == null) return 'Unknown Item';
   
   // First check API-provided names
-  if (apiItemNames && apiItemNames[itemId]) {
-    const item = apiItemNames[itemId];
+  if (apiItemNames && (apiItemNames[itemId] || apiItemNames[String(itemId)])) {
+    const item = apiItemNames[itemId] || apiItemNames[String(itemId)];
     return item.name || item.item_name || item; // Handle objects or legacy names
   }
   
@@ -51,7 +52,7 @@ function getItemName(itemId) {
  */
 function getItemData(itemId) {
   if (itemId == null || !apiItemNames) return null;
-  return apiItemNames[itemId] || null;
+  return apiItemNames[itemId] || apiItemNames[String(itemId)] || null;
 }
 
 module.exports = { ITEM_NAMES, getItemName, getItemData, setApiItemNames };
