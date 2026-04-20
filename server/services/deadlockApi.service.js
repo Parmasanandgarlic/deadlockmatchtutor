@@ -206,6 +206,30 @@ async function getPlayerHeroStats(accountId, heroId) {
 }
 
 /**
+ * Fetch hero-specific statistics for a player across ALL heroes.
+ * Powers the player profile "Top Heroes" strip.
+ * @param {string|number} accountId
+ * @returns {Promise<Array>} Array of per-hero stats objects
+ */
+async function getPlayerHeroStatsAll(accountId) {
+  try {
+    const { data } = await playersApi.playerHeroStats({
+      accountIds: [Number(accountId)],
+    });
+    const arr = Array.isArray(data) ? data : [];
+    logger.debug(`Fetched all hero stats for account ${accountId}: ${arr.length} heroes`);
+    return arr;
+  } catch (err) {
+    if (err.response?.status === 403 || err.response?.status === 404 || err.response?.status === 500) {
+      logger.warn(`All-hero stats error (${err.response?.status}) for ${accountId}. Continuing without it.`);
+      return [];
+    }
+    logger.error(`Failed to fetch all-hero stats for ${accountId}: ${err.message}`);
+    return [];
+  }
+}
+
+/**
  * Fetch rank prediction for a player.
  * @param {string|number} accountId
  * @returns {Promise<Object>} Rank prediction data
@@ -332,6 +356,7 @@ module.exports = {
   getMatchMetadata,
   getMatchInfo,
   getPlayerHeroStats,
+  getPlayerHeroStatsAll,
   getPlayerRankPredict,
   getPlayerAccountStats,
   getPlayerCard,

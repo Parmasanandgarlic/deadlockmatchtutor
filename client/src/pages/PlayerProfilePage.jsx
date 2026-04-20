@@ -1,6 +1,8 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { usePlayerTrends } from '../hooks/usePlayerTrends';
+import { usePlayerProfile } from '../hooks/usePlayerProfile';
+import PlayerDossierHeader from '../components/dashboard/PlayerDossierHeader';
 import LoadingState from '../components/ui/LoadingState';
 import { ErrorEmptyState } from '../components/ui/EmptyState';
 import {
@@ -86,6 +88,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 export default function PlayerProfilePage() {
   const { accountId } = useParams();
   const { trendsData, isLoading, error } = usePlayerTrends(accountId);
+  const { data: profile } = usePlayerProfile(accountId);
 
   if (isLoading) {
     return (
@@ -112,18 +115,24 @@ export default function PlayerProfilePage() {
 
   if (!trendsData.available || trendsData.insufficientData) {
     return (
-      <div className="max-w-3xl mx-auto py-12 px-4 text-center">
-        <div className="bg-[#151921] border border-[#ffad1c] rounded-sm p-8 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#151921] via-[#ffad1c] to-[#151921]"></div>
-          <h2 className="font-serif text-2xl text-white mb-2">Insufficient Intel</h2>
-          <p className="text-gray-400 font-sans mb-6">
-            {trendsData.message || 'We need more analyzed matches to generate reliable trend data.'}
-            <br />
-            Matches analyzed: <span className="text-[#ffad1c] font-bold">{trendsData.matchesAnalyzed || 0}</span>
-          </p>
-          <Link to={`/player/${accountId}`} className="inline-block bg-[#1a2130] hover:bg-[#20293b] text-[#ffad1c] px-6 py-2 border border-[#3b7db2]/50 font-serif transition-colors">
-            Analyze Recent Matches
-          </Link>
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Always render the dossier header when we can — rank + heroes
+            don't require analyzed matches, so the page stays useful. */}
+        <PlayerDossierHeader profile={profile} />
+
+        <div className="max-w-3xl mx-auto py-4 text-center">
+          <div className="bg-[#151921] border border-[#ffad1c] rounded-sm p-8 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#151921] via-[#ffad1c] to-[#151921]"></div>
+            <h2 className="font-serif text-2xl text-white mb-2">Insufficient Intel for Trends</h2>
+            <p className="text-gray-400 font-sans mb-6">
+              {trendsData.message || 'We need more analyzed matches to generate reliable trend data.'}
+              <br />
+              Matches analyzed: <span className="text-[#ffad1c] font-bold">{trendsData.matchesAnalyzed || 0}</span>
+            </p>
+            <Link to={`/player/${accountId}`} className="inline-block bg-[#1a2130] hover:bg-[#20293b] text-[#ffad1c] px-6 py-2 border border-[#3b7db2]/50 font-serif transition-colors">
+              Analyze Recent Matches
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -144,6 +153,9 @@ export default function PlayerProfilePage() {
         title="Player Trend Dashboard | Deadlock AfterMatch" 
         description="Long-term performance trends, winning trajectories, and progression analysis." 
       />
+
+      {/* Ranked rank + career stats + top heroes */}
+      <PlayerDossierHeader profile={profile} />
 
       {/* Header */}
       <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between border-b-2 border-[#1a2130] pb-4">

@@ -163,6 +163,11 @@ export async function getPlayerMmrHistory(accountId) {
   return data;
 }
 
+export async function getPlayerProfile(accountId) {
+  const { data } = await api.get(`/players/${accountId}/profile`);
+  return data;
+}
+
 // ---- Match ----
 
 export async function getMatchInfo(matchId) {

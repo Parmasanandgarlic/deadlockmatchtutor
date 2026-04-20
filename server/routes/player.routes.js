@@ -1,5 +1,10 @@
 const { Router } = require('express');
-const { resolvePlayer, getPlayerMatches, getPlayerMmrHistory } = require('../controllers/player.controller');
+const {
+  resolvePlayer,
+  getPlayerMatches,
+  getPlayerMmrHistory,
+  getPlayerProfile,
+} = require('../controllers/player.controller');
 const { handleManualSync } = require('../controllers/sync.controller');
 const { validateSteamInput, requireNumericParam } = require('../middleware/validation');
 
@@ -72,5 +77,20 @@ router.post('/:accountId/sync', requireNumericParam('accountId'), handleManualSy
  *           type: integer
  */
 router.get('/:accountId/mmr-history', requireNumericParam('accountId'), getPlayerMmrHistory);
+
+/**
+ * @swagger
+ * /api/players/{accountId}/profile:
+ *   get:
+ *     summary: Unified player profile — rank, career stats, top heroes
+ *     tags: [Players]
+ *     parameters:
+ *       - in: path
+ *         name: accountId
+ *         required: true
+ *         schema:
+ *           type: integer
+ */
+router.get('/:accountId/profile', requireNumericParam('accountId'), getPlayerProfile);
 
 module.exports = router;
