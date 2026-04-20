@@ -5,16 +5,10 @@
 @layer base {
   body {
     @apply font-sans;
-    /* Ambient Deadlock lighting — deep-blue top wash, warm sepia bottom, hex-mesh grain */
-    background-color: #050506;
-    background-image:
-      radial-gradient(ellipse 1200px 700px at 50% -10%, rgba(59, 125, 178, 0.10) 0%, transparent 60%),
-      radial-gradient(ellipse 900px 600px at 10% 110%, rgba(245, 180, 85, 0.06) 0%, transparent 55%),
-      radial-gradient(ellipse 700px 500px at 95% 90%, rgba(77, 208, 225, 0.04) 0%, transparent 50%),
-      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='52' viewBox='0 0 60 52'><g fill='none' stroke='rgba(255,173,28,0.035)' stroke-width='1'><polygon points='30,2 56,15 56,37 30,50 4,37 4,15'/><polygon points='30,14 44,21 44,31 30,38 16,31 16,21'/></g></svg>");
-    background-attachment: fixed, fixed, fixed, fixed;
-    background-repeat: no-repeat, no-repeat, no-repeat, repeat;
-    background-size: auto, auto, auto, 60px 52px;
+    background-image: 
+      radial-gradient(circle at 50% 0%, rgba(59, 125, 178, 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 0% 100%, rgba(255, 173, 28, 0.05) 0%, transparent 40%);
+    background-attachment: fixed;
   }
 
 
@@ -44,138 +38,33 @@
 }
 
 @layer components {
-  /* ──────────────────────────────────────────────────────────────
-   * DEADLOCK ART-DECO CARD
-   * Double-line border with inner amber hairline — mirrors the
-   * ornate frame treatments in the Curiosity shop & item cards.
-   * ────────────────────────────────────────────────────────────── */
   .card {
     @apply bg-deadlock-surface border border-deadlock-border rounded-none p-6 relative overflow-hidden;
-    box-shadow:
-      0 4px 20px rgba(0, 0, 0, 0.4),
-      inset 0 0 0 1px rgba(255, 173, 28, 0.04);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   }
-  /* Inner hairline — subtle second line like the in-game item frame */
-  .card::before {
-    content: '';
-    position: absolute;
-    inset: 3px;
-    border: 1px solid rgba(255, 173, 28, 0.05);
-    pointer-events: none;
-    z-index: 0;
-  }
-  .card > * { position: relative; z-index: 1; }
 
   .card-amber {
     @apply border-l-4 border-l-deadlock-amber;
-    box-shadow:
-      0 4px 20px rgba(0, 0, 0, 0.4),
-      inset 0 0 0 1px rgba(255, 173, 28, 0.08),
-      -6px 0 18px -10px rgba(255, 173, 28, 0.35);
   }
 
   .card-blue {
     @apply border-l-4 border-l-deadlock-blue;
-    box-shadow:
-      0 4px 20px rgba(0, 0, 0, 0.4),
-      inset 0 0 0 1px rgba(59, 125, 178, 0.08),
-      -6px 0 18px -10px rgba(59, 125, 178, 0.35);
   }
 
-  /* ──────────────────────────────────────────────────────────────
-   * DEADLOCK RARITY FRAMES
-   * Item-highlight inspired — bronze, enhanced, rare, legendary.
-   * Use on any wrapper: <div class="card rarity-enhanced">…
-   * ────────────────────────────────────────────────────────────── */
-  .rarity-bronze {
-    border-color: rgba(212, 168, 83, 0.45);
-    box-shadow:
-      0 4px 20px rgba(0, 0, 0, 0.4),
-      inset 0 0 0 1px rgba(212, 168, 83, 0.18),
-      0 0 18px -6px rgba(212, 168, 83, 0.35);
-  }
-  .rarity-enhanced {
-    border-color: rgba(77, 208, 225, 0.45);
-    box-shadow:
-      0 4px 20px rgba(0, 0, 0, 0.4),
-      inset 0 0 0 1px rgba(77, 208, 225, 0.18),
-      0 0 18px -6px rgba(77, 208, 225, 0.40);
-  }
-  .rarity-rare {
-    border-color: rgba(168, 85, 247, 0.50);
-    box-shadow:
-      0 4px 20px rgba(0, 0, 0, 0.4),
-      inset 0 0 0 1px rgba(168, 85, 247, 0.20),
-      0 0 20px -6px rgba(168, 85, 247, 0.45);
-  }
-  .rarity-legendary {
-    border-color: rgba(245, 194, 66, 0.55);
-    box-shadow:
-      0 4px 24px rgba(0, 0, 0, 0.5),
-      inset 0 0 0 1px rgba(245, 194, 66, 0.25),
-      0 0 24px -6px rgba(245, 194, 66, 0.55);
-  }
-
-  /* ──────────────────────────────────────────────────────────────
-   * DEADLOCK ART-DECO CORNER ACCENTS
-   * Tiny L-shaped corner marks, evoking the shield-frame items
-   * in the Deadlock item highlight screen.
-   * ────────────────────────────────────────────────────────────── */
-  .deco-corners {
-    position: relative;
-  }
-  .deco-corners::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background:
-      linear-gradient(to right, currentColor 0, currentColor 10px, transparent 10px) top left / 10px 1px no-repeat,
-      linear-gradient(to bottom, currentColor 0, currentColor 10px, transparent 10px) top left / 1px 10px no-repeat,
-      linear-gradient(to left, currentColor 0, currentColor 10px, transparent 10px) top right / 10px 1px no-repeat,
-      linear-gradient(to bottom, currentColor 0, currentColor 10px, transparent 10px) top right / 1px 10px no-repeat,
-      linear-gradient(to right, currentColor 0, currentColor 10px, transparent 10px) bottom left / 10px 1px no-repeat,
-      linear-gradient(to top, currentColor 0, currentColor 10px, transparent 10px) bottom left / 1px 10px no-repeat,
-      linear-gradient(to left, currentColor 0, currentColor 10px, transparent 10px) bottom right / 10px 1px no-repeat,
-      linear-gradient(to top, currentColor 0, currentColor 10px, transparent 10px) bottom right / 1px 10px no-repeat;
-    opacity: 0.55;
-  }
-
-  /* ──────────────────────────────────────────────────────────────
-   * DEADLOCK BUTTONS
-   * Primary = gilded amber plaque with bevel highlight (like the
-   * "Use Re-Roll" / "Purchase" buttons in Deadlock's item UI).
-   * ────────────────────────────────────────────────────────────── */
   .btn-primary {
     @apply bg-deadlock-amber hover:bg-deadlock-amber/90 text-black font-bold uppercase tracking-widest
            px-8 py-3 rounded-none transition-all duration-300 transform active:scale-95
            disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_0_0_#9c620c] active:shadow-none;
-    background-image: linear-gradient(180deg, rgba(255, 226, 138, 0.45) 0%, rgba(255, 173, 28, 0) 55%);
-    position: relative;
-  }
-  .btn-primary::after {
-    content: '';
-    position: absolute;
-    inset: 2px;
-    border: 1px solid rgba(0, 0, 0, 0.25);
-    pointer-events: none;
   }
 
   .btn-secondary {
     @apply bg-deadlock-surface border border-deadlock-border hover:border-deadlock-amber
            text-deadlock-text font-semibold uppercase tracking-widest px-6 py-2.5 rounded-none transition-all duration-300;
-    box-shadow: inset 0 0 0 1px rgba(255, 173, 28, 0.05);
-  }
-  .btn-secondary:hover {
-    box-shadow:
-      inset 0 0 0 1px rgba(255, 173, 28, 0.18),
-      0 0 14px -6px rgba(255, 173, 28, 0.45);
   }
 
   .btn-outline-blue {
     @apply bg-transparent border border-deadlock-blue/50 hover:bg-deadlock-blue/10 hover:border-deadlock-blue
            text-deadlock-blue font-semibold uppercase tracking-widest px-6 py-2.5 rounded-none transition-all duration-300;
-    box-shadow: inset 0 0 0 1px rgba(59, 125, 178, 0.08);
   }
 
   .input-field {
@@ -191,20 +80,11 @@
 
   .badge-win {
     @apply badge bg-deadlock-green/20 text-deadlock-green border border-deadlock-green/30;
-    text-shadow: 0 0 6px rgba(46, 204, 113, 0.45);
   }
 
   .badge-loss {
     @apply badge bg-deadlock-red/20 text-deadlock-red border border-deadlock-red/30;
-    text-shadow: 0 0 6px rgba(255, 77, 77, 0.45);
   }
-
-  /* Deadlock-style rarity pills (mirrors the ENHANCED / LEGENDARY labels) */
-  .badge-bronze    { @apply badge bg-deadlock-bronze/15    text-deadlock-bronze    border border-deadlock-bronze/40; }
-  .badge-enhanced  { @apply badge bg-deadlock-enhanced/15  text-deadlock-enhanced  border border-deadlock-enhanced/40; }
-  .badge-rare      { @apply badge bg-deadlock-rare/15      text-deadlock-rare      border border-deadlock-rare/40; }
-  .badge-legendary { @apply badge bg-deadlock-legendary/15 text-deadlock-legendary border border-deadlock-legendary/45; }
-  .badge-ability   { @apply badge bg-deadlock-ability/15   text-deadlock-ability   border border-deadlock-ability/40; }
 
   .tab {
     @apply px-6 py-3 text-xs font-bold uppercase tracking-widest transition-all duration-300
@@ -238,39 +118,6 @@
     from { opacity: 0; }
     to { opacity: 1; }
   }
-
-  /* ──────────────────────────────────────────────────────────────
-   * DEADLOCK ART-DECO DIVIDER
-   * Tapered horizontal rule flanked by diamond pips — evokes the
-   * stained-glass fan above the Curiosity shop window.
-   * ────────────────────────────────────────────────────────────── */
-  .deadlock-divider {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    color: rgba(255, 173, 28, 0.35);
-  }
-  .deadlock-divider::before,
-  .deadlock-divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(to right, transparent, currentColor, transparent);
-  }
-  .deadlock-divider__pip {
-    width: 6px;
-    height: 6px;
-    transform: rotate(45deg);
-    background: currentColor;
-    opacity: 0.8;
-  }
-
-  /* Subtle hex-mesh wash, for use inside large display panels */
-  .bg-hex-mesh {
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='50' height='44' viewBox='0 0 50 44'><polygon points='25,2 46,13 46,32 25,43 4,32 4,13' fill='none' stroke='rgba(255,173,28,0.08)' stroke-width='1'/></svg>");
-    background-size: 50px 44px;
-  }
-
   .sketchy-line {
     @apply h-[2px] sm:h-[3px] bg-white my-3 relative opacity-90;
     clip-path: polygon(
@@ -283,5 +130,73 @@
   .textured-text {
     filter: url(#distress-filter);
     text-shadow: 1px 1px 0px rgba(0,0,0,0.2);
+  }
+
+  /* ── Art-Deco Divider ── */
+  .deadlock-divider {
+    @apply relative w-full h-6 flex items-center justify-center;
+  }
+  .deadlock-divider::before,
+  .deadlock-divider::after {
+    content: '';
+    @apply flex-1 h-px;
+    background: linear-gradient(90deg, transparent, rgba(255, 173, 28, 0.25), rgba(26, 29, 38, 0.6));
+  }
+  .deadlock-divider::after {
+    background: linear-gradient(90deg, rgba(26, 29, 38, 0.6), rgba(255, 173, 28, 0.25), transparent);
+  }
+
+  /* ── Panel Inset (double-border item frame) ── */
+  .panel-inset {
+    @apply bg-deadlock-surface border border-deadlock-border relative overflow-hidden;
+    box-shadow: inset 0 1px 0 0 rgba(255, 173, 28, 0.06), 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+  .panel-inset::after {
+    content: '';
+    @apply absolute inset-[3px] border border-deadlock-border/30 pointer-events-none;
+  }
+
+  /* ── Hero Header Background (compass medallion watermark) ── */
+  .hero-header-bg {
+    @apply relative overflow-hidden;
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(255, 173, 28, 0.08) 0%, transparent 55%),
+      radial-gradient(circle at 90% 80%, rgba(59, 125, 178, 0.05) 0%, transparent 40%);
+  }
+  .hero-header-bg::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: 400px;
+    opacity: 0.015;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='100' cy='100' r='90' fill='none' stroke='%23ffad1c' stroke-width='1.5'/%3E%3Ccircle cx='100' cy='100' r='75' fill='none' stroke='%23ffad1c' stroke-width='0.75'/%3E%3Cpolygon points='100,15 115,100 100,185 85,100' fill='none' stroke='%23ffad1c' stroke-width='1'/%3E%3Cpolygon points='15,100 100,85 185,100 100,115' fill='none' stroke='%23ffad1c' stroke-width='1'/%3E%3Ccircle cx='100' cy='100' r='8' fill='%23ffad1c'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    pointer-events: none;
+  }
+
+  /* ── Rarity Frames ── */
+  .rarity-frame-base {
+    @apply border-deadlock-border;
+    box-shadow: inset 0 0 0 1px rgba(26, 29, 38, 0.5);
+  }
+  .rarity-frame-green {
+    @apply border-deadlock-green/40;
+    box-shadow: inset 0 0 12px rgba(46, 204, 113, 0.08), 0 0 4px rgba(46, 204, 113, 0.1);
+  }
+  .rarity-frame-blue {
+    @apply border-deadlock-blue/40;
+    box-shadow: inset 0 0 12px rgba(59, 125, 178, 0.08), 0 0 4px rgba(59, 125, 178, 0.1);
+  }
+  .rarity-frame-purple {
+    @apply border-deadlock-purple/40;
+    box-shadow: inset 0 0 12px rgba(168, 85, 247, 0.08), 0 0 4px rgba(168, 85, 247, 0.1);
+  }
+  .rarity-frame-amber {
+    @apply border-deadlock-amber/40;
+    box-shadow: inset 0 0 12px rgba(255, 173, 28, 0.08), 0 0 4px rgba(255, 173, 28, 0.1);
   }
 }

@@ -7,6 +7,9 @@ import Tooltip from '../ui/Tooltip';
  * Aggregate summary panel computed client-side over the match list.
  * Shows: games, winrate, avg KDA, total souls earned, most-played hero.
  * Read-only — all calculation is memoised so the list can update freely.
+ *
+ * Art-deco treatment: double-border inset cards, icon accent glow,
+ * geometric corner accents, and subtle gradient top highlights.
  */
 export default function MatchSummaryPanel({ matches }) {
   const stats = useMemo(() => computeStats(matches), [matches]);
@@ -20,6 +23,7 @@ export default function MatchSummaryPanel({ matches }) {
         value={`${stats.winrate}%`}
         subValue={`${stats.wins}W · ${stats.losses}L`}
         tooltip="Win rate across the matches shown below."
+        accentColor="green"
       />
       <SummaryStat
         icon={<Swords className="w-4 h-4 text-deadlock-accent" />}
@@ -27,6 +31,7 @@ export default function MatchSummaryPanel({ matches }) {
         value={stats.avgKda}
         subValue={`${stats.totalKills}/${stats.totalDeaths}/${stats.totalAssists}`}
         tooltip="Average (Kills + Assists) / Deaths across the shown matches."
+        accentColor="amber"
       />
       <SummaryStat
         icon={<Clock className="w-4 h-4 text-deadlock-blue" />}
@@ -34,6 +39,7 @@ export default function MatchSummaryPanel({ matches }) {
         value={stats.avgDurationLabel}
         subValue={`${stats.totalGames} games`}
         tooltip="Average match length across the shown matches."
+        accentColor="blue"
       />
       <SummaryStat
         icon={<Flame className="w-4 h-4 text-deadlock-amber" />}
@@ -41,30 +47,61 @@ export default function MatchSummaryPanel({ matches }) {
         value={stats.topHero.name}
         subValue={`${stats.topHero.count} games · ${stats.topHero.winrate}% WR`}
         tooltip="Hero you've played most in the shown matches, with that hero's win rate."
+        accentColor="amber"
       />
     </div>
   );
 }
 
-function SummaryStat({ icon, label, value, subValue, tooltip }) {
+const accentGradients = {
+  green: 'from-deadlock-green/10 via-transparent',
+  amber: 'from-deadlock-amber/10 via-transparent',
+  blue: 'from-deadlock-blue/10 via-transparent',
+};
+
+const accentBorders = {
+  green: 'border-deadlock-green/20',
+  amber: 'border-deadlock-amber/20',
+  blue: 'border-deadlock-blue/20',
+};
+
+function SummaryStat({ icon, label, value, subValue, tooltip, accentColor = 'amber' }) {
   return (
-    <div className="card !p-3">
-      <div className="flex items-center gap-2 mb-1">
-        {icon}
-        <Tooltip content={{ term: label, definition: tooltip, category: 'Summary' }}>
-          <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-deadlock-muted">
-            {label}
-          </span>
-        </Tooltip>
-      </div>
-      <div className="text-lg font-mono font-semibold text-deadlock-text truncate" title={value}>
-        {value}
-      </div>
-      {subValue && (
-        <div className="text-[10px] text-deadlock-muted font-mono truncate" title={subValue}>
-          {subValue}
+    <div className="card !p-0 relative group overflow-visible">
+      {/* Corner accents */}
+      <div className={`absolute top-0 left-0 w-2.5 h-2.5 border-t border-l ${accentBorders[accentColor]} pointer-events-none`} />
+      <div className={`absolute top-0 right-0 w-2.5 h-2.5 border-t border-r ${accentBorders[accentColor]} pointer-events-none`} />
+      <div className={`absolute bottom-0 left-0 w-2.5 h-2.5 border-b border-l ${accentBorders[accentColor]} pointer-events-none`} />
+      <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 border-b border-r ${accentBorders[accentColor]} pointer-events-none`} />
+
+      {/* Inner inset panel */}
+      <div className="m-[1px] border border-deadlock-border/20 p-3 relative overflow-hidden">
+        {/* Subtle gradient top highlight */}
+        <div className={`absolute top-0 left-0 right-0 h-8 bg-gradient-to-b ${accentGradients[accentColor]} to-transparent pointer-events-none`} />
+
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="relative">
+              {icon}
+              {/* Icon glow */}
+              <div className="absolute inset-0 blur-sm opacity-30">{icon}</div>
+            </div>
+            <Tooltip content={{ term: label, definition: tooltip, category: 'Summary' }}>
+              <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-deadlock-muted">
+                {label}
+              </span>
+            </Tooltip>
+          </div>
+          <div className="text-lg font-mono font-semibold text-deadlock-text truncate" title={value}>
+            {value}
+          </div>
+          {subValue && (
+            <div className="text-[10px] text-deadlock-muted font-mono truncate" title={subValue}>
+              {subValue}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
