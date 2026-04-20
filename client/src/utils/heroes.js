@@ -1,5 +1,6 @@
 // Deadlock hero ID → display name mapping.
 // Source: Deadlock Assets API https://assets.deadlock-api.com/v2/heroes
+// This is used as a fallback if API data is not available.
 export const HERO_NAMES = {
   1: 'Infernus',
   2: 'Seven',
@@ -41,12 +42,54 @@ export const HERO_NAMES = {
   38: 'Hornet',
 };
 
+// Cache for API-provided hero data
+let apiHeroData = null;
+
+/**
+ * Set the API-provided hero names map.
+ * @param {Array} heroes - Array of hero objects from API
+ */
+export function setApiHeroData(heroes) {
+  if (Array.isArray(heroes)) {
+    const heroMap = {};
+    heroes.forEach(hero => {
+      const id = hero?.id ?? hero?.hero_id ?? hero?.heroId;
+      if (id != null) {
+        heroMap[id] = hero;
+        heroMap[String(id)] = hero;
+      }
+    });
+    apiHeroData = heroMap;
+  }
+}
+
 /**
  * Get a hero's display name from its numeric ID.
+ * Prioritizes API-provided names, falls back to static mapping.
+ * @param {number} heroId
+ * @returns {string} Hero name
  */
 export function getHeroName(heroId) {
   if (heroId == null) return 'Unknown Hero';
+  
+  // First check API-provided names
+  if (apiHeroData && (apiHeroData[heroId] || apiHeroData[String(heroId)])) {
+    const hero = apiHeroData[heroId] || apiHeroData[String(heroId)];
+    return hero.name || hero;
+  }
+  
+  // Fall back to static mapping
   return HERO_NAMES[heroId] || `Hero #${heroId}`;
+}
+
+/**
+ * Get full hero data from its numeric ID.
+ * @param {number} heroId
+ * @returns {Object|null} Hero data object or null
+ */
+export function getHeroData(heroId) {
+  if (heroId == null || !apiHeroData) return null;
+  return apiHeroData[heroId] || apiHeroData[String(heroId)] || null;
 }
 
 /**
