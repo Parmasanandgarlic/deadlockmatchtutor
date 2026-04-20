@@ -3,7 +3,7 @@
  * Used to provide context-aware coaching and scoring based on intended hero function.
  */
 
-export const HERO_ROLES = {
+const HERO_ROLES = {
   1: { role: 'brawler', sub_role: 'flex', lane: 'solo' },        // Infernus
   2: { role: 'carry', sub_role: 'aoe_carry', lane: 'solo' },     // Seven
   3: { role: 'carry', sub_role: 'marksman', lane: 'safe' },      // Vindicta
@@ -28,7 +28,7 @@ export const HERO_ROLES = {
   27: { role: 'support', sub_role: 'utility', lane: 'safe' },    // Paradox
 };
 
-export const ROLE_BENCHMARKS = {
+const ROLE_BENCHMARKS = {
   carry: {
     soulsPerMin: { excellent: 700, average: 500, poor: 350 },
     kdaWeight: { kills: 0.5, deaths: -0.8, assists: 0.2 },
@@ -50,3 +50,5 @@ export const ROLE_BENCHMARKS = {
     objectiveWeight: 0.4
   }
 };
+
+module.exports = { HERO_ROLES, ROLE_BENCHMARKS };
