@@ -199,4 +199,11 @@
     @apply border-deadlock-amber/40;
     box-shadow: inset 0 0 12px rgba(255, 173, 28, 0.08), 0 0 4px rgba(255, 173, 28, 0.1);
   }
+
+  /* ── OSIC Dossier Background ── */
+  .osic-dossier-bg {
+    @apply bg-deadlock-surface/95 border border-deadlock-border/40 relative shadow-2xl;
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.8), 0 20px 40px -10px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+  }
 }

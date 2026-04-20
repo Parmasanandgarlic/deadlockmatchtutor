@@ -66,8 +66,8 @@ export default function PerformanceRadar({ modules }) {
     <div className="card h-full flex flex-col justify-start animate-reveal border-l-4 border-l-deadlock-blue">
       <div className="flex items-center gap-3 mb-2">
         <div>
-          <h2 className="text-lg font-serif tracking-widest text-white uppercase">Performance Radar</h2>
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-deadlock-muted">Visual skill fingerprint</p>
+          <h2 className="text-lg font-serif tracking-widest text-white uppercase">Tactical Matrix</h2>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-deadlock-muted">Combat Signature</p>
         </div>
       </div>
       <div className="w-full flex-1 min-h-[300px] mt-4">

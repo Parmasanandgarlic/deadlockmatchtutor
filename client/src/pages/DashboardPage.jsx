@@ -88,45 +88,46 @@ export default function DashboardPage() {
         description={dynamicDesc}
         schema={dashboardSchema}
       />
-      <div className="flex items-center justify-between mb-6">
-        <Link
-          to={`/matches/${accountId}`}
-          className="inline-flex items-center gap-2 text-deadlock-text-dim hover:text-deadlock-accent transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" /> Back to matches
-        </Link>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsGuideOpen(true)}
-            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-deadlock-amber hover:text-white transition-colors border border-deadlock-amber/20 px-3 py-1.5 bg-deadlock-amber/5"
+      <div className="osic-dossier-bg p-6 lg:p-10 rounded-lg">
+        <div className="flex items-center justify-between mb-6">
+          <Link
+            to={`/matches/${accountId}`}
+            className="inline-flex items-center gap-2 text-deadlock-text-dim hover:text-deadlock-accent transition-colors"
           >
-            <Info className="w-4 h-4" /> How to Read
-          </button>
-          <ShareButton matchId={matchId} accountId={accountId} />
+            <ArrowLeft className="w-4 h-4" /> Back to matches
+          </Link>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsGuideOpen(true)}
+              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-deadlock-amber hover:text-white transition-colors border border-deadlock-amber/20 px-3 py-1.5 bg-deadlock-amber/5"
+            >
+              <Info className="w-4 h-4" /> How to Read
+            </button>
+            <ShareButton matchId={matchId} accountId={accountId} />
+          </div>
         </div>
-      </div>
 
-      <HeroHeader meta={analysis.meta} overall={analysis.overall} />
+        <HeroHeader meta={analysis.meta} overall={analysis.overall} />
 
-      <DashboardActions matchId={matchId} />
+        <DashboardActions matchId={matchId} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div className="lg:col-span-1 h-full">
-          <PerformanceRadar modules={analysis.modules} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div className="lg:col-span-1 h-full">
+            <PerformanceRadar modules={analysis.modules} />
+          </div>
+          <div className="lg:col-span-2 h-full">
+            <InsightDeck insights={analysis.insights} />
+          </div>
         </div>
-        <div className="lg:col-span-2">
-          <InsightDeck insights={analysis.insights} />
-        </div>
-      </div>
 
-      {/* Recommendations Section */}
-      {analysis.recommendations && analysis.recommendations.length > 0 && (
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Lightbulb className="w-5 h-5 text-deadlock-accent" />
-            Recommendations
-          </h2>
-          <div className="space-y-3">
+        {/* Recommendations Section */}
+        {analysis.recommendations && analysis.recommendations.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Lightbulb className="w-5 h-5 text-deadlock-accent" />
+              Strategic Directives
+            </h2>
+            <div className="space-y-3">
             {analysis.recommendations.map((rec, idx) => {
               const priority = PRIORITY_CONFIG[rec.priority] || PRIORITY_CONFIG.low;
               return (
@@ -146,21 +147,22 @@ export default function DashboardPage() {
                 </div>
               );
             })}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Temporal + MMR history (from meta) */}
-      {(analysis.meta?.temporal || analysis.meta?.mmrHistory) && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {analysis.meta?.temporal && <TemporalTrendCard temporal={analysis.meta.temporal} />}
-          {analysis.meta?.mmrHistory && <MmrHistoryCard mmr={analysis.meta.mmrHistory} />}
-        </div>
-      )}
+        {/* Temporal + MMR history (from meta) */}
+        {(analysis.meta?.temporal || analysis.meta?.mmrHistory) && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {analysis.meta?.temporal && <TemporalTrendCard temporal={analysis.meta.temporal} />}
+            {analysis.meta?.mmrHistory && <MmrHistoryCard mmr={analysis.meta.mmrHistory} />}
+          </div>
+        )}
 
-      <ModuleTabs modules={analysis.modules} meta={analysis.meta} />
+        <ModuleTabs modules={analysis.modules} meta={analysis.meta} />
 
-      <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
+        <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
+      </div>
     </div>
   );
 }

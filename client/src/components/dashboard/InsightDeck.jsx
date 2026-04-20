@@ -18,8 +18,8 @@ export default function InsightDeck({ insights }) {
           <Lightbulb className="w-5 h-5 text-deadlock-amber animate-pulse-slow" />
         </div>
         <div>
-          <h2 className="text-xl font-serif tracking-widest text-white uppercase">Neural Insights</h2>
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-deadlock-muted">Top {insights.length} critical patterns identified</p>
+          <h2 className="text-xl font-serif tracking-widest text-white uppercase">OSIC Field Report</h2>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-deadlock-muted">Priority threats and behavioral patterns</p>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
