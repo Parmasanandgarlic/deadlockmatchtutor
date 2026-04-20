@@ -195,6 +195,20 @@ export async function getPlayerTrends(accountId, limit = 10) {
   return data;
 }
 
+// ---- Metadata ----
+
+export async function getHeroes() {
+  const { data } = await api.get('/meta/heroes');
+  return data;
+}
+
+export async function getItems() {
+  const { data } = await api.get('/meta/items');
+  return data;
+}
+
+export async function getRanks() {
+  const { data } = await api.get('/meta/ranks');
 // ---- Assets (Direct from Deadlock CDN) ----
 
 export async function getDeadlockHeroes() {

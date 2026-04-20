@@ -1,13 +1,102 @@
 // Deadlock hero ID → display name mapping.
+// Source: Deadlock Assets API https://assets.deadlock-api.com/v2/heroes
+// This is used as a fallback if API data is not available.
+export const HERO_NAMES = {
+  1: 'Infernus',
+  2: 'Seven',
+  3: 'Vindicta',
+  4: 'Lady Geist',
+  5: 'Dynamo',
+  6: 'Abrams',
+  7: 'Wraith',
+  8: 'McGinnis',
+  9: 'Kelvin',
+  10: 'Paradox',
+  11: 'Haze',
+  12: 'Holliday',
+  13: 'Bebop',
+  14: 'Calico',
+  15: 'Grey Talon',
+  16: 'Mo & Krill',
+  17: 'Shiv',
+  18: 'Ivy',
+  19: 'Lash',
+  20: 'Viscous',
+  21: 'Mirage',
+  22: 'Pocket',
+  23: 'Warden',
+  24: 'Yamato',
+  25: 'Sinclair',
+  26: 'Vyper',
+  27: 'Wrecker',
+  28: 'Magician',
+  29: 'Fathom',
+  30: 'Raven',
+  31: 'Victor',
+  32: 'Drifter',
+  33: 'Billy',
+  34: 'Frank',
+  35: 'Doorman',
+  36: 'Trapper',
+  37: 'Bookworm',
+  38: 'Hornet',
+};
 // Deprecated: Now dynamically hydrated via AssetContext
 export const HERO_NAMES = {};
 
+// Cache for API-provided hero data
+let apiHeroData = null;
+
 /**
+ * Set the API-provided hero names map.
+ * @param {Array} heroes - Array of hero objects from API
+ */
+export function setApiHeroData(heroes) {
+  if (Array.isArray(heroes)) {
+    const heroMap = {};
+    heroes.forEach(hero => {
+      const id = hero?.id ?? hero?.hero_id ?? hero?.heroId;
+      if (id != null) {
+        heroMap[id] = hero;
+        heroMap[String(id)] = hero;
+      }
+    });
+    apiHeroData = heroMap;
+  }
+}
+
+/**
+ * Get a hero's display name from its numeric ID.
+ * Prioritizes API-provided names, falls back to static mapping.
+ * @param {number} heroId
+ * @returns {string} Hero name
+ */
+export function getHeroName(heroId) {
+  if (heroId == null) return 'Unknown Hero';
+  
+  // First check API-provided names
+  if (apiHeroData && (apiHeroData[heroId] || apiHeroData[String(heroId)])) {
+    const hero = apiHeroData[heroId] || apiHeroData[String(heroId)];
+    return hero.name || hero;
+  }
+  
+  // Fall back to static mapping
+  return HERO_NAMES[heroId] || `Hero #${heroId}`;
  * @deprecated Use useAssets() from AssetContext instead to get correct dynamic hero data.
  */
 export function getHeroName(heroId) {
   if (heroId == null) return 'Unknown Hero';
   return `Hero #${heroId}`;
+}
+
+/**
+ * Get full hero data from its numeric ID.
+ * @param {number} heroId
+ * @returns {Object|null} Hero data object or null
+ */
+export function getHeroData(heroId) {
+  if (heroId == null || !apiHeroData) return null;
+  return apiHeroData[heroId] || apiHeroData[String(heroId)] || null;
 }
 
 /**
