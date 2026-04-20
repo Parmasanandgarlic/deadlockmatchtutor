@@ -24,8 +24,10 @@ export function useSyncPlayerMatches() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (accountId) => syncPlayerMatches(accountId),
-    onSuccess: (_, accountId) => {
-      // Invalidate and refetch
+    onSuccess: (data, accountId) => {
+      if (Array.isArray(data?.matches)) {
+        queryClient.setQueryData(['playerMatches', accountId], data.matches);
+      }
       queryClient.invalidateQueries({ queryKey: ['playerMatches', accountId] });
     },
   });

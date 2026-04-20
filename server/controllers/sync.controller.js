@@ -53,10 +53,14 @@ async function handleManualSync(req, res) {
     await invalidatePlayerCaches(accountId);
 
     // 2. Force a fresh fetch and re-track the account
-    await getMatchHistory(accountId, { bypassCache: true });
+    const matches = await getMatchHistory(accountId, { bypassCache: true });
     await trackAccount(accountId);
     
-    res.json({ status: 'success', message: 'Sync triggered successfully' });
+    res.json({
+      status: 'success',
+      message: 'Sync triggered successfully',
+      matches,
+    });
   } catch (err) {
     res.status(500).json({ error: 'Manual sync failed', message: err.message });
   }
