@@ -11,6 +11,8 @@ import PerformanceRadar from '../components/dashboard/PerformanceRadar';
 import ModuleTabs from '../components/dashboard/ModuleTabs';
 import ShareButton from '../components/dashboard/ShareButton';
 import DashboardActions from '../components/dashboard/DashboardActions';
+import TemporalTrendCard from '../components/dashboard/TemporalTrendCard';
+import MmrHistoryCard from '../components/dashboard/MmrHistoryCard';
 import GuideModal from '../components/ui/GuideModal';
 import { PRIORITY_CONFIG } from '../utils/constants';
 import { toErrorMessage } from '../utils/errorMessage';
@@ -145,6 +147,14 @@ export default function DashboardPage() {
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* Temporal + MMR history (from meta) */}
+      {(analysis.meta?.temporal || analysis.meta?.mmrHistory) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {analysis.meta?.temporal && <TemporalTrendCard temporal={analysis.meta.temporal} />}
+          {analysis.meta?.mmrHistory && <MmrHistoryCard mmr={analysis.meta.mmrHistory} />}
         </div>
       )}
 

@@ -158,6 +158,11 @@ export async function syncPlayerMatches(accountId) {
   return data;
 }
 
+export async function getPlayerMmrHistory(accountId) {
+  const { data } = await api.get(`/players/${accountId}/mmr-history`);
+  return data;
+}
+
 // ---- Match ----
 
 export async function getMatchInfo(matchId) {

@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { resolvePlayer, getPlayerMatches } = require('../controllers/player.controller');
+const { resolvePlayer, getPlayerMatches, getPlayerMmrHistory } = require('../controllers/player.controller');
 const { handleManualSync } = require('../controllers/sync.controller');
 const { validateSteamInput, requireNumericParam } = require('../middleware/validation');
 
@@ -57,5 +57,20 @@ router.get('/:accountId/matches', requireNumericParam('accountId'), getPlayerMat
  *     tags: [Players]
  */
 router.post('/:accountId/sync', requireNumericParam('accountId'), handleManualSync);
+
+/**
+ * @swagger
+ * /api/players/{accountId}/mmr-history:
+ *   get:
+ *     summary: Longitudinal MMR / rank-predict timeline
+ *     tags: [Players]
+ *     parameters:
+ *       - in: path
+ *         name: accountId
+ *         required: true
+ *         schema:
+ *           type: integer
+ */
+router.get('/:accountId/mmr-history', requireNumericParam('accountId'), getPlayerMmrHistory);
 
 module.exports = router;

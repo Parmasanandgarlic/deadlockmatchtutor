@@ -5,6 +5,10 @@ import HeroPerformanceModule from '../modules/HeroPerformanceModule';
 import ItemizationModule from '../modules/ItemizationModule';
 import CombatModule from '../modules/CombatModule';
 import BenchmarksModule from '../modules/BenchmarksModule';
+import RankBenchmarksModule from '../modules/RankBenchmarksModule';
+import MatchupDifficultyModule from '../modules/MatchupDifficultyModule';
+import BuildPathModule from '../modules/BuildPathModule';
+import DecisionQualityModule from '../modules/DecisionQualityModule';
 import Tooltip from '../ui/Tooltip';
 
 const MODULE_COMPONENTS = {
@@ -12,6 +16,10 @@ const MODULE_COMPONENTS = {
   itemization: ItemizationModule,
   combat: CombatModule,
   benchmarks: BenchmarksModule,
+  rankBenchmarks: RankBenchmarksModule,
+  matchupDifficulty: MatchupDifficultyModule,
+  buildPath: BuildPathModule,
+  decisionQuality: DecisionQualityModule,
 };
 
 const MODULE_DESCRIPTIONS = {
@@ -19,6 +27,10 @@ const MODULE_DESCRIPTIONS = {
   itemization: 'Item build efficiency, net worth progression, and soul collection patterns.',
   combat: 'Damage output, fight participation, and death analysis for teamfight impact.',
   benchmarks: 'How your performance compares to career averages and hero-specific benchmarks.',
+  rankBenchmarks: 'How this match compares to a typical player at your predicted rank.',
+  matchupDifficulty: 'Difficulty rating of the enemy composition: rank delta, counters, and net-worth gap.',
+  buildPath: 'Optimization of your item build: slot balance, power-spike timing, and missing items.',
+  decisionQuality: 'Synthesis of engagement, farm, death discipline, objectives, build, and adaptation.',
 };
 
 export default function ModuleTabs({ modules, meta }) {

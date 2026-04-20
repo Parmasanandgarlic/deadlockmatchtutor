@@ -44,7 +44,11 @@
           "heroPerformance": { "$ref": "#/moduleSchemas/heroPerformance" },
           "itemization": { "type": "object" },
           "combat": { "type": "object" },
-          "benchmarks": { "$ref": "#/moduleSchemas/benchmarks" }
+          "benchmarks": { "$ref": "#/moduleSchemas/benchmarks" },
+          "rankBenchmarks": { "type": "object" },
+          "matchupDifficulty": { "type": "object" },
+          "buildPath": { "type": "object" },
+          "decisionQuality": { "type": "object" }
         },
         "additionalProperties": true
       },

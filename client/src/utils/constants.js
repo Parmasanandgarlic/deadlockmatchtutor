@@ -4,9 +4,22 @@ export const MODULE_LABELS = {
   combat: 'Combat & KDA',
   benchmarks: 'Benchmark Comparison',
   economy: 'Economy & Farm',
+  rankBenchmarks: 'Rank Benchmarks',
+  matchupDifficulty: 'Matchup Difficulty',
+  buildPath: 'Build Path',
+  decisionQuality: 'Decision Quality',
 };
 
-export const MODULE_KEYS = ['heroPerformance', 'itemization', 'combat', 'benchmarks'];
+export const MODULE_KEYS = [
+  'heroPerformance',
+  'itemization',
+  'combat',
+  'benchmarks',
+  'rankBenchmarks',
+  'matchupDifficulty',
+  'buildPath',
+  'decisionQuality',
+];
 
 export const SEVERITY_CONFIG = {
   critical: { color: 'text-deadlock-red', bg: 'bg-deadlock-red/10', border: 'border-deadlock-red/30', label: 'Critical' },

@@ -6,6 +6,12 @@ const { getItemName, getItemData } = require('../utils/items');
 const logger = require('../utils/logger');
 const { HERO_ROLES, ROLE_BENCHMARKS } = require('../data/hero-roles');
 const { analyzeMatchPerformance } = require('./analyzers/match-performance.analyzer');
+const { analyzeRankBenchmarks } = require('./analyzers/rankBenchmarks.analyzer');
+const { analyzeTemporal } = require('./analyzers/temporal.analyzer');
+const { analyzeMatchupDifficulty } = require('./analyzers/matchupDifficulty.analyzer');
+const { analyzeBuildPath } = require('./analyzers/buildPath.analyzer');
+const { analyzeDecisionQuality } = require('./analyzers/decisionQuality.analyzer');
+const { buildMmrHistory } = require('../services/mmrHistory.service');
 
 /**
  * Master ETL Pipeline (API-based)
@@ -28,7 +34,15 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
   logger.info(`Starting API-based analysis pipeline for account ${accountId}`);
   const startTime = Date.now();
 
-  const { matchInHistory, heroStats, accountStats, rankPredict, playerCard, heroId } = apiData;
+  const {
+    matchInHistory,
+    matchHistory = [],
+    heroStats,
+    accountStats,
+    rankPredict,
+    playerCard,
+    heroId,
+  } = apiData;
 
   // Derive match-level context (duration, result) with robust fallbacks.
   const durationSeconds = Number(
@@ -79,8 +93,57 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
   // ---- Module 4: Benchmark Comparison (match vs career) ----
   const benchmarks = compareAgainstBenchmarks(matchInHistory, normalizedHeroStats, durationMinutes);
 
+  // ---- Advanced Modules ----
+  const rankPredictSummary = summarizeRankPrediction(rankPredict);
+
+  // Module 5: Dynamic Rank Benchmarks (match vs same-tier peers)
+  const rankBenchmarks = analyzeRankBenchmarks({
+    combat,
+    itemization,
+    rankPredict: rankPredictSummary,
+    playerStats,
+  });
+
+  // Module 6: Matchup Difficulty (enemy comp, rank delta, counters)
+  const matchupDifficulty = analyzeMatchupDifficulty({
+    matchInfo,
+    accountId,
+    heroId,
+    rankPredict: rankPredictSummary,
+  });
+
+  // Module 7: Build Path Optimization
+  const buildPath = analyzeBuildPath({
+    items: itemization.items || [],
+    role: heroRole.role,
+    durationSeconds,
+  });
+
+  // Module 8: Decision Quality Scoring (synthesizes the other modules)
+  const decisionQuality = analyzeDecisionQuality({
+    combat,
+    itemization,
+    heroPerformance,
+    rankBenchmarks,
+    matchupDifficulty,
+    buildPath,
+    playerStats,
+  });
+
+  // Temporal Tracking (trend across recent matches) — embedded in meta
+  const temporal = analyzeTemporal({ matchHistory, matchInHistory });
+
+  // MMR History (longitudinal rank timeline) — embedded in meta
+  const mmrHistory = buildMmrHistory(rankPredict, matchHistory);
+
   // ---- Recommendations ----
-  const recommendations = generateRecommendations(heroPerformance, itemization, combat, benchmarks);
+  const recommendations = generateRecommendations(
+    heroPerformance,
+    itemization,
+    combat,
+    benchmarks,
+    { rankBenchmarks, matchupDifficulty, buildPath, decisionQuality, temporal }
+  );
 
   // ---- Insights v2 (with meta context for Deadlock-specific intelligence) ----
   const insights = generateInsights(
@@ -91,12 +154,13 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
     { duration: durationSeconds, won }
   );
 
-  // ---- Overall Score ----
+  // ---- Overall Score (weighted: core modules + decision quality) ----
   const overall = computeOverallScore({
     heroPerformance: heroPerformance.score,
     itemization: itemization.score,
     combat: combat.score,
     benchmarks: benchmarks.score,
+    decisionQuality: decisionQuality.score,
   });
 
   const elapsed = Date.now() - startTime;
@@ -116,8 +180,10 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
       processedAt: new Date().toISOString(),
       patchVersion: matchInfo?.game_mode_version || matchInfo?.patch_version || matchInfo?.match_version || null,
       pipelineMs: elapsed,
-      rankPredict: summarizeRankPrediction(rankPredict),
+      rankPredict: rankPredictSummary,
       playerStats,
+      mmrHistory,
+      temporal,
     },
     overall,
     modules: {
@@ -125,6 +191,10 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
       itemization,
       combat,
       benchmarks,
+      rankBenchmarks,
+      matchupDifficulty,
+      buildPath,
+      decisionQuality,
     },
     recommendations,
     insights,
@@ -469,8 +539,9 @@ function compareAgainstBenchmarks(matchInHistory, normalizedHeroStats, durationM
 /**
  * Actionable recommendations derived from the match-level modules.
  */
-function generateRecommendations(heroPerformance, itemization, combat, benchmarks) {
+function generateRecommendations(heroPerformance, itemization, combat, benchmarks, advanced = {}) {
   const recommendations = [];
+  const { rankBenchmarks, matchupDifficulty, buildPath, decisionQuality, temporal } = advanced;
 
   if (combat.deaths >= 8 && combat.kills < combat.deaths) {
     recommendations.push({
@@ -506,6 +577,70 @@ function generateRecommendations(heroPerformance, itemization, combat, benchmark
       title: 'Below Your Own Average',
       description: `Your match KDA (${benchmarks.userKda}) is ${Math.abs(benchmarks.kdaDiff)} below your career average (${benchmarks.benchmarkKda}). Review this game's fights to spot what went wrong.`,
     });
+  }
+
+  // Advanced module-driven recommendations
+  if (buildPath?.underutilizedSlots?.length) {
+    const slots = buildPath.underutilizedSlots.slice(0, 2).join(' + ');
+    recommendations.push({
+      type: 'build',
+      priority: 'medium',
+      title: 'Rebalance Your Build',
+      description: `Your build was light on ${slots}. For your role, consider adding at least one item in each of those categories before late-game teamfights.`,
+    });
+  }
+  if (buildPath?.firstT3Item?.timeSeconds && buildPath.firstT3Item.timeSeconds / 60 > 25) {
+    recommendations.push({
+      type: 'build',
+      priority: 'medium',
+      title: 'Hit Power Spikes Earlier',
+      description: `Your first Tier-3 item came at ${Math.round(buildPath.firstT3Item.timeSeconds / 60)} min. Aim for sub-22 min to stay relevant in mid-game fights.`,
+    });
+  }
+  if (matchupDifficulty?.counters?.length) {
+    const hardCounters = matchupDifficulty.counters.filter((c) => c.strength !== 'soft');
+    if (hardCounters.length > 0) {
+      recommendations.push({
+        type: 'matchup',
+        priority: 'medium',
+        title: `Adapt Against ${hardCounters[0].heroName}`,
+        description: `${hardCounters.map((c) => c.heroName).join(', ')} counter your hero archetype. Lean on your team earlier, and itemize defensively.`,
+      });
+    }
+  }
+  if (rankBenchmarks?.score != null && rankBenchmarks.score < 40) {
+    recommendations.push({
+      type: 'rank',
+      priority: 'high',
+      title: 'Below Your Rank Peers',
+      description: `You scored ${rankBenchmarks.score}/100 versus typical ${rankBenchmarks.tierName} players. The biggest gaps were in the comparisons table — focus there first.`,
+    });
+  }
+  if (temporal?.trendLabel === 'declining') {
+    recommendations.push({
+      type: 'temporal',
+      priority: 'medium',
+      title: 'Form is Slipping',
+      description: `Your KDA trend across the last ${temporal.sampleSize} matches is declining. Consider a short break or review VODs before queueing again.`,
+    });
+  } else if (temporal?.trendLabel === 'improving') {
+    recommendations.push({
+      type: 'temporal',
+      priority: 'low',
+      title: 'Form is Climbing',
+      description: `Your KDA has been trending up across your last ${temporal.sampleSize} matches. Keep the momentum going.`,
+    });
+  }
+  if (decisionQuality?.findings?.length) {
+    const weakness = decisionQuality.findings.find((f) => f.type === 'weakness');
+    if (weakness) {
+      recommendations.push({
+        type: 'decision',
+        priority: 'high',
+        title: `Decision Gap: ${weakness.area}`,
+        description: `Your decision-quality score in ${weakness.area} was ${weakness.score}/100. This was your weakest dimension this match.`,
+      });
+    }
   }
 
   if (recommendations.length === 0) {

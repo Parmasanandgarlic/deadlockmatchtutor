@@ -1,6 +1,7 @@
 const { resolveSteamId } = require('../services/steam.service');
-const { getMatchHistory } = require('../services/deadlockApi.service');
+const { getMatchHistory, getPlayerRankPredict } = require('../services/deadlockApi.service');
 const { trackAccount } = require('../services/sync.service');
+const { buildMmrHistory, fetchRankPredictRaw } = require('../services/mmrHistory.service');
 const logger = require('../utils/logger');
 const config = require('../config');
 
@@ -72,4 +73,28 @@ async function getPlayerMatches(req, res, next) {
   }
 }
 
-module.exports = { resolvePlayer, getPlayerMatches };
+/**
+ * GET /api/players/:accountId/mmr-history
+ * Return an enriched MMR timeline derived from rank-predict + match history.
+ */
+async function getPlayerMmrHistory(req, res, next) {
+  try {
+    const { accountId } = req.params;
+
+    const [rankPredictRaw, rankPredictClient, matches] = await Promise.all([
+      fetchRankPredictRaw(accountId).catch(() => null),
+      getPlayerRankPredict(accountId).catch(() => null),
+      getMatchHistory(accountId).catch(() => []),
+    ]);
+
+    // Prefer the richer mmr-history payload if available
+    const rankPredict = rankPredictRaw || rankPredictClient || null;
+    const mmr = buildMmrHistory(rankPredict, matches);
+    res.json(mmr);
+  } catch (err) {
+    logger.error(`MMR history failed for ${req.params.accountId}: ${err.message}`);
+    res.status(500).json({ error: 'Failed to build MMR history.' });
+  }
+}
+
+module.exports = { resolvePlayer, getPlayerMatches, getPlayerMmrHistory };

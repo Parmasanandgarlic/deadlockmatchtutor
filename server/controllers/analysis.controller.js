@@ -238,6 +238,7 @@ async function runAnalysis(req, res, next) {
     const apiData = {
       matchInfo,
       matchInHistory,
+      matchHistory,
       heroStats,
       accountStats,
       rankPredict,

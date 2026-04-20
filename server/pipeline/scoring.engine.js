@@ -20,20 +20,21 @@ function computeOverallScore(moduleScores) {
   const itemization = clamp(moduleScores.itemization ?? 0, 0, 100);
   const combat = clamp(moduleScores.combat ?? 0, 0, 100);
   const benchmarks = clamp(moduleScores.benchmarks ?? 0, 0, 100);
+  const hasDecisionQuality = typeof moduleScores.decisionQuality === 'number';
+  const decisionQuality = clamp(moduleScores.decisionQuality ?? 0, 0, 100);
 
-  // Updated weights for API-based analysis
-  const weights = {
-    heroPerformance: 0.30,
-    itemization: 0.25,
-    combat: 0.25,
-    benchmarks: 0.20,
-  };
+  // Updated weights — when decision quality is present, it is the single
+  // strongest signal because it synthesizes the others.
+  const weights = hasDecisionQuality
+    ? { heroPerformance: 0.22, itemization: 0.20, combat: 0.22, benchmarks: 0.16, decisionQuality: 0.20 }
+    : { heroPerformance: 0.30, itemization: 0.25, combat: 0.25, benchmarks: 0.20 };
 
-  const impactScore = Math.round(
+  let impactScore = Math.round(
     heroPerformance * weights.heroPerformance +
     itemization * weights.itemization +
     combat * weights.combat +
-    benchmarks * weights.benchmarks
+    benchmarks * weights.benchmarks +
+    (hasDecisionQuality ? decisionQuality * weights.decisionQuality : 0)
   );
 
   const letterGrade = scoreToGrade(impactScore);
@@ -44,6 +45,13 @@ function computeOverallScore(moduleScores) {
     combat: { score: combat, weight: weights.combat, weighted: Math.round(combat * weights.combat) },
     benchmarks: { score: benchmarks, weight: weights.benchmarks, weighted: Math.round(benchmarks * weights.benchmarks) },
   };
+  if (hasDecisionQuality) {
+    breakdown.decisionQuality = {
+      score: decisionQuality,
+      weight: weights.decisionQuality,
+      weighted: Math.round(decisionQuality * weights.decisionQuality),
+    };
+  }
 
   logger.info(`Impact Score: ${impactScore} (${letterGrade})`);
 
