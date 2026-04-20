@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Flame, Skull, Hourglass, Compass, Search, ArrowRight, Github, Shield, History, X } from 'lucide-react';
+import { Flame, Skull, Hourglass, Compass, Search, ArrowRight, Github, Shield, History, X, Target } from 'lucide-react';
 import { resolvePlayer } from '../api/client';
 import SEOHead from '../components/seo/SEOHead';
 
