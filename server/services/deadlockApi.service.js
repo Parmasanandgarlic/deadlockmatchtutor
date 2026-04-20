@@ -34,12 +34,12 @@ async function fetchMatchHistoryFromApi(accountId) {
  * @param {string|number} accountId  Steam32 account ID
  * @returns {Promise<Array>} Array of match summary objects
  */
-async function getMatchHistory(accountId) {
+async function getMatchHistory(accountId, { bypassCache = false } = {}) {
   const cacheKey = redisClient.cacheKeys?.playerMatches?.(accountId);
   
   try {
-    // 1. Check Redis Cache
-    const cached = cacheKey ? await redisClient.get(cacheKey) : null;
+    // 1. Check Redis Cache unless the caller explicitly wants a fresh fetch
+    const cached = !bypassCache && cacheKey ? await redisClient.get(cacheKey) : null;
     if (cached) {
       logger.debug(`[Redis] Cache hit for match history: ${accountId}`);
       const matches = normalizeMatchHistory(cached);
@@ -53,9 +53,9 @@ async function getMatchHistory(accountId) {
     warnOnContractMismatch(`matchHistory.${accountId}`, matches, MATCH_HISTORY_SCHEMA);
     logger.debug(`Fetched ${matches.length} matches for account ${accountId}`);
 
-    // 3. Save to Redis (5 minute TTL)
+    // 3. Save to Redis (2 minute TTL)
     if (cacheKey && matches.length > 0) {
-      await redisClient.set(cacheKey, matches, 300);
+      await redisClient.set(cacheKey, matches, 120);
     }
 
     return matches;

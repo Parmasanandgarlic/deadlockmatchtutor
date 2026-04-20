@@ -9,7 +9,9 @@ export function usePlayerMatches(accountId) {
     queryKey: ['playerMatches', accountId],
     queryFn: () => getPlayerMatches(accountId),
     enabled: !!accountId,
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 1000 * 30, // 30 seconds
+    refetchInterval: 1000 * 60, // 60 seconds
+    refetchIntervalInBackground: true,
     retry: false,
     refetchOnWindowFocus: false,
   });

@@ -60,11 +60,12 @@ async function resolvePlayer(req, res, next) {
 async function getPlayerMatches(req, res, next) {
   try {
     const { accountId } = req.params;
+    const bypassCache = req.query?.refresh === '1' || req.query?.refresh === 'true';
     
     // Background track this account
     trackAccount(accountId);
 
-    const matches = await getMatchHistory(accountId);
+    const matches = await getMatchHistory(accountId, { bypassCache });
     res.json(matches);
   } catch (err) {
     const msg = err.message || 'Failed to fetch match history.';
@@ -84,11 +85,12 @@ async function getPlayerMatches(req, res, next) {
 async function getPlayerMmrHistory(req, res, next) {
   try {
     const { accountId } = req.params;
+    const bypassCache = req.query?.refresh === '1' || req.query?.refresh === 'true';
 
     const [rankPredictRaw, rankPredictClient, matches] = await Promise.all([
       fetchRankPredictRaw(accountId).catch(() => null),
       getPlayerRankPredict(accountId).catch(() => null),
-      getMatchHistory(accountId).catch(() => []),
+      getMatchHistory(accountId, { bypassCache }).catch(() => []),
     ]);
 
     // Prefer the richer mmr-history payload if available

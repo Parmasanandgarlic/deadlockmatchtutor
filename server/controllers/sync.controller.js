@@ -1,4 +1,5 @@
 const { syncActiveAccounts, trackAccount, invalidatePlayerCaches } = require('../services/sync.service');
+const { getMatchHistory } = require('../services/deadlockApi.service');
 const { supabase } = require('../utils/supabase');
 const logger = require('../utils/logger');
 const config = require('../config');
@@ -51,7 +52,8 @@ async function handleManualSync(req, res) {
     // 1. Clear stale cached match/profile/analysis data
     await invalidatePlayerCaches(accountId);
 
-    // 2. Force a track update (this refreshes the timestamp)
+    // 2. Force a fresh fetch and re-track the account
+    await getMatchHistory(accountId, { bypassCache: true });
     await trackAccount(accountId);
     
     res.json({ status: 'success', message: 'Sync triggered successfully' });
