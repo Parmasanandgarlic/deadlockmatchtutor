@@ -107,53 +107,75 @@ async function getMatchMetadata(matchId) {
  */
 async function getMatchInfo(matchId) {
   const cacheKey = redisClient.cacheKeys?.matchDetails?.(matchId);
-  
+  const granularUrl = `${config.deadlockApi.baseUrl}/v1/matches/${matchId}/metadata`;
+  const granularParams = {
+    include_player_stats: true,
+    include_player_death_details: true,
+    include_player_items: true,
+  };
+
+  // 1. Check Redis Cache
   try {
-    // 1. Check Redis Cache
     const cached = cacheKey ? await redisClient.get(cacheKey) : null;
-    if (cached) {
+    if (cached && Object.keys(cached).length > 0) {
       logger.debug(`[Redis] Cache hit for match info: ${matchId}`);
       return cached;
     }
-
-    // Use manual axios call to support granular player stats flags
-    // The generated client might not correctly expose these as parameters
-    const url = `${config.deadlockApi.baseUrl}/v1/matches/${matchId}/metadata`;
-    const { data } = await axios.get(url, {
-      params: {
-        include_player_stats: true,
-        include_player_death_details: true,
-        include_player_items: true,
-      },
-      timeout: 15000,
-    });
-    
-    logger.debug(`Fetched granular match info for ${matchId}`);
-    
-    // 3. Save to Redis (1 hour TTL)
-    if (cacheKey && data && Object.keys(data).length > 0) {
-      await redisClient.set(cacheKey, data, 3600);
-    }
-
-    return data;
   } catch (err) {
-    // If the granular request fails, try a basic fallback with the generated client
-    logger.warn(`Granular match info failed for ${matchId}, trying fallback: ${err.message}`);
+    logger.warn(`[Redis] Match info read failed for ${matchId}: ${err.message}`);
+  }
+
+  // 2. Granular endpoint, retried once on 5xx/timeouts. The Deadlock community
+  //    API regularly returns transient 500s for this endpoint; a single retry
+  //    dramatically improves hit rate and prevents the dashboard from
+  //    collapsing to zeros.
+  let lastErr = null;
+  for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      const { data } = await matchesApi.metadata({ matchId: Number(matchId) });
-      return data;
-    } catch (fallbackErr) {
-      logger.error(`Failed to fetch match info for ${matchId}: ${fallbackErr.message}`);
-      if (fallbackErr.response?.status === 404) {
-        throw new Error('Match not found.');
+      const { data } = await axios.get(granularUrl, {
+        params: granularParams,
+        timeout: 15000,
+      });
+      if (data && Object.keys(data).length > 0) {
+        logger.debug(`Fetched granular match info for ${matchId} (attempt ${attempt})`);
+        if (cacheKey) {
+          await redisClient.set(cacheKey, data, 3600).catch(() => {});
+        }
+        return data;
       }
-      if (fallbackErr.response?.status === 500) {
-        logger.warn(`Match info 500 error for match ${matchId}. Continuing without it.`);
-        return {};
-      }
-      throw new Error('Failed to fetch match info from Deadlock API.');
+      logger.warn(`[MatchInfo] Empty granular payload for ${matchId} (attempt ${attempt})`);
+    } catch (err) {
+      lastErr = err;
+      const status = err.response?.status;
+      const retriable = !status || status >= 500 || err.code === 'ECONNABORTED';
+      logger.warn(`[MatchInfo] Granular attempt ${attempt} failed for ${matchId} (status ${status || 'n/a'}): ${err.message}`);
+      if (!retriable || attempt === 2) break;
+      await new Promise((r) => setTimeout(r, 400));
     }
   }
+
+  // 3. Fall back to the generated client's basic metadata call.
+  try {
+    const { data } = await matchesApi.metadata({ matchId: Number(matchId) });
+    if (data && Object.keys(data).length > 0) {
+      logger.debug(`Fetched fallback match info for ${matchId}`);
+      if (cacheKey) {
+        await redisClient.set(cacheKey, data, 3600).catch(() => {});
+      }
+      return data;
+    }
+  } catch (fallbackErr) {
+    lastErr = fallbackErr;
+    logger.error(`Failed to fetch match info for ${matchId}: ${fallbackErr.message}`);
+    if (fallbackErr.response?.status === 404) {
+      throw new Error('Match not found.');
+    }
+  }
+
+  // 4. Give up gracefully so the pipeline can fall back to matchInHistory.
+  if (lastErr?.response?.status === 404) throw new Error('Match not found.');
+  logger.warn(`Match info unavailable for ${matchId}; continuing with match-history fallback.`);
+  return {};
 }
 
 /**

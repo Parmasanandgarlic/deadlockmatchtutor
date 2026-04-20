@@ -292,6 +292,12 @@ function extractGranularPlayerStats(matchInfo, accountId, durationMinutes) {
   );
   if (!player) return {};
 
+  const kills = Number(player.kills ?? player.player_kills ?? 0);
+  const deaths = Number(player.deaths ?? player.player_deaths ?? 0);
+  const assists = Number(player.assists ?? player.player_assists ?? 0);
+  const netWorth = Number(
+    player.net_worth ?? player.networth ?? player.souls ?? 0
+  );
   const damageDealt = Number(
     player.net_damage_dealt ?? player.player_damage ?? player.damage ?? player.hero_damage ?? 0
   );
@@ -321,6 +327,10 @@ function extractGranularPlayerStats(matchInfo, accountId, durationMinutes) {
   }
 
   return {
+    kills,
+    deaths,
+    assists,
+    netWorth: netWorth || null,
     damageDealt: damageDealt || null,
     damageTaken: damageTaken || null,
     damageTakenPerMin: durationMinutes > 0 ? Math.round(damageTaken / durationMinutes) : null,
@@ -374,12 +384,20 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
   if (items.length === 0 && matchInfo && Array.isArray(matchInfo.players)) {
     const player = matchInfo.players.find(p => Number(p.account_id) === Number(accountId));
     if (player) {
-      items = player.items || 
-              player.build || 
-              player.item_ids || 
-              player.match_items || 
+      items = player.items ||
+              player.build ||
+              player.item_ids ||
+              player.match_items ||
+              player.player_items ||
+              player.inventory ||
               [];
-      
+
+      // Some responses nest items under stats or final_build
+      if ((!items || items.length === 0) && Array.isArray(player.stats)) {
+        const lastStats = player.stats[player.stats.length - 1];
+        if (lastStats && Array.isArray(lastStats.items)) items = lastStats.items;
+      }
+
       if (items.length > 0) {
         logger.debug(`[Pipeline] Extracted ${items.length} items from matchInfo player stats`);
       }

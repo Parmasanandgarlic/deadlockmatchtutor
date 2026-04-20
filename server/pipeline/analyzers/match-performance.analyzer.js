@@ -8,13 +8,44 @@ const { safeDivide, clamp } = require('../../utils/helpers');
  */
 function analyzeMatchPerformance(data, context) {
   const { benchmarks, matchDuration } = context;
-  const stats = data.playerStats || {};
+  const granular = data.playerStats || {};
+  const history = data.matchInHistory || {};
   const heroStats = data.normalizedHeroStats || {};
-  
+
+  // Merge: prefer granular match-metadata values, but fall back to the
+  // summary match-history payload whenever a field is missing. This keeps
+  // the dashboard populated even when the /v1/matches/{id}/metadata
+  // endpoint returns an empty object (a common 500 response upstream).
+  const pickNumber = (...values) => {
+    for (const v of values) {
+      if (v == null) continue;
+      const n = Number(v);
+      if (!Number.isNaN(n)) return n;
+    }
+    return 0;
+  };
+
+  const kills = pickNumber(granular.kills, history.player_kills, history.kills);
+  const deaths = pickNumber(granular.deaths, history.player_deaths, history.deaths);
+  const assists = pickNumber(granular.assists, history.player_assists, history.assists);
+  const netWorth = pickNumber(granular.netWorth, granular.souls, history.net_worth, history.netWorth);
+  const damageDealt = pickNumber(granular.damageDealt, history.player_damage, history.damage);
+  const objectiveDamage = pickNumber(granular.objectiveDamage, history.objective_damage);
+
+  const stats = {
+    ...granular,
+    kills,
+    deaths,
+    assists,
+    netWorth,
+    damageDealt,
+    objectiveDamage,
+  };
+
   // 1. Economy Scoring (SPM)
   const durationMins = matchDuration / 60;
-  const spm = safeDivide(stats.netWorth || 0, durationMins);
-  
+  const spm = safeDivide(netWorth, durationMins);
+
   let spmScore = 0;
   if (spm >= benchmarks.soulsPerMin.excellent) spmScore = 100;
   else if (spm >= benchmarks.soulsPerMin.average) {
@@ -29,7 +60,6 @@ function analyzeMatchPerformance(data, context) {
   }
 
   // 2. Combat Scoring (KDA Weighting)
-  const { kills = 0, deaths = 0, assists = 0 } = stats;
   // Weighted KDA components based on role
   const killPoints = kills * benchmarks.kdaWeight.kills * 10;
   const assistPoints = assists * benchmarks.kdaWeight.assists * 10;
