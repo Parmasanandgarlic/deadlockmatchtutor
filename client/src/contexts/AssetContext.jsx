@@ -32,9 +32,12 @@ export function AssetProvider({ children }) {
     const map = {};
     const heroArray = Array.isArray(heroesData) ? heroesData : Object.values(heroesData);
     heroArray.forEach(hero => {
-      // Use the numeric ID exactly as returned by the API (which the match history uses)
-      if (hero && hero.id) {
-        map[hero.id] = hero;
+      if (!hero) return;
+      const id = hero.id ?? hero.hero_id ?? hero.heroId;
+      if (id != null) {
+        // Store both numeric and string keys so callers can use either form.
+        map[id] = hero;
+        map[String(id)] = hero;
       }
     });
     return map;
@@ -45,8 +48,11 @@ export function AssetProvider({ children }) {
     const map = {};
     const itemsArray = Array.isArray(itemsData) ? itemsData : Object.values(itemsData);
     itemsArray.forEach(item => {
-      if (item && item.id) {
-        map[item.id] = item;
+      if (!item) return;
+      const id = item.id ?? item.item_id ?? item.itemId;
+      if (id != null) {
+        map[id] = item;
+        map[String(id)] = item;
       }
     });
     return map;

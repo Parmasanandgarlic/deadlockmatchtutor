@@ -18,15 +18,43 @@ const PROGRESS_STAGES = [
 export default function useMatchAnalysis() {
   const [progressStage, setProgressStage] = useState(0);
   const [progressText, setProgressText] = useState('');
+  const [analysis, setAnalysis] = useState(null);
+  const [cachedLoading, setCachedLoading] = useState(false);
+  const [cachedError, setCachedError] = useState(null);
   const queryClient = useQueryClient();
 
   const analysisMutation = useMutation({
     mutationFn: ({ matchId, accountId }) => runAnalysis(matchId, accountId),
     onSuccess: (data, { matchId, accountId }) => {
+      setAnalysis(data);
       // Globally cache result
       queryClient.setQueryData(['analysis', matchId, accountId], data);
     },
   });
+
+  const loadCached = useCallback(async (matchId, accountId) => {
+    const queryKey = ['analysis', matchId, accountId];
+    const cached = queryClient.getQueryData(queryKey);
+    if (cached) {
+      setAnalysis(cached);
+      setCachedError(null);
+      return cached;
+    }
+
+    setCachedLoading(true);
+    setCachedError(null);
+    try {
+      const data = await getCachedAnalysis(matchId, accountId);
+      queryClient.setQueryData(queryKey, data);
+      setAnalysis(data);
+      return data;
+    } catch (err) {
+      setCachedError(err?.message || 'Failed to load cached analysis.');
+      throw err;
+    } finally {
+      setCachedLoading(false);
+    }
+  }, [queryClient]);
 
   const startAnalysis = useCallback(async (matchId, accountId) => {
     setProgressStage(0);
@@ -52,11 +80,12 @@ export default function useMatchAnalysis() {
   }, [analysisMutation]);
 
   return {
-    analysis: analysisMutation.data,
-    loading: analysisMutation.isPending,
-    error: analysisMutation.error?.message,
+    analysis: analysis ?? analysisMutation.data,
+    loading: analysisMutation.isPending || cachedLoading,
+    error: analysisMutation.error?.message || cachedError,
     progressText,
     progressStage,
     startAnalysis,
+    loadCached,
   };
 }

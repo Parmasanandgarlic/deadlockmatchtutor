@@ -1,4 +1,4 @@
-const { syncActiveAccounts, trackAccount } = require('../services/sync.service');
+const { syncActiveAccounts, trackAccount, invalidatePlayerCaches } = require('../services/sync.service');
 const { supabase } = require('../utils/supabase');
 const logger = require('../utils/logger');
 const config = require('../config');
@@ -48,11 +48,12 @@ async function handleManualSync(req, res) {
 
     logger.info(`Manual sync requested for ${accountId}`);
     
-    // 1. Force a track update (this refreshes the timestamp)
+    // 1. Clear stale cached match/profile/analysis data
+    await invalidatePlayerCaches(accountId);
+
+    // 2. Force a track update (this refreshes the timestamp)
     await trackAccount(accountId);
     
-    // 2. Clear any local/API caches if they existed (in our case, just hit the service)
-    // The service call results are what we care about
     res.json({ status: 'success', message: 'Sync triggered successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Manual sync failed', message: err.message });

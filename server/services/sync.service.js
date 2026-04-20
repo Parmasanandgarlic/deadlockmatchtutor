@@ -1,5 +1,6 @@
 const { supabase } = require('../utils/supabase');
 const { getMatchHistory } = require('./deadlockApi.service');
+const redisClient = require('./redis.service');
 const logger = require('../utils/logger');
 
 /**
@@ -32,6 +33,27 @@ async function trackAccount(accountId) {
     logger.debug(`Tracked account: ${accountId}`);
   } catch (err) {
     logger.error(`Failed to track account ${accountId}: ${err.message}`);
+  }
+}
+
+async function invalidatePlayerCaches(accountId, { includeAnalyses = true } = {}) {
+  const cacheKeys = [
+    redisClient.cacheKeys?.playerMatches?.(accountId),
+    redisClient.cacheKeys?.userProfile?.(accountId),
+    `mmr:${accountId}`,
+  ].filter(Boolean);
+
+  await Promise.all(cacheKeys.map((key) => redisClient.del(key).catch(() => false)));
+
+  if (includeAnalyses && supabase) {
+    try {
+      await supabase
+        .from('analyses')
+        .delete()
+        .eq('account_id', Number(accountId));
+    } catch (err) {
+      logger.warn(`Failed to invalidate Supabase analyses for ${accountId}: ${err.message}`);
+    }
   }
 }
 
@@ -70,6 +92,8 @@ async function syncActiveAccounts(limit = 10) {
     try {
       logger.info(`Syncing account ${account.account_id}...`);
       
+      await invalidatePlayerCaches(account.account_id, { includeAnalyses: false });
+
       // We call the API. Even if we don't store the matches yet (as per current design),
       // the "sync" ensures the API has them cached or the service has done its duty.
       // In a future step, we will implement a match_cache table.
@@ -96,4 +120,5 @@ async function syncActiveAccounts(limit = 10) {
 module.exports = {
   trackAccount,
   syncActiveAccounts,
+  invalidatePlayerCaches,
 };
