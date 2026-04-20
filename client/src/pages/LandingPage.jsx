@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Crosshair, Search, ArrowRight, Github, Shield, BarChart3, Swords, Target, Zap, History, User, X, Trash2 } from 'lucide-react';
+import { Flame, Skull, Hourglass, Compass, Search, ArrowRight, Github, Shield, History, X } from 'lucide-react';
 import { resolvePlayer } from '../api/client';
 import SEOHead from '../components/seo/SEOHead';
 
 const features = [
-  { icon: BarChart3, label: 'Economy Grading', desc: 'Net worth efficiency & farm scores' },
-  { icon: Zap, label: 'Power Spike Tracking', desc: 'Timing analysis for item & level spikes' },
-  { icon: Swords, label: 'Combat & KDA', desc: 'Fight-by-fight performance grading' },
-  { icon: Target, label: 'Objective Control', desc: 'Lane & objective impact scoring' },
+  { icon: Flame, label: 'Economy Grading', desc: 'Net worth efficiency & farm scores' },
+  { icon: Hourglass, label: 'Power Spike Tracking', desc: 'Timing analysis for item & level spikes' },
+  { icon: Skull, label: 'Combat & KDA', desc: 'Fight-by-fight performance grading' },
+  { icon: Compass, label: 'Objective Control', desc: 'Lane & objective impact scoring' },
 ];
 
 export default function LandingPage() {
@@ -174,19 +174,20 @@ export default function LandingPage() {
         {/* Search Engine */}
         <div className="w-full max-w-xl mb-24">
           <form onSubmit={handleSubmit} className="relative group">
-            <div className="relative flex">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-deadlock-text-dim/50">
-                <Search className="w-5 h-5" />
-              </div>
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onFocus={() => history.length > 0 && setShowHistory(true)}
-                placeholder="PROCEED TO ANALYSIS (STEAM ID/URL)..."
-                className="input-field pl-12 pr-40 text-sm font-bold tracking-widest"
-                disabled={loading}
-              />
+            <div className="flex shadow-2xl">
+              <div className="relative flex-1">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-deadlock-text-dim/50">
+                  <Search className="w-5 h-5" />
+                </div>
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onFocus={() => history.length > 0 && setShowHistory(true)}
+                  placeholder="PROCEED TO ANALYSIS (STEAM ID/URL)..."
+                  className="w-full bg-deadlock-surface border border-deadlock-border text-deadlock-text placeholder-deadlock-muted h-14 pl-12 pr-4 text-sm font-bold tracking-widest focus:outline-none focus:border-deadlock-amber transition-colors"
+                  disabled={loading}
+                />
               
               {/* Search History Dropdown */}
               {showHistory && history.length > 0 && (
@@ -237,15 +238,16 @@ export default function LandingPage() {
                   </div>
                 </div>
               )}
+              </div>
               <button
                 type="submit"
                 disabled={loading || !input.trim()}
-                className="absolute right-1 top-1 bottom-1 btn-primary px-6"
+                className="bg-deadlock-amber hover:bg-deadlock-amber/90 text-black font-bold uppercase tracking-widest px-8 h-14 flex items-center justify-center disabled:opacity-50 transition-colors border border-deadlock-amber"
               >
                 {loading ? (
                   <div className="animate-spin w-4 h-4 border-2 border-black/30 border-t-black" />
                 ) : (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 whitespace-nowrap">
                     START <ArrowRight className="w-4 h-4" />
                   </div>
                 )}
@@ -306,7 +308,7 @@ export default function LandingPage() {
         {/* Themed Modules */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-4xl">
           <div className="card card-blue group hover:bg-deadlock-blue/5 transition-colors">
-            <BarChart3 className="w-8 h-8 text-deadlock-blue mb-4 group-hover:scale-110 transition-transform" />
+            <Flame className="w-8 h-8 text-deadlock-blue mb-4 group-hover:scale-110 transition-transform" />
             <h3 className="text-sm font-serif mb-2 tracking-widest">Economy Flow</h3>
             <p className="text-xs text-deadlock-text-dim leading-relaxed">
               Track net worth efficiency and soul collection timings across the match duration.
@@ -314,7 +316,7 @@ export default function LandingPage() {
           </div>
 
           <div className="card card-amber group hover:bg-deadlock-amber/5 transition-colors">
-            <Swords className="w-8 h-8 text-deadlock-amber mb-4 group-hover:scale-110 transition-transform" />
+            <Skull className="w-8 h-8 text-deadlock-amber mb-4 group-hover:scale-110 transition-transform" />
             <h3 className="text-sm font-serif mb-2 tracking-widest">Combat Reach</h3>
             <p className="text-xs text-deadlock-text-dim leading-relaxed">
               Advanced KDA metrics and fight-by-fight impact scoring for every skirmish.
@@ -322,7 +324,7 @@ export default function LandingPage() {
           </div>
 
           <div className="card card-amber group hover:bg-deadlock-amber/5 transition-colors">
-            <Zap className="w-8 h-8 text-deadlock-amber mb-4 group-hover:scale-110 transition-transform" />
+            <Hourglass className="w-8 h-8 text-deadlock-amber mb-4 group-hover:scale-110 transition-transform" />
             <h3 className="text-sm font-serif mb-2 tracking-widest">Power Peaks</h3>
             <p className="text-xs text-deadlock-text-dim leading-relaxed">
               Identify key item and level spikes and evaluate how effectively you utilized them.
@@ -330,7 +332,7 @@ export default function LandingPage() {
           </div>
 
           <div className="card card-blue group hover:bg-deadlock-blue/5 transition-colors">
-            <Crosshair className="w-8 h-8 text-deadlock-blue mb-4 group-hover:scale-110 transition-transform" />
+            <Compass className="w-8 h-8 text-deadlock-blue mb-4 group-hover:scale-110 transition-transform" />
             <h3 className="text-sm font-serif mb-2 tracking-widest">Macro Intent</h3>
             <p className="text-xs text-deadlock-text-dim leading-relaxed">
               Objective control scoring and map impact analysis to uncover rotation mistakes.
