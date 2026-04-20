@@ -209,6 +209,9 @@ export async function getItems() {
 
 export async function getRanks() {
   const { data } = await api.get('/meta/ranks');
+  return data;
+}
+
 // ---- Assets (Direct from Deadlock CDN) ----
 
 export async function getDeadlockHeroes() {
