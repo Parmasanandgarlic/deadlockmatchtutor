@@ -44,27 +44,41 @@ export default function ModuleTabs({ modules, meta }) {
 
   return (
     <div>
-      {/* Tab Bar */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none">
-        {MODULE_KEYS.map((key) => {
+      {/* Module Dossier Tabs */}
+      <div
+        role="tablist"
+        aria-label="Analysis modules"
+        className="flex gap-2 overflow-x-auto pb-3 mb-5 scrollbar-none"
+      >
+        {MODULE_KEYS.map((key, idx) => {
           const isActive = key === active;
           const score = modules[key]?.score ?? 0;
+          const label = MODULE_LABELS[key] || key;
+          const fileTag = `§${String(idx + 1).padStart(2, '0')}`;
           return (
             <Tooltip
               key={key}
               content={{
-                term: MODULE_LABELS[key],
+                term: label,
                 definition: MODULE_DESCRIPTIONS[key] || 'Detailed performance analysis for this category.',
                 category: 'Module'
               }}
             >
               <button
+                type="button"
+                role="tab"
+                aria-selected={isActive}
                 onClick={() => setActive(key)}
-                className={isActive ? 'tab-active' : 'tab'}
+                className={`module-chip ${isActive ? 'module-chip-active' : ''}`}
               >
-                <span>{MODULE_LABELS[key]}</span>
-                <span className={`ml-3 px-1.5 py-0.5 bg-black/40 border border-white/5 font-bold text-[10px] ${getScoreColor(score)}`}>
-                  {score}
+                {isActive && <span className="module-chip-rail" aria-hidden="true" />}
+                <span className="module-chip-label">
+                  <span className="module-chip-sub">{fileTag}</span>
+                  <span className="module-chip-title">{label}</span>
+                </span>
+                <span className="module-score-plate" aria-label={`Score ${score} of 100`}>
+                  <span className={`module-score-plate-value ${getScoreColor(score)}`}>{score}</span>
+                  <span className="module-score-plate-label">/100</span>
                 </span>
               </button>
             </Tooltip>
