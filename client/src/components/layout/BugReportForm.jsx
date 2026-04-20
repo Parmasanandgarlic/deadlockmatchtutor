@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Send, Bug, AlertTriangle } from 'lucide-react';
+import { X, Send, Bug } from 'lucide-react';
 
 export default function BugReportForm({ isOpen, onClose }) {
   const [severity, setSeverity] = useState('low');
@@ -14,7 +14,6 @@ export default function BugReportForm({ isOpen, onClose }) {
   function handleSubmit(e) {
     e.preventDefault();
     // User will handle email integration
-    console.log('Bug report submitted:', { severity, area, title, description, steps });
     setSubmitted(true);
     setTimeout(() => {
       setSubmitted(false);

@@ -12,7 +12,6 @@ export default function FeedbackForm({ isOpen, onClose }) {
   function handleSubmit(e) {
     e.preventDefault();
     // User will handle email integration
-    console.log('Feedback submitted:', { rating, category, message });
     setSubmitted(true);
     setTimeout(() => {
       setSubmitted(false);
