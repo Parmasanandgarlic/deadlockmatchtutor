@@ -20,7 +20,7 @@ import { useState } from 'react';
 
 export default function DashboardPage() {
   const { matchId, accountId } = useParams();
-  const { analysis, loading, error, progressText, startAnalysis } = useMatchAnalysis();
+  const { analysis, loading, error, progressText, progressStage, startAnalysis } = useMatchAnalysis();
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const startedAnalysisKeyRef = useRef(null);
 
@@ -67,7 +67,7 @@ export default function DashboardPage() {
   }, [matchId, accountId, startAnalysis]);
 
   if (loading) {
-    return <LoadingState progressText={progressText} />;
+    return <LoadingState progressText={progressText} progressStage={progressStage} />;
   }
 
   if (error) {
