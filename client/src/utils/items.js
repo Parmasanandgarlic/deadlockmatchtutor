@@ -4,6 +4,8 @@
 export const ITEM_NAMES = {
   // Common items (will be populated by API)
 };
+// Deprecated: Now dynamically hydrated via AssetContext
+export const ITEM_NAMES = {};
 
 // Cache for API-provided item data
 let apiItemData = null;
@@ -43,6 +45,11 @@ export function getItemName(itemId) {
   
   // Fall back to static mapping
   return ITEM_NAMES[itemId] || `Item #${itemId}`;
+ * @deprecated Use useAssets() from AssetContext instead to get correct dynamic item data.
+ */
+export function getItemName(itemId) {
+  if (itemId == null) return 'Unknown Item';
+  return `Item #${itemId}`;
 }
 
 /**

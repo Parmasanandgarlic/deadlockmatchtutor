@@ -209,6 +209,15 @@ export async function getItems() {
 
 export async function getRanks() {
   const { data } = await api.get('/meta/ranks');
+// ---- Assets (Direct from Deadlock CDN) ----
+
+export async function getDeadlockHeroes() {
+  const { data } = await axios.get('https://assets.deadlock-api.com/v2/heroes');
+  return data;
+}
+
+export async function getDeadlockItems() {
+  const { data } = await axios.get('https://assets.deadlock-api.com/v2/items');
   return data;
 }
 

@@ -41,6 +41,8 @@ export const HERO_NAMES = {
   37: 'Bookworm',
   38: 'Hornet',
 };
+// Deprecated: Now dynamically hydrated via AssetContext
+export const HERO_NAMES = {};
 
 // Cache for API-provided hero data
 let apiHeroData = null;
@@ -80,6 +82,11 @@ export function getHeroName(heroId) {
   
   // Fall back to static mapping
   return HERO_NAMES[heroId] || `Hero #${heroId}`;
+ * @deprecated Use useAssets() from AssetContext instead to get correct dynamic hero data.
+ */
+export function getHeroName(heroId) {
+  if (heroId == null) return 'Unknown Hero';
+  return `Hero #${heroId}`;
 }
 
 /**

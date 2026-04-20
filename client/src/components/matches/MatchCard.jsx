@@ -5,11 +5,12 @@ import {
   formatResult,
   formatRelativeTime,
   formatDateTime,
-  getHeroImage,
 } from '../../utils/formatters';
-import { getHeroName } from '../../utils/heroes';
+import { useAssets } from '../../contexts/AssetContext';
 
 export default function MatchCard({ match, accountId }) {
+  const { heroesMap } = useAssets();
+  
   // match_result: winning team (0 or 1); player_team: which team the player was on.
   // Fallback to legacy player_team_won/won fields if present.
   let won = null;
@@ -21,7 +22,8 @@ export default function MatchCard({ match, accountId }) {
     won = match.won;
   }
 
-  const heroName = match.hero_name || getHeroName(match.hero_id);
+  const heroAsset = heroesMap?.[match.hero_id];
+  const heroName = match.hero_name || heroAsset?.name || 'Unknown Hero';
   const kills = match.player_kills ?? match.kills ?? 0;
   const deaths = match.player_deaths ?? match.deaths ?? 0;
   const assists = match.player_assists ?? match.assists ?? 0;
@@ -35,7 +37,7 @@ export default function MatchCard({ match, accountId }) {
   const relative = startTime ? formatRelativeTime(startTime) : '';
   const absolute = startTime ? formatDateTime(startTime) : '';
 
-  const avatarUrl = getHeroImage(heroName, 'small');
+  const avatarUrl = heroAsset?.images?.icon_image_small_webp || heroAsset?.images?.icon_image_small;
 
   // Deadlock-style framing: win → legendary (gold), loss → rare (purple fade),
   // unknown → plain card. Adds a soft rarity glow instead of a flat color bar.

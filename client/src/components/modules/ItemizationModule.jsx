@@ -1,11 +1,21 @@
-import { formatNumber, getItemImage } from '../../utils/formatters';
+import { formatNumber } from '../../utils/formatters';
 import { ShoppingBag, Coins, Box, TrendingUp, AlertCircle } from 'lucide-react';
 import Tooltip from '../ui/Tooltip';
 import TimelineGraph from '../dashboard/TimelineGraph';
+import { useAssets } from '../../contexts/AssetContext';
 
 export default function ItemizationModule({ data, meta }) {
-  const { items, netWorth, souls, soulsPerMin } = data;
+  const { items = [], netWorth = 0, souls = 0, soulsPerMin = 0 } = data || {};
+  const { itemsMap, isLoading } = useAssets();
   
+  if (isLoading && items.length > 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 space-y-4">
+        <div className="w-8 h-8 border-2 border-deadlock-accent border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-deadlock-muted animate-pulse">Hydrating item artifacts...</p>
+      </div>
+    );
+  }
   return (
     <div className="space-y-6">
       {/* Key Stats Row */}
@@ -75,12 +85,15 @@ export default function ItemizationModule({ data, meta }) {
         {items && items.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {items.map((item, i) => {
-              const itemImg = getItemImage(item);
+              const itemAsset = itemsMap?.[item.id];
+              const itemName = itemAsset?.name || item.name || 'Unknown Item';
+              const itemImg = itemAsset?.images?.icon_image_small_webp || itemAsset?.images?.icon_image_small;
+              
               return (
                 <Tooltip
                   key={i}
                   content={{
-                    term: item.name,
+                    term: itemName,
                     definition: `Item cost: ${formatNumber(item.cost)} gold. Item effectiveness depends on timing and enemy composition.`,
                     category: 'Build'
                   }}
@@ -89,7 +102,7 @@ export default function ItemizationModule({ data, meta }) {
                     {itemImg ? (
                       <img
                         src={itemImg}
-                        alt={item.name}
+                        alt={itemName}
                         className="w-12 h-12 mx-auto mb-2 object-contain rounded"
                         onError={(e) => {
                           e.currentTarget.onerror = null;
@@ -101,7 +114,7 @@ export default function ItemizationModule({ data, meta }) {
                         <Box className="w-6 h-6" />
                       </div>
                     )}
-                    <p className="text-xs text-deadlock-muted truncate">{item.name}</p>
+                    <p className="text-xs text-deadlock-muted truncate">{itemName}</p>
                     <p className="font-mono text-sm">{formatNumber(item.cost)}</p>
                   </div>
                 </Tooltip>
