@@ -68,7 +68,11 @@ async function getPlayerMatches(req, res, next) {
     res.json(matches);
   } catch (err) {
     const msg = err.message || 'Failed to fetch match history.';
-    const status = msg.includes('not found') || msg.includes('Invalid') || msg.includes('check') ? 400 : 500;
+    const status = msg.toLowerCase().includes('timeout')
+      ? 504
+      : msg.includes('not found') || msg.includes('Invalid') || msg.includes('check')
+        ? 400
+        : 500;
     res.status(status).json({ error: msg });
   }
 }
@@ -93,7 +97,8 @@ async function getPlayerMmrHistory(req, res, next) {
     res.json(mmr);
   } catch (err) {
     logger.error(`MMR history failed for ${req.params.accountId}: ${err.message}`);
-    res.status(500).json({ error: 'Failed to build MMR history.' });
+    const status = err.message.toLowerCase().includes('timeout') ? 504 : 500;
+    res.status(status).json({ error: err.message || 'Failed to build MMR history.' });
   }
 }
 

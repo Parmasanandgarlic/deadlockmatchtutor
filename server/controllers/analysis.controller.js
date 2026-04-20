@@ -48,6 +48,12 @@ let ranksCache = null;
 let ranksCacheTime = 0;
 const RANKS_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
+function safeSetHeader(res, key, value) {
+  if (res && typeof res.setHeader === 'function') {
+    res.setHeader(key, value);
+  }
+}
+
 /**
  * Fetch and cache hero names from API.
  */
@@ -58,6 +64,10 @@ async function fetchHeroNames() {
   }
 
   try {
+    if (typeof getHeroes !== 'function') {
+      logger.warn('Hero metadata helper is unavailable; skipping API hero cache refresh.');
+      return heroNamesCache;
+    }
     const heroes = await getHeroes();
     if (heroes.length > 0) {
       heroNamesCache = heroes;
@@ -81,6 +91,10 @@ async function fetchItemNames() {
   }
 
   try {
+    if (typeof getItems !== 'function') {
+      logger.warn('Item metadata helper is unavailable; skipping API item cache refresh.');
+      return itemNamesCache;
+    }
     const items = await getItems();
     if (items.length > 0) {
       itemNamesCache = items;
@@ -104,6 +118,10 @@ async function fetchRanks() {
   }
 
   try {
+    if (typeof getRanks !== 'function') {
+      logger.warn('Rank metadata helper is unavailable; skipping API rank cache refresh.');
+      return ranksCache;
+    }
     const ranks = await getRanks();
     if (ranks.length > 0) {
       ranksCache = ranks;
@@ -157,7 +175,7 @@ async function runAnalysis(req, res, next) {
     if (existingRecord?.data) {
       logger.info(`[Supabase] Cache hit for ${cacheKey}`);
       warnOnContractMismatch('analysis.cached', existingRecord.data, ANALYSIS_RESPONSE_SCHEMA);
-      res.setHeader('X-Cache', 'HIT (Supabase)');
+      safeSetHeader(res, 'X-Cache', 'HIT (Supabase)');
       return res.json({ cached: true, ...existingRecord.data });
     }
   } catch (err) {
@@ -171,7 +189,7 @@ async function runAnalysis(req, res, next) {
     // 1b. Check local fallback cache (for Vercel local dev / temporary)
     if (fallbackCache.has(cacheKey)) {
       logger.info(`[FallbackCache] Cache hit for ${cacheKey}`);
-      res.setHeader('X-Cache', 'HIT (Fallback)');
+      safeSetHeader(res, 'X-Cache', 'HIT (Fallback)');
       await redisClient.del(lockKey);
       return res.json({ cached: true, ...fallbackCache.get(cacheKey) });
     }
@@ -269,7 +287,7 @@ async function runAnalysis(req, res, next) {
       if (fallbackCache.size > 100) fallbackCache.delete(fallbackCache.keys().next().value);
     }
 
-    res.setHeader('X-Cache', 'MISS');
+    safeSetHeader(res, 'X-Cache', 'MISS');
     await redisClient.del(lockKey);
     res.json({ cached: false, ...result });
   } catch (err) {

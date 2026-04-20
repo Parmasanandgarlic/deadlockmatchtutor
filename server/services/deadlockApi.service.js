@@ -21,6 +21,14 @@ function normalizeMatchHistory(data) {
   return [];
 }
 
+async function fetchMatchHistoryFromApi(accountId) {
+  const url = `${config.deadlockApi.baseUrl}/v1/players/${Number(accountId)}/match-history`;
+  const { data } = await axios.get(url, {
+    timeout: 15000,
+  });
+  return data;
+}
+
 /**
  * Fetch a player's recent match history.
  * @param {string|number} accountId  Steam32 account ID
@@ -40,7 +48,7 @@ async function getMatchHistory(accountId) {
     }
 
     // 2. Fetch from API
-    const { data } = await playersApi.matchHistory({ accountId: Number(accountId) });
+    const data = await fetchMatchHistoryFromApi(accountId);
     const matches = normalizeMatchHistory(data);
     warnOnContractMismatch(`matchHistory.${accountId}`, matches, MATCH_HISTORY_SCHEMA);
     logger.debug(`Fetched ${matches.length} matches for account ${accountId}`);
@@ -61,6 +69,9 @@ async function getMatchHistory(accountId) {
     }
     if (err.response?.status === 500) {
       throw new Error('Deadlock API is currently experiencing issues. Please try again later.');
+    }
+    if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
+      throw new Error('Deadlock API timed out while loading match history. Please try again in a moment.');
     }
     throw new Error('Failed to fetch match history from Deadlock API.');
   }
