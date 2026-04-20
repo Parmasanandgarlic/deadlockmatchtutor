@@ -29,10 +29,11 @@ A comprehensive post-match analytics dashboard for **Deadlock**. Fetches match d
 
 ### What You'll See
 
-- **Overall Grade**: A+ to F letter grade based on your match impact
-- **Module Scores**: Economy, Itemization, Combat, and Benchmarks
-- **Insights**: Plain-English recommendations for improvement
-- **Match Details**: KDA, net worth, damage, and more
+- **Deep Player Profiles**: View your MMR history, temporal win-rate trends, and aggregated top-hero statistics.
+- **OSIC Field Report**: Lore-accurate actionable insights delivered as Occult Security and Investigation Commission directives.
+- **Tactical Matrix**: A multi-dimensional radar chart visualizing your unique "Combat Signature" against average players.
+- **Lore-Accurate Aesthetics**: A beautifully themed UI inspired directly by Deadlock's 1930s occult-steampunk New York setting, featuring subway backgrounds, Juke Rooms, and geometric art-deco dossier styling.
+- **Score & Grade**: A+ to F letter grade based on your performance across multiple match dimensions.
 
 ## Architecture
 
@@ -227,6 +228,17 @@ npm run test:failover    # Disaster Recovery & Failover tests
 **Total: 62 tests across 12 suites**
 
 ## Key Features
+
+### Authentic "Deadlock" Lore Integration
+
+- **OSIC Dossier UI**: The dashboard leverages Deadlock's "Occult Security and Investigation Commission" lore, serving reports inside realistic government ledgers with custom art-deco SVGs.
+- **Game-Accurate Scenery**: Dynamic backgrounds featuring high-resolution captures of "Broadway" (the Blue Lane) and subway Juke Rooms.
+
+### Match Synchronization & Tracking
+
+- **Automated Match Sync**: Background cron jobs keep player match histories continuously up to date.
+- **On-Demand Sync**: An in-UI button allows players to instantly pull data for matches that just ended without waiting on background jobs.
+- **Player Trends**: Dedicated profile pages track MMR progression and win-rate trends over your last 20 matches.
 
 ### Fault Tolerance
 
