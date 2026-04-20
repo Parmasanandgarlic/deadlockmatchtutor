@@ -37,18 +37,19 @@ export default function MatchCard({ match, accountId }) {
 
   const avatarUrl = getHeroImage(heroName, 'small');
 
-  // Subtle colored accent based on result.
-  const accentClass =
+  // Deadlock-style framing: win → legendary (gold), loss → rare (purple fade),
+  // unknown → plain card. Adds a soft rarity glow instead of a flat color bar.
+  const rarityClass =
     won === true
-      ? 'border-l-4 border-l-deadlock-green/70'
+      ? 'rarity-legendary border-l-4 border-l-deadlock-legendary'
       : won === false
-      ? 'border-l-4 border-l-deadlock-red/70'
+      ? 'rarity-rare border-l-4 border-l-deadlock-rare/70'
       : '';
 
   return (
     <Link
       to={`/dashboard/${match.match_id}/${accountId}`}
-      className={`card group hover:border-deadlock-accent/50 transition-all duration-200 cursor-pointer flex flex-col ${accentClass}`}
+      className={`card group hover:border-deadlock-accent/60 transition-all duration-200 cursor-pointer flex flex-col ${rarityClass}`}
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2 min-w-0">

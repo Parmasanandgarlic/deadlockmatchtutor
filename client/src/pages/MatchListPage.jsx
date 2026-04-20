@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { ArrowLeft, Loader2, RefreshCw } from 'lucide-react';
 import { usePlayerMatches, useSyncPlayerMatches } from '../hooks/usePlayer';
 import SEOHead from '../components/seo/SEOHead';
+import DeadlockSceneBackground from '../components/layout/DeadlockSceneBackground';
 import MatchCard from '../components/matches/MatchCard';
 import MatchListToolbar from '../components/matches/MatchListToolbar';
 import MatchSummaryPanel from '../components/matches/MatchSummaryPanel';
@@ -54,14 +55,8 @@ export default function MatchListPage() {
 
   return (
     <div className="relative min-h-[90vh]">
-      {/* Background with heavily darkened overlay for readability */}
-      <div 
-        className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center bg-fixed"
-        style={{ 
-          backgroundImage: 'url("/images/bg-scene.png")',
-          opacity: 0.15 
-        }}
-      />
+      {/* Deadlock-themed subway/shop scene (composed SVG, no external asset) */}
+      <DeadlockSceneBackground intensity={0.28} />
       <div className="relative z-10 max-w-5xl mx-auto px-4 py-8">
         <SEOHead title={`Matches · ${accountId}`} schema={matchListSchema} />
 
@@ -74,6 +69,9 @@ export default function MatchListPage() {
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
         <div>
+          <div className="deadlock-divider max-w-[320px] mb-3">
+            <span className="deadlock-divider__pip" />
+          </div>
           <h2 className="text-2xl font-bold mb-1">Recent Matches</h2>
           <p className="text-deadlock-text-dim">
             Account ID: <span className="font-mono text-deadlock-accent">{accountId}</span>
