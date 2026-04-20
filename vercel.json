@@ -1,7 +1,7 @@
 {
   "version": 2,
   "buildCommand": "npm run build -w client",
-  "outputDirectory": "client/dist",
+  "outputDirectory": "dist",
   "cleanUrls": true,
   "trailingSlash": false,
   "functions": {
