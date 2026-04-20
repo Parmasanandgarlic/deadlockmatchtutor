@@ -13,7 +13,7 @@ export default function HeroHeader({ meta, overall }) {
   const [copiedMatchId, setCopiedMatchId] = useState(false);
   const scoreColor = getScoreColor(overall?.impactScore ?? 0);
   
-  const heroAsset = heroesMap?.[meta?.hero_id];
+  const heroAsset = heroesMap?.[meta?.heroId || meta?.hero_id];
   const heroBg = heroAsset?.images?.background_image_webp || heroAsset?.images?.background_image || getHeroImage(heroAsset || meta?.heroName, 'card');
   const heroAvatar = heroAsset?.images?.icon_image_small_webp || heroAsset?.images?.icon_image_small || getHeroImage(heroAsset || meta?.heroName, 'small');
   const heroNameDisplay = meta?.heroName || heroAsset?.name || 'Unknown Hero';

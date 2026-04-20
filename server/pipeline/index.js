@@ -357,28 +357,41 @@ function roundTo(value, decimals = 1) {
 function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durationMinutes) {
   let items = [];
   
-  if (matchInHistory && (matchInHistory.items || matchInHistory.build)) {
-    items = matchInHistory.items || matchInHistory.build;
-    logger.debug(`Extracted items from matchInHistory: ${items.length} items`);
-  } else if (matchInfo && Array.isArray(matchInfo.players)) {
-    const player = matchInfo.players.find(p => Number(p.account_id) === Number(accountId));
-    if (player && (player.items || player.build || player.item_ids)) {
-      items = player.items || player.build || player.item_ids || [];
-      logger.debug(`Extracted items from matchInfo player: ${items.length} items`);
-    } else {
-      logger.warn(`No items found in matchInfo for player ${accountId}. Player data:`, player);
+  // 1. Try matchInHistory (usually faster/cached)
+  if (matchInHistory) {
+    items = matchInHistory.items || 
+            matchInHistory.item_ids || 
+            matchInHistory.build || 
+            matchInHistory.match_items || 
+            [];
+    
+    if (items.length > 0) {
+      logger.debug(`[Pipeline] Extracted ${items.length} items from matchInHistory`);
     }
-  } else {
-    logger.warn(`No items found. matchInHistory has items/build: ${!!(matchInHistory?.items || matchInHistory?.build)}, matchInfo has players: ${!!matchInfo?.players}`);
   }
 
-  if (!Array.isArray(items)) {
-    logger.warn(`Items is not an array, converting to empty array. Type: ${typeof items}, Value:`, items);
-    items = [];
+  // 2. Fallback to full matchInfo players list if history items were missing
+  if (items.length === 0 && matchInfo && Array.isArray(matchInfo.players)) {
+    const player = matchInfo.players.find(p => Number(p.account_id) === Number(accountId));
+    if (player) {
+      items = player.items || 
+              player.build || 
+              player.item_ids || 
+              player.match_items || 
+              [];
+      
+      if (items.length > 0) {
+        logger.debug(`[Pipeline] Extracted ${items.length} items from matchInfo player stats`);
+      }
+    }
   }
 
-  const netWorth = matchInHistory?.net_worth ?? matchInHistory?.netWorth ?? 0;
-  const souls = matchInHistory?.souls ?? matchInHistory?.last_hits ?? 0;
+  if (items.length === 0) {
+    logger.warn(`[Pipeline] No item data found for match ${matchInHistory?.match_id || 'unknown'} and player ${accountId}`);
+  }
+
+  const netWorth = Number(matchInHistory?.net_worth ?? matchInHistory?.netWorth ?? matchInHistory?.souls ?? 0);
+  const souls = Number(matchInHistory?.souls ?? matchInHistory?.last_hits ?? 0);
   const soulsPerMin = perMinute(netWorth, durationMinutes);
 
   // Strong benchmark: ~700 souls/min (good core hero), weak: ~350.

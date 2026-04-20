@@ -90,6 +90,31 @@ export function formatDateTime(input) {
   });
 }
 
+const HERO_SLUGS = {
+  'Infernus': 'inferno',
+  'Mo & Krill': 'mokrill',
+  'Grey Talon': 'greytalon',
+  'Lady Geist': 'ladygeist',
+  'Bebop': 'bebop',
+  'Abrams': 'abrams',
+  'Haze': 'haze',
+  'Ivy': 'ivy',
+  'Kelvin': 'kelvin',
+  'Lash': 'lash',
+  'McGinnis': 'mcginnis',
+  'Paradox': 'paradox',
+  'Seven': 'seven',
+  'Shiv': 'shiv',
+  'Vindicta': 'vindicta',
+  'Viscous': 'viscous',
+  'Warden': 'warden',
+  'Wraith': 'wraith',
+  'Yamato': 'yamato',
+  'Dynamo': 'dynamo',
+  'Pocket': 'pocket',
+  'Mirage': 'mirage'
+};
+
 /**
  * Get official Deadlock API hero image URL.
  */
@@ -109,13 +134,15 @@ export function getHeroImage(hero, type = 'small') {
 
   const heroName = typeof hero === 'string' ? hero : data?.name || 'Unknown Hero';
   if (!heroName || heroName === 'Unknown Hero') return null;
-  const safeName = heroName.toLowerCase().replace(/[^a-z0-9]/g, '');
+  
+  // Use slug mapping if available, otherwise normalize
+  const slug = HERO_SLUGS[heroName] || heroName.toLowerCase().replace(/[^a-z0-9]/g, '');
   
   const types = {
-    small: `images/heroes/${safeName}_sm.png`,
-    card: `images/heroes/${safeName}_card.png`,
-    minimap: `images/heroes/${safeName}_mm.png`,
-    icon: `icons/${safeName}.svg`
+    small: `images/heroes/${slug}_sm.png`,
+    card: `images/heroes/${slug}_card.png`,
+    minimap: `images/heroes/${slug}_mm.png`,
+    icon: `icons/${slug}.svg`
   };
   
   return `https://assets-bucket.deadlock-api.com/assets-api-res/${types[type] || types.small}`;

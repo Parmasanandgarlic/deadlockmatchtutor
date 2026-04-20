@@ -5,9 +5,17 @@ import TimelineGraph from '../dashboard/TimelineGraph';
 import { useAssets } from '../../contexts/AssetContext';
 
 export default function ItemizationModule({ data, meta }) {
-  const { items, netWorth, souls, soulsPerMin } = data;
-  const { itemsMap } = useAssets();
+  const { items = [], netWorth = 0, souls = 0, soulsPerMin = 0 } = data || {};
+  const { itemsMap, isLoading } = useAssets();
   
+  if (isLoading && items.length > 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 space-y-4">
+        <div className="w-8 h-8 border-2 border-deadlock-accent border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-deadlock-muted animate-pulse">Hydrating item artifacts...</p>
+      </div>
+    );
+  }
   return (
     <div className="space-y-6">
       {/* Key Stats Row */}
