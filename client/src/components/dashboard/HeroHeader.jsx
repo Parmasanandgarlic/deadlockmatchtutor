@@ -6,15 +6,21 @@ import { getScoreColor, getScoreLabel } from '../../utils/grading';
 import { MODULE_LABELS } from '../../utils/constants';
 import { getHeroRole, ROLE_STYLES } from '../../utils/heroes';
 import { useState } from 'react';
+import { useAssets } from '../../contexts/AssetContext';
 
 export default function HeroHeader({ meta, overall }) {
+  const { heroesMap } = useAssets();
   const [copiedMatchId, setCopiedMatchId] = useState(false);
   const scoreColor = getScoreColor(overall?.impactScore ?? 0);
-  const heroBg = getHeroImage(meta, 'card');
-  const heroAvatar = getHeroImage(meta, 'small');
+  
+  const heroAsset = heroesMap?.[meta?.hero_id];
+  const heroBg = heroAsset?.images?.background_image_webp || heroAsset?.images?.background_image || getHeroImage(heroAsset || meta?.heroName, 'card');
+  const heroAvatar = heroAsset?.images?.icon_image_small_webp || heroAsset?.images?.icon_image_small || getHeroImage(heroAsset || meta?.heroName, 'small');
+  const heroNameDisplay = meta?.heroName || heroAsset?.name || 'Unknown Hero';
+  
   const won = meta?.won;
   const rank = meta?.rankPredict;
-  const role = getHeroRole(meta?.heroName);
+  const role = getHeroRole(heroNameDisplay);
   const roleStyle = role ? ROLE_STYLES[role] : null;
 
   function handleCopyMatchId() {
@@ -64,7 +70,7 @@ export default function HeroHeader({ meta, overall }) {
               </div>
             )}
             <h1 className="text-2xl font-bold drop-shadow-md truncate">
-              {meta?.heroName || 'Unknown Hero'}
+              {heroNameDisplay}
             </h1>
             {won === true && (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-deadlock-green/15 border border-deadlock-green/30 text-deadlock-green text-xs font-semibold uppercase tracking-wider">

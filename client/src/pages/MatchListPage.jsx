@@ -2,11 +2,11 @@ import { useParams, Link } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import { ArrowLeft, Loader2, RefreshCw } from 'lucide-react';
 import { usePlayerMatches, useSyncPlayerMatches } from '../hooks/usePlayer';
+import { useAssets } from '../contexts/AssetContext';
 import SEOHead from '../components/seo/SEOHead';
 import MatchCard from '../components/matches/MatchCard';
 import MatchListToolbar from '../components/matches/MatchListToolbar';
 import MatchSummaryPanel from '../components/matches/MatchSummaryPanel';
-import { getHeroName } from '../utils/heroes';
 
 const DEFAULT_FILTERS = {
   search: '',
@@ -18,18 +18,19 @@ const DEFAULT_FILTERS = {
 export default function MatchListPage() {
   const { accountId } = useParams();
   const { data: matches = [], isLoading: loading, error, refetch } = usePlayerMatches(accountId);
+  const { heroesMap } = useAssets();
   const syncMutation = useSyncPlayerMatches();
   const isSyncing = syncMutation.isPending;
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
 
   const heroOptions = useMemo(
-    () => deriveHeroOptions(matches),
-    [matches]
+    () => deriveHeroOptions(matches, heroesMap),
+    [matches, heroesMap]
   );
 
   const filteredMatches = useMemo(
-    () => applyFiltersAndSort(matches, filters),
-    [matches, filters]
+    () => applyFiltersAndSort(matches, filters, heroesMap),
+    [matches, filters, heroesMap]
   );
 
   const matchListSchema = {
@@ -171,11 +172,11 @@ export default function MatchListPage() {
 /**
  * Build a sorted list of unique hero names seen in the match list.
  */
-function deriveHeroOptions(matches) {
+function deriveHeroOptions(matches, heroesMap) {
   if (!Array.isArray(matches)) return [];
   const set = new Set();
   for (const m of matches) {
-    const name = m.hero_name || getHeroName(m.hero_id);
+    const name = m.hero_name || heroesMap?.[m.hero_id]?.name || 'Unknown Hero';
     if (name && name !== 'Unknown Hero') set.add(name);
   }
   return [...set].sort();
@@ -184,7 +185,7 @@ function deriveHeroOptions(matches) {
 /**
  * Pure filtering + sorting transform — keeps MatchListPage render fast & memoisable.
  */
-function applyFiltersAndSort(matches, filters) {
+function applyFiltersAndSort(matches, filters, heroesMap) {
   if (!Array.isArray(matches)) return [];
   const { search, result, hero, sort } = filters;
 
@@ -204,7 +205,7 @@ function applyFiltersAndSort(matches, filters) {
     }
     // Hero filter
     if (hero !== 'all') {
-      const name = m.hero_name || getHeroName(m.hero_id);
+      const name = m.hero_name || heroesMap?.[m.hero_id]?.name || 'Unknown Hero';
       if (name !== hero) return false;
     }
     return true;

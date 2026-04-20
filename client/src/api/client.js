@@ -195,4 +195,16 @@ export async function getPlayerTrends(accountId, limit = 10) {
   return data;
 }
 
+// ---- Assets (Direct from Deadlock CDN) ----
+
+export async function getDeadlockHeroes() {
+  const { data } = await axios.get('https://assets.deadlock-api.com/v2/heroes');
+  return data;
+}
+
+export async function getDeadlockItems() {
+  const { data } = await axios.get('https://assets.deadlock-api.com/v2/items');
+  return data;
+}
+
 export default api;

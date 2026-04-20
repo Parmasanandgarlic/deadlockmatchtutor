@@ -1,15 +1,11 @@
 // Deadlock item ID → display name mapping.
-// Source: Deadlock Assets API https://assets.deadlock-api.com/v2/items
-export const ITEM_NAMES = {
-  // Common items (will be populated by API)
-};
+// Deprecated: Now dynamically hydrated via AssetContext
+export const ITEM_NAMES = {};
 
 /**
- * Get an item's display name from its numeric ID.
- * @param {number} itemId
- * @returns {string} Item name
+ * @deprecated Use useAssets() from AssetContext instead to get correct dynamic item data.
  */
 export function getItemName(itemId) {
   if (itemId == null) return 'Unknown Item';
-  return ITEM_NAMES[itemId] || `Item #${itemId}`;
+  return `Item #${itemId}`;
 }

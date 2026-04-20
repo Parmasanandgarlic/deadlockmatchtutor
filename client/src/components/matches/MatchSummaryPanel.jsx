@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Trophy, Swords, Clock, Flame } from 'lucide-react';
-import { getHeroName } from '../../utils/heroes';
 import Tooltip from '../ui/Tooltip';
+import { useAssets } from '../../contexts/AssetContext';
 
 /**
  * Aggregate summary panel computed client-side over the match list.
@@ -12,7 +12,8 @@ import Tooltip from '../ui/Tooltip';
  * geometric corner accents, and subtle gradient top highlights.
  */
 export default function MatchSummaryPanel({ matches }) {
-  const stats = useMemo(() => computeStats(matches), [matches]);
+  const { heroesMap } = useAssets();
+  const stats = useMemo(() => computeStats(matches, heroesMap), [matches, heroesMap]);
   if (!stats) return null;
 
   return (
@@ -106,7 +107,7 @@ function SummaryStat({ icon, label, value, subValue, tooltip, accentColor = 'amb
   );
 }
 
-function computeStats(matches) {
+function computeStats(matches, heroesMap) {
   if (!Array.isArray(matches) || matches.length === 0) return null;
 
   let wins = 0;
@@ -140,7 +141,7 @@ function computeStats(matches) {
     const duration = m.match_duration_s ?? m.duration_s ?? m.duration ?? 0;
     if (duration > 0) totalDurationSec += duration;
 
-    const heroName = m.hero_name || getHeroName(m.hero_id);
+    const heroName = m.hero_name || heroesMap?.[m.hero_id]?.name || 'Unknown Hero';
     if (heroName && heroName !== 'Unknown Hero') {
       const existing = heroCounts.get(heroName) || { count: 0, wins: 0 };
       existing.count += 1;
