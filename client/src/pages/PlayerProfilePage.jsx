@@ -150,8 +150,8 @@ export default function PlayerProfilePage() {
   return (
     <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <SEOHead 
-        title="Player Trend Dashboard | Deadlock AfterMatch" 
-        description="Long-term performance trends, winning trajectories, and progression analysis." 
+        title="Player Trend Dossier | Deadlock AfterMatch" 
+        description="Ranked player dossier with predicted rank, peak rank, top heroes, career stats, and long-term Deadlock trends." 
       />
 
       {/* Ranked rank + career stats + top heroes */}

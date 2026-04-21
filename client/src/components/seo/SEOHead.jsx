@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 
-const DEFAULT_TITLE = 'Deadlock AfterMatch — Post-Match Performance Grading';
-const DEFAULT_DESC = 'Free, open-source post-match analytics for Deadlock. Grade your economy, itemization, combat, and benchmarks with actionable insights.';
-const DEFAULT_KEYWORDS = 'Deadlock, Deadlock game, post-match, analytics, performance, KDA, build, hero guide, Valve';
+const DEFAULT_TITLE = 'Deadlock AfterMatch — Post-Match Performance Grading & Player Dossiers';
+const DEFAULT_DESC = 'Open-source Deadlock analytics with dossier-style match reports, ranked player profiles, top heroes, item builds, combat grades, and benchmark comparisons.';
+const DEFAULT_KEYWORDS = 'Deadlock, Deadlock analytics, Deadlock tracker, post-match report, player dossier, ranked profile, KDA, item build, hero stats, benchmark comparison, Valve';
 
 /**
  * SEOHead - Injects SEO tags, Open Graph meta, and JSON-LD schema into the document head.
@@ -17,6 +17,8 @@ export default function SEOHead({
   imageUrl = '/favicon.svg'
 }) {
   const finalTitle = title ? `${title} · Deadlock AfterMatch` : DEFAULT_TITLE;
+  const finalDescription = description || DEFAULT_DESC;
+  const finalKeywords = keywords || DEFAULT_KEYWORDS;
 
   useEffect(() => {
     const url = window.location.href;
@@ -37,19 +39,19 @@ export default function SEOHead({
     };
 
     // 2. Standard Meta
-    setMetaTag('name', 'description', description);
-    setMetaTag('name', 'keywords', keywords);
+    setMetaTag('name', 'description', finalDescription);
+    setMetaTag('name', 'keywords', finalKeywords);
 
     // 3. Open Graph
     setMetaTag('property', 'og:title', finalTitle);
-    setMetaTag('property', 'og:description', description);
+    setMetaTag('property', 'og:description', finalDescription);
     setMetaTag('property', 'og:type', type);
     setMetaTag('property', 'og:url', url);
     setMetaTag('property', 'og:image', imageUrl);
 
     // 4. Twitter
     setMetaTag('name', 'twitter:title', finalTitle);
-    setMetaTag('name', 'twitter:description', description);
+    setMetaTag('name', 'twitter:description', finalDescription);
     setMetaTag('name', 'twitter:image', imageUrl);
 
     // 5. Structured Data (JSON-LD) for AEO/GEO
@@ -67,7 +69,7 @@ export default function SEOHead({
       // Remove it if no schema provided for this route
       document.head.removeChild(scriptTag);
     }
-  }, [finalTitle, description, keywords, type, schema, imageUrl]);
+  }, [finalTitle, finalDescription, finalKeywords, type, schema, imageUrl]);
 
   return null; // Component does not render any visible UI
 }

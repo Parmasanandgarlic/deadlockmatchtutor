@@ -33,12 +33,12 @@ export default function DashboardPage() {
   }, [loading, analysis]);
 
   const dynamicTitle = analysis?.meta
-    ? `${analysis.meta.heroName} · Grade ${analysis.overall?.letterGrade || ''}`.trim()
+    ? `${analysis.meta.heroName} · Grade ${analysis.overall?.letterGrade || ''} · Deadlock AfterMatch`.trim()
     : `Match #${matchId}`;
 
   const dynamicDesc = analysis?.meta
-    ? `Deadlock match analysis for ${analysis.meta.heroName}. Scored a ${analysis.overall?.letterGrade} with ${analysis.modules?.heroPerformance?.matchKda} KDA and ${analysis.modules?.itemization?.soulsPerMin} souls/min.`
-    : `Detailed performance breakdown for Deadlock match ${matchId}.`;
+    ? `Deadlock match dossier for ${analysis.meta.heroName}: grade ${analysis.overall?.letterGrade}, ${analysis.modules?.heroPerformance?.matchKda} match KDA, ${analysis.modules?.itemization?.soulsPerMin} souls/min, ranked benchmarks, item build, and combat breakdown.`
+    : `Detailed Deadlock match dossier for match ${matchId}, including combat, itemization, benchmarks, and performance grades.`;
 
   const dashboardSchema = analysis ? [
     {
