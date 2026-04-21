@@ -46,9 +46,18 @@ export function getItemName(itemId) {
 }
 
 /**
+ * Secondary item lookup (deprecated).
+ * @deprecated Use useAssets() from AssetContext instead to get correct dynamic item data.
+ */
+export function getItemNameSecondary(itemId) {
+  if (itemId == null) return 'Unknown Item';
+  return `Item #${itemId}`;
+}
+
+/**
  * Get full item data from its numeric ID.
  * @param {number} itemId
- * @returns {Object|null} Item data object or null
+ * @returns {Object|null} Hero data object or null
  */
 export function getItemData(itemId) {
   if (itemId == null || !apiItemData) return null;

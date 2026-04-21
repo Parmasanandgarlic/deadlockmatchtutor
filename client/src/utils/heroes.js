@@ -83,6 +83,17 @@ export function getHeroName(heroId) {
 }
 
 /**
+ * Get a hero's display name from its numeric ID (deprecated fallback).
+ * @deprecated Use useAssets() from AssetContext instead to get correct dynamic hero data.
+ * @param {number} heroId
+ * @returns {string} Hero name
+ */
+export function getHeroNameSecondary(heroId) {
+  if (heroId == null) return 'Unknown Hero';
+  return `Hero #${heroId}`;
+}
+
+/**
  * Get full hero data from its numeric ID.
  * @param {number} heroId
  * @returns {Object|null} Hero data object or null

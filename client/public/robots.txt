@@ -9,4 +9,3 @@ Disallow: /report/
 
 Sitemap: https://www.aftermatch.xyz/sitemap.xml
 Host: www.aftermatch.xyz
-
