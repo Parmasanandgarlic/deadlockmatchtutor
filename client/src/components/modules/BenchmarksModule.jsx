@@ -2,6 +2,8 @@ import { TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
 import Tooltip from '../ui/Tooltip';
 
 export default function BenchmarksModule({ data }) {
+  if (!data) return null;
+
   const {
     userKda,
     benchmarkKda,
@@ -15,6 +17,22 @@ export default function BenchmarksModule({ data }) {
 
   return (
     <div className="space-y-6">
+      <div className="card hero-header-bg overflow-hidden">
+        <div className="relative z-10 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-deadlock-muted mb-1">Benchmark Dossier</p>
+            <h3 className="text-2xl font-serif uppercase tracking-wider text-deadlock-text">Comparison vs Career</h3>
+            <p className="text-xs text-deadlock-text-dim mt-2 max-w-2xl">
+              This section compares the current match to your own long-term baseline on this hero.
+            </p>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="text-[10px] uppercase tracking-[0.24em] text-deadlock-muted">Module Score</p>
+            <p className="font-mono text-3xl font-bold text-deadlock-accent">{data.score}/100</p>
+          </div>
+        </div>
+      </div>
+
       {/* Key Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
         <Tooltip
@@ -28,6 +46,7 @@ export default function BenchmarksModule({ data }) {
             icon={<BarChart3 className="w-4 h-4 text-deadlock-purple" />}
             label="Match vs Career Score"
             value={`${percentile}%`}
+            highlight={percentile >= 65}
           />
         </Tooltip>
         <StatBox
@@ -39,7 +58,8 @@ export default function BenchmarksModule({ data }) {
 
       {/* KDA Comparison */}
       <div>
-        <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3 flex items-center gap-2">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-deadlock-text-dim uppercase tracking-[0.24em] flex items-center gap-2">
           <Tooltip
             content={{
               term: 'KDA',
@@ -49,7 +69,11 @@ export default function BenchmarksModule({ data }) {
           >
             <span>KDA — This Match vs Career Average</span>
           </Tooltip>
-        </h3>
+          </h3>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-deadlock-muted">
+            performance delta
+          </span>
+        </div>
         <ComparisonBar
           label="KDA"
           userValue={userKda}
@@ -64,7 +88,7 @@ export default function BenchmarksModule({ data }) {
       {/* Souls/min Comparison */}
       {benchmarkSoulsPerMin > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3 uppercase tracking-[0.24em] flex items-center gap-2">
             <Tooltip
               content={{
                 term: 'Souls Per Minute',
@@ -98,7 +122,7 @@ export default function BenchmarksModule({ data }) {
 
 function StatBox({ icon, label, value, highlight }) {
   return (
-    <div className={`bg-deadlock-bg rounded-lg p-3 ${highlight ? 'ring-1 ring-deadlock-accent/30' : ''}`}>
+    <div className={`bg-deadlock-bg rounded-lg p-3 border ${highlight ? 'border-deadlock-accent/40 ring-1 ring-deadlock-accent/30' : 'border-deadlock-border'}`}>
       <div className="flex items-center gap-1.5 mb-1">
         {icon}
         <span className="text-xs text-deadlock-muted">{label}</span>
@@ -127,9 +151,9 @@ function ComparisonBar({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between text-sm">
-        <span className="text-deadlock-muted">{label}</span>
+        <span className="text-deadlock-muted uppercase tracking-[0.18em] text-[10px]">{label}</span>
         <div className="flex items-center gap-2">
-          <span className="font-mono">{userValue}{unit}</span>
+          <span className="font-mono text-deadlock-text">{userValue}{unit}</span>
           {isPositive ? (
             <TrendingUp className="w-4 h-4 text-deadlock-green" />
           ) : (
@@ -144,7 +168,7 @@ function ComparisonBar({
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-xs">
           <span className="w-24 text-deadlock-muted shrink-0">{userLabel}</span>
-          <div className="flex-1 h-4 bg-deadlock-border rounded-full overflow-hidden">
+          <div className="flex-1 h-4 bg-deadlock-border/70 rounded-full overflow-hidden">
             <div
               className="h-full bg-deadlock-accent rounded-full transition-all"
               style={{ width: `${userPercent}%` }}
@@ -153,7 +177,7 @@ function ComparisonBar({
         </div>
         <div className="flex items-center gap-2 text-xs">
           <span className="w-24 text-deadlock-muted shrink-0">{benchmarkLabel}</span>
-          <div className="flex-1 h-4 bg-deadlock-border rounded-full overflow-hidden">
+          <div className="flex-1 h-4 bg-deadlock-border/70 rounded-full overflow-hidden">
             <div
               className="h-full bg-deadlock-purple rounded-full transition-all"
               style={{ width: `${benchmarkPercent}%` }}

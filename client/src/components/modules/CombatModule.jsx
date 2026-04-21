@@ -4,6 +4,8 @@ import Tooltip from '../ui/Tooltip';
 import { getScoreColor } from '../../utils/grading';
 
 export default function CombatModule({ data }) {
+  if (!data) return null;
+
   const {
     kills, deaths, assists, kda, damage, damagePerMin, deathsPerMin,
     damageTaken, damageTakenPerMin, healing, healingPerMin,
@@ -12,6 +14,22 @@ export default function CombatModule({ data }) {
   
   return (
     <div className="space-y-6">
+      <div className="card hero-header-bg overflow-hidden">
+        <div className="relative z-10 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-deadlock-muted mb-1">Combat Dossier</p>
+            <h3 className="text-2xl font-serif uppercase tracking-wider text-deadlock-text">Combat & KDA</h3>
+            <p className="text-xs text-deadlock-text-dim mt-2 max-w-2xl">
+              Fight output, survivability, and objective pressure distilled into a dossier-style combat summary.
+            </p>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="text-[10px] uppercase tracking-[0.24em] text-deadlock-muted">Module Score</p>
+            <p className="font-mono text-3xl font-bold text-deadlock-accent">{data.score}/100</p>
+          </div>
+        </div>
+      </div>
+
       {/* Key Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Tooltip
@@ -61,9 +79,10 @@ export default function CombatModule({ data }) {
           }}
         >
           <StatBox
-            icon={<Zap className="w-4 h-4 text-deadlock-accent" />}
+            icon={<Sword className="w-4 h-4 text-deadlock-blue" />}
             label="KDA"
-            value={kda}
+            value={Number(kda ?? 0).toFixed(2)}
+            highlight={Number(kda ?? 0) >= 3}
           />
         </Tooltip>
         <StatBox
@@ -75,7 +94,8 @@ export default function CombatModule({ data }) {
 
       {/* Rate Metrics */}
       <div>
-        <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3 flex items-center gap-2">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-deadlock-text-dim uppercase tracking-[0.24em] flex items-center gap-2">
           <Tooltip
             content={{
               term: 'Pace Metrics',
@@ -85,7 +105,11 @@ export default function CombatModule({ data }) {
           >
             <span>Pace</span>
           </Tooltip>
-        </h3>
+          </h3>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-deadlock-muted">
+            Fight intensity and survivability
+          </span>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Tooltip
             content={{
@@ -126,7 +150,7 @@ export default function CombatModule({ data }) {
 
       {/* Damage & Utility Breakdown */}
       <div>
-        <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3">
+        <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3 uppercase tracking-[0.24em]">
           <Tooltip
             content={{
               term: 'Damage & Utility',
@@ -176,7 +200,7 @@ export default function CombatModule({ data }) {
       {/* Positioning Score (only when damage taken data is available) */}
       {positioningScore != null && (
         <div>
-          <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3">
+          <h3 className="text-sm font-semibold text-deadlock-text-dim mb-3 uppercase tracking-[0.24em]">
             <Tooltip metric="positioningScore">
               <span>Positioning Score</span>
             </Tooltip>
