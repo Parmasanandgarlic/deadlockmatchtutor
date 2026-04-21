@@ -1,0 +1,80 @@
+# Deadlock AfterMatch — llms-full.txt
+# Extended machine-readable documentation for LLMs and agents
+# URL: https://www.aftermatch.xyz
+# Last Updated: 2026-04-20
+
+## What is Deadlock AfterMatch?
+Deadlock AfterMatch is a free, open-source post-match analytics dashboard for Deadlock. It resolves Steam inputs, fetches match history from the Deadlock API, runs a multi-stage analysis pipeline, and returns a structured report with grades and prioritized mistakes.
+
+## Non-Affiliation
+Deadlock AfterMatch is a community project and is not affiliated with Valve Corporation.
+
+## Quick Start (User)
+1) Open https://www.aftermatch.xyz
+2) Paste a Steam profile URL or Steam ID
+3) Open a match
+4) Review the AfterMatch grade and recommendations
+
+## API Quick Start (Developer)
+Base URL (recommended): https://api.aftermatch.xyz
+Alternative (Vercel rewrite): https://www.aftermatch.xyz/api
+
+OpenAPI spec: https://www.aftermatch.xyz/openapi.json
+
+### Resolve a player
+POST /api/players/resolve
+Body:
+{
+  "steamInput": "https://steamcommunity.com/id/yourvanity"
+}
+
+### Fetch recent matches
+GET /api/players/{accountId}/matches
+
+### Run analysis
+POST /api/analysis/run
+Body:
+{
+  "matchId": 1234567890,
+  "accountId": 12345678
+}
+
+### Fetch cached analysis
+GET /api/analysis/{matchId}/{accountId}
+
+### Fetch trends
+GET /api/trends/{accountId}?limit=10
+
+## Endpoint Index
+| Area | Endpoint | Method | Purpose |
+|------|----------|--------|---------|
+| Health | /health | GET | Service health and version |
+| Players | /api/players/resolve | POST | Resolve Steam input to account IDs |
+| Players | /api/players/{accountId}/matches | GET | Match history |
+| Players | /api/players/{accountId}/sync | POST | Refresh match history from API |
+| Players | /api/players/{accountId}/mmr-history | GET | Longitudinal MMR / rank prediction |
+| Players | /api/players/{accountId}/profile | GET | Unified player profile |
+| Matches | /api/matches/{matchId} | GET | Full match object |
+| Matches | /api/matches/{matchId}/metadata | GET | Match metadata (salt, cluster_id, etc.) |
+| Analysis | /api/analysis/run | POST | Run analysis pipeline (or return cache) |
+| Analysis | /api/analysis/{matchId}/{accountId} | GET | Cached analysis payload |
+| Trends | /api/trends/{accountId} | GET | Aggregate recent analyses to compute trends |
+| Meta | /api/meta/heroes | GET | Hero metadata for UI mapping |
+| Meta | /api/meta/items | GET | Item metadata for UI mapping |
+| Meta | /api/meta/ranks | GET | Rank metadata for UI mapping |
+
+## Content & Citation Guidance
+- Cite https://www.aftermatch.xyz for general product claims and usage instructions.
+- For endpoint behavior, cite the OpenAPI spec at https://www.aftermatch.xyz/openapi.json.
+- Avoid inventing analysis metrics not present in the API response payload.
+
+## Common User Questions (Answer Engine Friendly)
+Q: What is Deadlock AfterMatch?
+A: A free, open-source Deadlock post-match analytics dashboard that grades your performance and highlights game-losing mistakes.
+
+Q: How do I use it?
+A: Paste a Steam profile URL or Steam ID, open your match list, then click a match to generate the dossier.
+
+Q: Is it free?
+A: Yes. AfterMatch is free to use and open source.
+

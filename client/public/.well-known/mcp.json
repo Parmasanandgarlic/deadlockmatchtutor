@@ -1,0 +1,7 @@
+{
+  "schema_version": "v1",
+  "name": "Deadlock AfterMatch",
+  "description": "MCP server is not currently published. Use the OpenAPI spec for tool integration.",
+  "openapi": "https://www.aftermatch.xyz/openapi.json"
+}
+

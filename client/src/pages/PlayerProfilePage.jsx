@@ -150,8 +150,16 @@ export default function PlayerProfilePage() {
   return (
     <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <SEOHead 
-        title="Player Trend Dossier | Deadlock AfterMatch" 
-        description="Ranked player dossier with predicted rank, peak rank, top heroes, career stats, and long-term Deadlock trends." 
+        title={`Player trends · ${accountId}`}
+        description="Deadlock player trends and profile dossier: rank prediction, top heroes, and rolling performance signals."
+        robots="noindex,nofollow"
+        schema={{
+          '@context': 'https://schema.org',
+          '@type': 'WebPage',
+          name: `Deadlock player trends for account ${accountId}`,
+          description:
+            'Player profile dossier and rolling performance trends (impact score, KDA, Souls/Min) based on analyzed matches.',
+        }}
       />
 
       {/* Ranked rank + career stats + top heroes */}

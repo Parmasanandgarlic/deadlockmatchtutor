@@ -23,10 +23,7 @@ export default function MatchListPage() {
   const isSyncing = syncMutation.isPending;
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
 
-  const heroOptions = useMemo(
-    () => deriveHeroOptions(matches, heroesMap),
-    [matches, heroesMap]
-  );
+  const heroOptions = useMemo(() => deriveHeroOptions(matches, heroesMap), [matches, heroesMap]);
 
   const filteredMatches = useMemo(
     () => applyFiltersAndSort(matches, filters, heroesMap),
@@ -35,19 +32,19 @@ export default function MatchListPage() {
 
   const matchListSchema = {
     '@context': 'https://schema.org',
-    '@type': 'ProfilePage',
-    mainEntity: {
-      '@type': 'Person',
-      identifier: accountId,
-      name: `Player ${accountId}`,
-    },
+    '@type': 'WebPage',
+    name: `Deadlock match history for account ${accountId}`,
+    description:
+      'Recent Deadlock matches for a player account. Open a match to view the full AfterMatch dossier and performance grades.',
   };
 
   if (!accountId) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-20 text-center">
         <p className="text-deadlock-red mb-4">No account ID provided.</p>
-        <Link to="/" className="text-deadlock-accent underline">Return to search</Link>
+        <Link to="/" className="text-deadlock-accent underline">
+          Return to search
+        </Link>
       </div>
     );
   }
@@ -55,115 +52,125 @@ export default function MatchListPage() {
   return (
     <div className="relative min-h-[90vh]">
       {/* Background scene — Deadlock subway alley */}
-      <div 
+      <div
         className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center bg-fixed"
-        style={{ 
+        style={{
           backgroundImage: 'url("/images/bg-scene.png")',
-          opacity: 0.18 
+          opacity: 0.18,
         }}
       />
       {/* Top-to-bottom gradient overlay for text legibility */}
-      <div 
+      <div
         className="absolute inset-0 z-0 pointer-events-none"
         style={{
-          background: 'linear-gradient(to bottom, rgba(5,5,6,0.85) 0%, rgba(5,5,6,0.4) 30%, rgba(5,5,6,0.3) 70%, rgba(5,5,6,0.7) 100%)'
+          background:
+            'linear-gradient(to bottom, rgba(5,5,6,0.85) 0%, rgba(5,5,6,0.4) 30%, rgba(5,5,6,0.3) 70%, rgba(5,5,6,0.7) 100%)',
         }}
       />
       <div className="relative z-10 max-w-5xl mx-auto px-4 py-8">
-        <SEOHead title={`Matches · ${accountId}`} schema={matchListSchema} />
+        <SEOHead
+          title={`Matches · ${accountId}`}
+          description="Browse recent Deadlock matches for this account. Open any match to see AfterMatch grades and actionable insights."
+          robots="noindex,nofollow"
+          schema={matchListSchema}
+        />
 
         <Link
-        to="/"
-        className="inline-flex items-center gap-2 text-deadlock-text-dim hover:text-deadlock-accent mb-6 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" /> Back to search
-      </Link>
+          to="/"
+          className="inline-flex items-center gap-2 text-deadlock-text-dim hover:text-deadlock-accent mb-6 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back to search
+        </Link>
 
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
-        <div>
-          <h2 className="text-2xl font-bold mb-1">Recent Matches</h2>
-          <p className="text-deadlock-text-dim">
-            Account ID: <span className="font-mono text-deadlock-accent">{accountId}</span>
-          </p>
-        </div>
-        
-        <div className="flex gap-2">
-          <Link
-            to={`/player/${accountId}`}
-            className="btn-primary flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 h-fit"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-            </svg>
-            View Trends
-          </Link>
-          <button
-            onClick={() => syncMutation.mutate(accountId)}
-            disabled={loading || isSyncing}
-            className={`btn-secondary flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 h-fit ${isSyncing ? 'opacity-70' : ''}`}
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-            {isSyncing ? 'Syncing...' : 'Sync with API'}
-          </button>
-        </div>
-      </div>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-2xl font-bold mb-1">Recent Matches</h2>
+            <p className="text-deadlock-text-dim">
+              Account ID: <span className="font-mono text-deadlock-accent">{accountId}</span>
+            </p>
+          </div>
 
-      {loading && (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 text-deadlock-accent animate-spin" />
-          <span className="ml-3 text-deadlock-text-dim">Loading matches...</span>
-        </div>
-      )}
-
-      {error && !loading && (
-        <div className="card text-center py-12">
-          <p className="text-deadlock-red mb-4">{error}</p>
-          <div className="flex items-center justify-center gap-4">
-            <button onClick={refetch} className="btn-secondary flex items-center gap-2 text-sm">
-              <RefreshCw className="w-4 h-4" /> Retry
+          <div className="flex gap-2">
+            <Link
+              to={`/player/${accountId}`}
+              className="btn-primary flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 h-fit"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                />
+              </svg>
+              View Trends
+            </Link>
+            <button
+              onClick={() => syncMutation.mutate(accountId)}
+              disabled={loading || isSyncing}
+              className={`btn-secondary flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 h-fit ${isSyncing ? 'opacity-70' : ''}`}
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+              {isSyncing ? 'Syncing...' : 'Sync with API'}
             </button>
-            <Link to="/" className="text-sm text-deadlock-accent underline">Try a different Steam ID</Link>
           </div>
         </div>
-      )}
 
-      {!loading && !error && matches.length === 0 && (
-        <div className="card text-center py-12">
-          <p className="text-deadlock-text-dim">No matches found for this player.</p>
-        </div>
-      )}
+        {loading && (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 text-deadlock-accent animate-spin" />
+            <span className="ml-3 text-deadlock-text-dim">Loading matches...</span>
+          </div>
+        )}
 
-      {!loading && !error && matches.length > 0 && (
-        <>
-          <MatchSummaryPanel matches={matches} />
-
-          <MatchListToolbar
-            filters={filters}
-            onFiltersChange={setFilters}
-            heroOptions={heroOptions}
-            matchCount={filteredMatches.length}
-            totalCount={matches.length}
-          />
-
-          {filteredMatches.length === 0 ? (
-            <div className="card text-center py-12">
-              <p className="text-deadlock-text-dim mb-3">No matches match your filters.</p>
-              <button
-                onClick={() => setFilters(DEFAULT_FILTERS)}
-                className="text-sm text-deadlock-accent underline"
-              >
-                Reset filters
+        {error && !loading && (
+          <div className="card text-center py-12">
+            <p className="text-deadlock-red mb-4">{error}</p>
+            <div className="flex items-center justify-center gap-4">
+              <button onClick={refetch} className="btn-secondary flex items-center gap-2 text-sm">
+                <RefreshCw className="w-4 h-4" /> Retry
               </button>
+              <Link to="/" className="text-sm text-deadlock-accent underline">
+                Try a different Steam ID
+              </Link>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredMatches.map((match) => (
-                <MatchCard key={match.match_id} match={match} accountId={accountId} />
-              ))}
-            </div>
-          )}
-        </>
-      )}
+          </div>
+        )}
+
+        {!loading && !error && matches.length === 0 && (
+          <div className="card text-center py-12">
+            <p className="text-deadlock-text-dim">No matches found for this player.</p>
+          </div>
+        )}
+
+        {!loading && !error && matches.length > 0 && (
+          <>
+            <MatchSummaryPanel matches={matches} />
+
+            <MatchListToolbar
+              filters={filters}
+              onFiltersChange={setFilters}
+              heroOptions={heroOptions}
+              matchCount={filteredMatches.length}
+              totalCount={matches.length}
+            />
+
+            {filteredMatches.length === 0 ? (
+              <div className="card text-center py-12">
+                <p className="text-deadlock-text-dim mb-3">No matches match your filters.</p>
+                <button onClick={() => setFilters(DEFAULT_FILTERS)} className="text-sm text-deadlock-accent underline">
+                  Reset filters
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredMatches.map((match) => (
+                  <MatchCard key={match.match_id} match={match} accountId={accountId} />
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
@@ -183,7 +190,7 @@ function deriveHeroOptions(matches, heroesMap) {
 }
 
 /**
- * Pure filtering + sorting transform — keeps MatchListPage render fast & memoisable.
+ * Pure filtering + sorting transform — keeps MatchListPage render fast & memoizable.
  */
 function applyFiltersAndSort(matches, filters, heroesMap) {
   if (!Array.isArray(matches)) return [];
@@ -253,3 +260,4 @@ function resolveResult(m) {
   if (m.won != null) return m.won;
   return null;
 }
+

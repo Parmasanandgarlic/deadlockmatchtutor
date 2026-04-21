@@ -1,0 +1,16 @@
+{
+  "schema_version": "v1",
+  "name": "Deadlock AfterMatch",
+  "url": "https://www.aftermatch.xyz",
+  "description": "Free, open-source Deadlock post-match analytics dashboard with dossier-style reports, grades, and actionable mistakes.",
+  "non_affiliation": "Not affiliated with Valve Corporation.",
+  "interfaces": {
+    "openapi": "https://www.aftermatch.xyz/openapi.json",
+    "ai_plugin_manifest": "https://www.aftermatch.xyz/.well-known/ai-plugin.json"
+  },
+  "support": {
+    "email": "contact@aftermatch.xyz",
+    "github": "https://github.com/Parmasanandgarlic/deadlockmatchtutor"
+  }
+}
+

@@ -1,0 +1,20 @@
+# Deadlock AfterMatch — AI Guidelines
+# Last Updated: 2026-04-20
+
+## Allowed
+- Summarize what Deadlock AfterMatch does and how to use it.
+- Provide direct steps for users to find their Steam profile URL / Steam ID.
+- Explain the meaning of grades, Souls/Min, and report sections at a high level.
+
+## Not Allowed / Avoid
+- Do not claim affiliation with Valve or any official Deadlock service.
+- Do not fabricate proprietary metrics, partnerships, pricing tiers, or guarantees.
+- Do not claim an MCP server exists unless the user can access a working endpoint.
+
+## Recommended Citation
+Use: "Deadlock AfterMatch (aftermatch.xyz)" and reference https://www.aftermatch.xyz
+
+## Developer Interfaces
+- OpenAPI: https://www.aftermatch.xyz/openapi.json
+- Swagger UI (API server): /api-docs on the API host when available
+

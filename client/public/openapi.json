@@ -1,0 +1,567 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Deadlock AfterMatch API",
+    "version": "1.0.0",
+    "description": "REST API for Deadlock AfterMatch (player resolution, match retrieval, analysis pipeline, trends, and metadata).",
+    "contact": {
+      "name": "Support",
+      "email": "contact@aftermatch.xyz"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.aftermatch.xyz",
+      "description": "Production API Server"
+    },
+    {
+      "url": "http://localhost:3001",
+      "description": "Local Development Server"
+    }
+  ],
+  "externalDocs": {
+    "description": "Deadlock AfterMatch",
+    "url": "https://www.aftermatch.xyz"
+  },
+  "paths": {
+    "/api/analysis/run": {
+      "post": {
+        "summary": "Trigger full match analysis pipeline",
+        "tags": [
+          "Analysis"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "matchId",
+                  "accountId"
+                ],
+                "properties": {
+                  "matchId": {
+                    "type": "integer",
+                    "description": "The unique ID of the match to analyze"
+                  },
+                  "accountId": {
+                    "type": "integer",
+                    "description": "The account ID of the player being analyzed"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Analysis complete or retrieved from cache"
+          },
+          "400": {
+            "description": "Missing or invalid parameters"
+          }
+        }
+      }
+    },
+    "/api/analysis/{matchId}/{accountId}": {
+      "get": {
+        "summary": "Retrieve cached analysis result",
+        "tags": [
+          "Analysis"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "matchId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "accountId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cached analysis payload"
+          },
+          "404": {
+            "description": "Analysis not found"
+          }
+        }
+      }
+    },
+    "/api/auth/steam": {
+      "get": {
+        "summary": "Initiate Steam login",
+        "description": "Redirects user to Steam OpenID authentication page",
+        "tags": [
+          "Authentication"
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to Steam login page"
+          }
+        }
+      }
+    },
+    "/api/auth/steam/return": {
+      "get": {
+        "summary": "Steam login callback",
+        "description": "Handles Steam OpenID callback and creates user session",
+        "tags": [
+          "Authentication"
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to application home page with session"
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "summary": "Get current user profile",
+        "description": "Returns the authenticated user's profile information",
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "steamId": {
+                      "type": "integer"
+                    },
+                    "username": {
+                      "type": "string"
+                    },
+                    "avatar": {
+                      "type": "string"
+                    },
+                    "isPremium": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "summary": "Logout user",
+        "description": "Destroys the user session and logs them out",
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully logged out"
+          }
+        }
+      }
+    },
+    "/api/auth/favorites": {
+      "get": {
+        "summary": "Get user favorites",
+        "description": "Returns all favorited players and matches for the authenticated user",
+        "tags": [
+          "Favorites"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "player",
+                "match"
+              ]
+            },
+            "description": "Filter by favorite type"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of favorites"
+          },
+          "401": {
+            "description": "Not authenticated"
+          }
+        }
+      },
+      "post": {
+        "summary": "Add to favorites",
+        "description": "Add a player or match to user favorites",
+        "tags": [
+          "Favorites"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "type",
+                  "targetId"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "player",
+                      "match"
+                    ]
+                  },
+                  "targetId": {
+                    "type": "integer"
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Favorite added successfully"
+          },
+          "401": {
+            "description": "Not authenticated"
+          }
+        }
+      }
+    },
+    "/api/auth/favorites/{type}/{targetId}": {
+      "delete": {
+        "summary": "Remove from favorites",
+        "description": "Remove a player or match from user favorites",
+        "tags": [
+          "Favorites"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "type",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "player",
+                "match"
+              ]
+            }
+          },
+          {
+            "in": "path",
+            "name": "targetId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Favorite removed successfully"
+          },
+          "401": {
+            "description": "Not authenticated"
+          }
+        }
+      }
+    },
+    "/api/auth/settings": {
+      "put": {
+        "summary": "Update user settings",
+        "description": "Update the authenticated user's settings",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "theme": {
+                    "type": "string"
+                  },
+                  "notifications": {
+                    "type": "object"
+                  },
+                  "privacy": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Settings updated successfully"
+          },
+          "401": {
+            "description": "Not authenticated"
+          }
+        }
+      }
+    },
+    "/api/cron/sync": {
+      "get": {
+        "summary": "Trigger background match synchronization for active accounts.",
+        "tags": [
+          "Utility"
+        ]
+      }
+    },
+    "/api/matches/{matchId}": {
+      "get": {
+        "summary": "Fetch full match information",
+        "tags": [
+          "Matches"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "matchId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Full match data object"
+          },
+          "404": {
+            "description": "Match not found"
+          }
+        }
+      }
+    },
+    "/api/matches/{matchId}/metadata": {
+      "get": {
+        "summary": "Fetch match metadata with CDN salt",
+        "tags": [
+          "Matches"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "matchId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Match metadata (salt, cluster_id, etc.)"
+          }
+        }
+      }
+    },
+    "/api/players/resolve": {
+      "post": {
+        "summary": "Resolve Steam input (URL, ID, Vanity) to account IDs",
+        "tags": [
+          "Players"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "steamInput"
+                ],
+                "properties": {
+                  "steamInput": {
+                    "type": "string",
+                    "description": "Steam ID, Vanity name, or Profile URL"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resolved player IDs and basic info"
+          },
+          "400": {
+            "description": "Invalid input format"
+          }
+        }
+      }
+    },
+    "/api/players/{accountId}/matches": {
+      "get": {
+        "summary": "Fetch match history for a player",
+        "tags": [
+          "Players"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accountId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of recent matches"
+          }
+        }
+      }
+    },
+    "/api/players/{accountId}/sync": {
+      "post": {
+        "summary": "Trigger manual match history refresh from API",
+        "tags": [
+          "Players"
+        ]
+      }
+    },
+    "/api/players/{accountId}/mmr-history": {
+      "get": {
+        "summary": "Longitudinal MMR / rank-predict timeline",
+        "tags": [
+          "Players"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accountId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/api/players/{accountId}/profile": {
+      "get": {
+        "summary": "Unified player profile — rank, career stats, top heroes",
+        "tags": [
+          "Players"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accountId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/api/trends/{accountId}": {
+      "get": {
+        "summary": "Get trend analysis for a player",
+        "description": "Aggregates recent match analyses to compute rolling averages and trajectory for performance, itemization, and economy metrics.",
+        "tags": [
+          "Trends"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accountId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The player's Steam32 account ID"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Number of recent matches to analyze (default 10, max 30)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful trend aggregation"
+          },
+          "400": {
+            "description": "Invalid account ID format"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    }
+  },
+  "components": {},
+  "tags": []
+}

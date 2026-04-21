@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#0c0e14" />
     <meta name="color-scheme" content="dark" />
 
-    <!-- Primary SEO -->
+    <!-- Primary SEO (Homepage shell; SPA routes refine tags at runtime) -->
     <title>Deadlock AfterMatch — Post-Match Performance Grading & Player Dossiers</title>
     <meta
       name="description"
@@ -17,15 +17,20 @@
       content="Deadlock, Deadlock analytics, Deadlock tracker, post-match report, player dossier, ranked profile, KDA, item build, hero stats, benchmark comparison, Valve"
     />
     <meta name="author" content="Deadlock AfterMatch contributors" />
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+    <link rel="canonical" href="https://www.aftermatch.xyz/" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Deadlock AfterMatch" />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:title" content="Deadlock AfterMatch — Post-Match Performance Grading & Player Dossiers" />
     <meta
       property="og:description"
       content="Deadlock match analysis with dossier-style report cards, ranked profiles, top heroes, item builds, and benchmark comparisons."
     />
+    <meta property="og:url" content="https://www.aftermatch.xyz/" />
+    <meta property="og:image" content="https://www.aftermatch.xyz/images/bg-scene.png" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -34,15 +39,20 @@
       name="twitter:description"
       content="Free, open-source Deadlock analytics with dossier-style reports, ranked profiles, top heroes, and item builds."
     />
+    <meta name="twitter:image" content="https://www.aftermatch.xyz/images/bg-scene.png" />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://assets-bucket.deadlock-api.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Permanent+Marker&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Permanent+Marker&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body class="bg-deadlock-bg text-deadlock-text antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
+

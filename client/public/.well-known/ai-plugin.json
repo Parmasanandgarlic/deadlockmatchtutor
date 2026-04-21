@@ -1,0 +1,13 @@
+{
+  "schema_version": "v1",
+  "name_for_model": "deadlock_aftermatch",
+  "name_for_human": "Deadlock AfterMatch",
+  "description_for_model": "Use the Deadlock AfterMatch API to resolve Steam inputs, fetch player match history, run match analysis, retrieve cached reports, and compute player trends.",
+  "description_for_human": "Deadlock post-match analytics: resolve Steam IDs, browse matches, run analysis, view cached reports and trends.",
+  "auth": { "type": "none" },
+  "api": { "type": "openapi", "url": "https://www.aftermatch.xyz/openapi.json", "is_user_authenticated": false },
+  "logo_url": "https://www.aftermatch.xyz/favicon.svg",
+  "contact_email": "contact@aftermatch.xyz",
+  "legal_info_url": "https://www.aftermatch.xyz/privacy"
+}
+

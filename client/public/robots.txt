@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Block low-value / infinite SPA routes (user-specific)
+Disallow: /matches/
+Disallow: /player/
+Disallow: /dashboard/
+Disallow: /report/
+
+Sitemap: https://www.aftermatch.xyz/sitemap.xml
+Host: www.aftermatch.xyz
+

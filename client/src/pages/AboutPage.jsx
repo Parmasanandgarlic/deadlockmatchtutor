@@ -14,13 +14,13 @@ const values = [
   },
   {
     icon: Users,
-    title: 'Transparent',
-    description: 'No hidden data collection, no analytics tracking, no ads. Your Steam ID is used only to fetch your matches.',
+    title: 'Privacy-Minded',
+    description: 'No paywalls, no ads. The only input you provide is a Steam profile URL or ID to fetch match data.',
   },
   {
     icon: Heart,
     title: 'Free Forever',
-    description: 'No paywalls, no premium tiers. Post-match analytics should be accessible to every Deadlock player.',
+    description: 'No premium tiers. Post-match analytics should be accessible to every Deadlock player.',
   },
 ];
 
@@ -36,38 +36,67 @@ const techStack = [
 export default function AboutPage() {
   const aboutSchema = [
     {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Deadlock AfterMatch",
-      "applicationCategory": "GameApplication",
-      "operatingSystem": "Web",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      }
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'Deadlock AfterMatch',
+      applicationCategory: 'GameApplication',
+      operatingSystem: 'Web',
+      url: 'https://www.aftermatch.xyz/',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      description: 'Open-source post-match analytics dashboard for Deadlock.',
     },
     {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Deadlock AfterMatch Contributors",
-      "url": "https://github.com/Parmasanandgarlic/deadlockmatchtutor"
-    }
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'Deadlock AfterMatch Contributors',
+      url: 'https://www.aftermatch.xyz/',
+      sameAs: ['https://github.com/Parmasanandgarlic/deadlockmatchtutor'],
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What is Deadlock AfterMatch?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Deadlock AfterMatch is a free, open-source Deadlock post-match analytics dashboard. It turns match data into clear grades, player dossiers, and actionable mistakes to help you improve.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Where is the source code?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'The source code is hosted publicly on GitHub at Parmasanandgarlic/deadlockmatchtutor.',
+          },
+        },
+      ],
+    },
   ];
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
-      <SEOHead 
-        title="About · Open Source" 
+      <SEOHead
+        title="About · Open Source"
+        description="Learn what Deadlock AfterMatch is, what it does, and how to contribute to the open-source project."
+        imageUrl="/images/bg-scene.png"
         schema={aboutSchema}
       />
-      <section className="mb-12">
+
+      <header className="mb-8">
         <h1 className="text-3xl font-extrabold mb-2">
           <span className="text-deadlock-accent">Open</span> Source
         </h1>
-        <p className="text-deadlock-text-dim text-lg mb-8">
+        <p className="text-deadlock-text-dim text-lg">
           Deadlock AfterMatch is a community-built, open-source project. Anyone can contribute.
         </p>
+        <p className="mt-4 text-sm text-deadlock-muted">
+          TLDR: AfterMatch is a free Deadlock post-match analytics tool. Contribute by filing issues or submitting pull
+          requests on GitHub.
+        </p>
+      </header>
 
       {/* GitHub CTA */}
       <a
@@ -103,7 +132,7 @@ export default function AboutPage() {
 
       {/* Tech Stack */}
       <section className="card mb-8">
-        <h2 className="font-bold text-deadlock-text mb-4">Tech Stack</h2>
+        <h2 className="font-bold text-deadlock-text mb-4">What is Deadlock AfterMatch built with?</h2>
         <div className="flex flex-wrap gap-2">
           {techStack.map(({ name, category }) => (
             <span
@@ -119,22 +148,33 @@ export default function AboutPage() {
 
       {/* How to Contribute */}
       <section className="card">
-        <h2 className="font-bold text-deadlock-text mb-4">How to Contribute</h2>
+        <h2 className="font-bold text-deadlock-text mb-4">How can you contribute to Deadlock AfterMatch?</h2>
         <ol className="space-y-3 text-sm text-deadlock-text-dim">
           <li className="flex items-start gap-3">
-            <span className="w-6 h-6 rounded-full bg-deadlock-accent/15 text-deadlock-accent text-xs font-bold flex items-center justify-center shrink-0">1</span>
+            <span className="w-6 h-6 rounded-full bg-deadlock-accent/15 text-deadlock-accent text-xs font-bold flex items-center justify-center shrink-0">
+              1
+            </span>
             <span>Fork the repository on GitHub</span>
           </li>
           <li className="flex items-start gap-3">
-            <span className="w-6 h-6 rounded-full bg-deadlock-accent/15 text-deadlock-accent text-xs font-bold flex items-center justify-center shrink-0">2</span>
-            <span>Create a feature branch (<code className="font-mono text-deadlock-accent">git checkout -b feature/your-idea</code>)</span>
+            <span className="w-6 h-6 rounded-full bg-deadlock-accent/15 text-deadlock-accent text-xs font-bold flex items-center justify-center shrink-0">
+              2
+            </span>
+            <span>
+              Create a feature branch (
+              <code className="font-mono text-deadlock-accent">git checkout -b feature/your-idea</code>)
+            </span>
           </li>
           <li className="flex items-start gap-3">
-            <span className="w-6 h-6 rounded-full bg-deadlock-accent/15 text-deadlock-accent text-xs font-bold flex items-center justify-center shrink-0">3</span>
+            <span className="w-6 h-6 rounded-full bg-deadlock-accent/15 text-deadlock-accent text-xs font-bold flex items-center justify-center shrink-0">
+              3
+            </span>
             <span>Make your changes and commit with clear messages</span>
           </li>
           <li className="flex items-start gap-3">
-            <span className="w-6 h-6 rounded-full bg-deadlock-accent/15 text-deadlock-accent text-xs font-bold flex items-center justify-center shrink-0">4</span>
+            <span className="w-6 h-6 rounded-full bg-deadlock-accent/15 text-deadlock-accent text-xs font-bold flex items-center justify-center shrink-0">
+              4
+            </span>
             <span>Open a Pull Request describing what you changed and why</span>
           </li>
         </ol>
@@ -149,7 +189,7 @@ export default function AboutPage() {
           .
         </p>
       </section>
-      </section>
     </div>
   );
 }
+

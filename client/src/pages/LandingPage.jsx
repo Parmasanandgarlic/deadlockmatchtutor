@@ -89,48 +89,80 @@ export default function LandingPage() {
 
   const landingSchema = [
     {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Deadlock AfterMatch",
-      "url": "https://aftermatch.xyz",
-      "description": "Free, open-source post-match analytics for Deadlock."
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'Deadlock AfterMatch',
+      url: 'https://www.aftermatch.xyz/',
+      sameAs: ['https://github.com/Parmasanandgarlic/deadlockmatchtutor'],
+      contactPoint: [
+        {
+          '@type': 'ContactPoint',
+          contactType: 'customer support',
+          email: 'contact@aftermatch.xyz',
+        },
+      ],
     },
     {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Deadlock AfterMatch',
+      url: 'https://www.aftermatch.xyz/',
+      description: 'Free, open-source post-match analytics for Deadlock.',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: 'https://www.aftermatch.xyz/?q={search_term_string}',
+        'query-input': 'required name=search_term_string',
+      },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: 'Deadlock AfterMatch',
+      url: 'https://www.aftermatch.xyz/',
+      operatingSystem: 'Web',
+      applicationCategory: 'GameApplication',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      description:
+        'Post-match analytics dashboard for Deadlock: economy, itemization, combat, objectives, and plain-English mistakes.',
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
         {
-          "@type": "Question",
-          "name": "What is Deadlock AfterMatch?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Deadlock AfterMatch is a free, open-source post-match analytics engine for the game Deadlock. It provides high-precision data on your economy, combat performance, itemization efficiency, and objective control to help players improve their macro-decisions."
-          }
+          '@type': 'Question',
+          name: 'What is Deadlock AfterMatch?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Deadlock AfterMatch is a free, open-source post-match analytics engine for the game Deadlock. It analyzes match data to grade economy, combat, itemization, and objective control so players can improve macro decision-making.',
+          },
         },
         {
-          "@type": "Question",
-          "name": "How does Deadlock AfterMatch grade my performance?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "The platform analyzes your match data from the Deadlock API. It compares your Net Worth, KDA, and Souls/Min against your career hero averages and general community baselines, assigning an objective graded score from F to A+."
-          }
+          '@type': 'Question',
+          name: 'How does Deadlock AfterMatch grade my performance?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'AfterMatch analyzes your match data from the Deadlock API and scores key dimensions such as Net Worth trajectory, KDA density, Souls/Min, and objective impact. It compares your results to your own baselines and broader community signals to assign a grade from F to A+.',
+          },
         },
         {
-          "@type": "Question",
-          "name": "Is Deadlock AfterMatch free to use?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes, Deadlock AfterMatch is entirely free and open-source."
-          }
-        }
-      ]
-    }
+          '@type': 'Question',
+          name: 'Is Deadlock AfterMatch free to use?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. Deadlock AfterMatch is free to use and the code is open source on GitHub.',
+          },
+        },
+      ],
+    },
   ];
 
   return (
     <div className="relative min-h-[90vh] flex flex-col items-center justify-center pt-10 pb-20 overflow-hidden">
       <SEOHead 
-        title={null} 
+        title="Deadlock match analyzer & post-match reports"
+        description="Analyze Deadlock matches in minutes: economy and Souls/Min grading, itemization timing, combat impact, objective control, and plain-English mistakes."
+        imageUrl="/images/bg-scene.png"
         schema={landingSchema} 
       />
       {/* Background context (Minimal) */}
@@ -305,6 +337,51 @@ export default function LandingPage() {
           )}
         </div>
 
+        {/* AEO Quick Answer */}
+        <section className="w-full max-w-4xl mt-20">
+          <h2 className="text-2xl font-serif tracking-widest text-white mb-4 text-center uppercase">
+            What is Deadlock AfterMatch?
+          </h2>
+          <p className="text-sm text-deadlock-text-dim leading-relaxed max-w-3xl mx-auto text-center">
+            Deadlock AfterMatch is a free, open-source post-match analytics dashboard for Deadlock that turns match data into
+            clear grades and actionable mistakes. Paste a Steam profile URL or Steam ID to generate match reports and player
+            dossiers instantly.
+          </p>
+          <div className="mt-8 card overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="text-deadlock-text-dim">
+                <tr>
+                  <th className="py-2 pr-4">Dimension</th>
+                  <th className="py-2 pr-4">What you get</th>
+                  <th className="py-2">Why it matters</th>
+                </tr>
+              </thead>
+              <tbody className="text-deadlock-text-dim">
+                <tr className="border-t border-deadlock-border">
+                  <td className="py-2 pr-4 text-deadlock-text">Economy</td>
+                  <td className="py-2 pr-4">Net worth efficiency, Souls/Min signals</td>
+                  <td className="py-2">Detect farming vs fighting timing leaks</td>
+                </tr>
+                <tr className="border-t border-deadlock-border">
+                  <td className="py-2 pr-4 text-deadlock-text">Combat</td>
+                  <td className="py-2 pr-4">KDA density and fight impact</td>
+                  <td className="py-2">Spot overextensions and low-value deaths</td>
+                </tr>
+                <tr className="border-t border-deadlock-border">
+                  <td className="py-2 pr-4 text-deadlock-text">Itemization</td>
+                  <td className="py-2 pr-4">Power spike timing</td>
+                  <td className="py-2">Convert timings into win probability pressure</td>
+                </tr>
+                <tr className="border-t border-deadlock-border">
+                  <td className="py-2 pr-4 text-deadlock-text">Objectives</td>
+                  <td className="py-2 pr-4">Lane and objective impact scoring</td>
+                  <td className="py-2">Catch macro rotations that lose games</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         {/* Themed Modules */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-4xl">
           <div className="card card-blue group hover:bg-deadlock-blue/5 transition-colors">
@@ -343,7 +420,7 @@ export default function LandingPage() {
         {/* SEO / AEO Generative FAQ Section */}
         <section className="w-full max-w-4xl mt-32 border-t border-deadlock-border pt-16">
           <h2 className="text-2xl font-serif tracking-widest text-white mb-8 text-center uppercase">
-            Frequently Asked Questions
+            What questions do players ask about Deadlock AfterMatch?
           </h2>
           <div className="grid grid-cols-1 gap-6">
             <article className="bg-deadlock-bg border border-deadlock-border p-6 hover:border-deadlock-blue/30 transition-colors">

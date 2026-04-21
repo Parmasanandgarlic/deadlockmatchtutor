@@ -16,6 +16,7 @@
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:client": "npm run dev --workspace=client",
     "dev:server": "npm run dev --workspace=server",
+    "generate:openapi": "node scripts/generate-openapi.js",
     "build": "npm run build -w client",
     "vercel-build": "npm run build -w client && mkdir -p dist && cp -rv client/dist/* dist/",
     "start": "npm run start --workspace=server",

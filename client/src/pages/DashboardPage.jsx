@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Lightbulb, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import useMatchAnalysis from '../hooks/useMatchAnalysis';
@@ -16,7 +16,6 @@ import MmrHistoryCard from '../components/dashboard/MmrHistoryCard';
 import GuideModal from '../components/ui/GuideModal';
 import { PRIORITY_CONFIG } from '../utils/constants';
 import { toErrorMessage } from '../utils/errorMessage';
-import { useState } from 'react';
 
 export default function DashboardPage() {
   const { matchId, accountId } = useParams();
@@ -33,28 +32,24 @@ export default function DashboardPage() {
   }, [loading, analysis]);
 
   const dynamicTitle = analysis?.meta
-    ? `${analysis.meta.heroName} · Grade ${analysis.overall?.letterGrade || ''} · Deadlock AfterMatch`.trim()
+    ? `${analysis.meta.heroName} · Grade ${analysis.overall?.letterGrade || ''}`.trim()
     : `Match #${matchId}`;
 
   const dynamicDesc = analysis?.meta
     ? `Deadlock match dossier for ${analysis.meta.heroName}: grade ${analysis.overall?.letterGrade}, ${analysis.modules?.heroPerformance?.matchKda} match KDA, ${analysis.modules?.itemization?.soulsPerMin} souls/min, ranked benchmarks, item build, and combat breakdown.`
     : `Detailed Deadlock match dossier for match ${matchId}, including combat, itemization, benchmarks, and performance grades.`;
 
-  const dashboardSchema = analysis ? [
-    {
-      "@context": "https://schema.org",
-      "@type": "ProfilePage",
-      "mainEntity": {
-        "@type": "Person",
-        "name": `Match Profile - ${analysis.meta.heroName}`,
-        "interactionStatistic": {
-          "@type": "InteractionCounter",
-          "interactionType": "https://schema.org/PlayAction",
-          "userInteractionCount": 1
-        }
-      }
-    }
-  ] : null;
+  const dashboardSchema = analysis
+    ? [
+        {
+          '@context': 'https://schema.org',
+          '@type': 'WebPage',
+          name: `Deadlock match report: ${analysis.meta.heroName}`,
+          description: dynamicDesc,
+          isPartOf: { '@type': 'WebSite', name: 'Deadlock AfterMatch', url: 'https://www.aftermatch.xyz/' },
+        },
+      ]
+    : null;
 
   useEffect(() => {
     const routeKey = `${matchId}:${accountId}`;
@@ -74,7 +69,9 @@ export default function DashboardPage() {
     return (
       <div className="max-w-3xl mx-auto px-4 py-20 text-center">
         <p className="text-deadlock-red text-lg mb-4">{toErrorMessage(error)}</p>
-        <Link to="/" className="text-deadlock-accent underline">Return home</Link>
+        <Link to="/" className="text-deadlock-accent underline">
+          Return home
+        </Link>
       </div>
     );
   }
@@ -83,11 +80,8 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <SEOHead 
-        title={dynamicTitle} 
-        description={dynamicDesc}
-        schema={dashboardSchema}
-      />
+      <SEOHead title={dynamicTitle} description={dynamicDesc} robots="noindex,nofollow" schema={dashboardSchema} />
+
       <div className="osic-dossier-bg p-6 lg:p-10 rounded-lg">
         <div className="flex items-center justify-between mb-6">
           <Link
@@ -128,25 +122,24 @@ export default function DashboardPage() {
               Strategic Directives
             </h2>
             <div className="space-y-3">
-            {analysis.recommendations.map((rec, idx) => {
-              const priority = PRIORITY_CONFIG[rec.priority] || PRIORITY_CONFIG.low;
-              return (
-                <div
-                  key={idx}
-                  className={`card ${priority.bg} ${priority.border} border-l-4`}
-                >
-                  <div className="flex items-start gap-3">
-                    <span className={`text-xs font-semibold uppercase px-2 py-1 rounded ${priority.bg} ${priority.color} ${priority.border}`}>
-                      {priority.label}
-                    </span>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-sm mb-1">{rec.title}</h3>
-                      <p className="text-sm text-deadlock-text-dim">{rec.description}</p>
+              {analysis.recommendations.map((rec, idx) => {
+                const priority = PRIORITY_CONFIG[rec.priority] || PRIORITY_CONFIG.low;
+                return (
+                  <div key={idx} className={`card ${priority.bg} ${priority.border} border-l-4`}>
+                    <div className="flex items-start gap-3">
+                      <span
+                        className={`text-xs font-semibold uppercase px-2 py-1 rounded ${priority.bg} ${priority.color} ${priority.border}`}
+                      >
+                        {priority.label}
+                      </span>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-sm mb-1">{rec.title}</h3>
+                        <p className="text-sm text-deadlock-text-dim">{rec.description}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
             </div>
           </div>
         )}
@@ -166,3 +159,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

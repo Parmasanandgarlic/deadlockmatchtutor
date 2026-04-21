@@ -4,7 +4,7 @@ import SEOHead from '../components/seo/SEOHead';
 const sections = [
   {
     icon: Eye,
-    title: 'What We Collect',
+    title: 'What data do you collect?',
     items: [
       'Steam ID, vanity name, or profile URL you enter to look up a player',
       'Match IDs and account IDs associated with analyses you request',
@@ -13,7 +13,7 @@ const sections = [
   },
   {
     icon: Database,
-    title: 'How We Use Data',
+    title: 'How do you use the data?',
     items: [
       'To resolve your Steam identity and fetch match history from the Deadlock API',
       'To compute post-match analytics (economy, combat, itemization grades)',
@@ -22,7 +22,7 @@ const sections = [
   },
   {
     icon: Lock,
-    title: 'Data Storage & Security',
+    title: 'How is data stored and protected?',
     items: [
       'Analysis caches are stored in Supabase (PostgreSQL) with row-level security',
       'No passwords, payment info, or personal identification beyond Steam IDs are stored',
@@ -32,19 +32,20 @@ const sections = [
   },
   {
     icon: Trash2,
-    title: 'Data Retention & Deletion',
+    title: 'How long is data kept, and how can it be deleted?',
     items: [
-      'Cached analyses are retained indefinitely for performance but contain no personal data beyond match statistics',
+      'Cached analyses are retained for performance and contain match statistics tied to an account ID',
       'You may request deletion of cached analyses associated with your account ID by emailing contact@aftermatch.xyz or opening an issue on our GitHub repository',
       'Steam IDs are not stored independently — they are used only in transit for API resolution',
     ],
   },
   {
     icon: Shield,
-    title: 'Third-Party Services',
+    title: 'Which third-party services are involved?',
     items: [
       'Match data is sourced from the community-run Deadlock API (deadlock-api.com)',
-      'Steam vanity resolution uses Steam\'s public XML profile endpoint — no Steam API key is required',
+      "Steam vanity resolution uses Steam's public profile endpoints",
+      'Site analytics may be provided by Vercel Analytics as part of hosting/telemetry',
       'We are not affiliated with Valve Corporation or the Deadlock API project',
     ],
   },
@@ -53,25 +54,55 @@ const sections = [
 export default function PrivacyPage() {
   const privacySchema = [
     {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      "name": "Privacy Policy - Deadlock AfterMatch",
-      "description": "Privacy policy and data handling practices for the Deadlock AfterMatch analytics tool. Learn how we handle your Steam ID and match data."
-    }
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: 'Privacy Policy - Deadlock AfterMatch',
+      description:
+        'Privacy policy and data handling practices for the Deadlock AfterMatch analytics tool, including Steam ID usage and match analysis caching.',
+      url: 'https://www.aftermatch.xyz/privacy',
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What data does Deadlock AfterMatch collect?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'AfterMatch collects the Steam profile identifier you enter, match/account IDs required for analysis, and cached analysis results so pages load faster. It does not require passwords or payment information.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How can I request deletion of cached analyses?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Email contact@aftermatch.xyz or open a GitHub issue with your account ID and the match IDs you want removed.',
+          },
+        },
+      ],
+    },
   ];
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
-      <SEOHead 
+      <SEOHead
         title="Privacy Policy"
-        description="Privacy policy and data handling practices for the Deadlock AfterMatch analytics tool. Learn how we handle your Steam ID and match data."
+        description="Privacy policy for Deadlock AfterMatch: what data is used to fetch and analyze matches, what is cached, and how to request deletion."
+        imageUrl="/images/bg-scene.png"
         schema={privacySchema}
       />
+
       <header className="mb-8">
         <h1 className="text-3xl font-extrabold mb-2">
           <span className="text-deadlock-accent">Privacy</span> Policy
         </h1>
-        <p className="text-deadlock-text-dim">Last updated: April 2026</p>
+        <p className="text-deadlock-text-dim">Last updated: April 20, 2026</p>
+        <p className="mt-4 text-sm text-deadlock-muted">
+          TLDR: We use your Steam profile identifier to fetch match data and generate analytics. We cache analysis results
+          for performance, and you can request deletion via email or GitHub.
+        </p>
       </header>
 
       <div className="space-y-8">
@@ -97,8 +128,7 @@ export default function PrivacyPage() {
 
       <aside className="mt-8 card bg-deadlock-bg border-deadlock-border">
         <p className="text-sm text-deadlock-text-dim leading-relaxed">
-          This project is open source. If you have questions or concerns about data practices,
-          please open an issue on{' '}
+          This project is open source. If you have questions or concerns about data practices, please open an issue on{' '}
           <a
             href="https://github.com/Parmasanandgarlic/deadlockmatchtutor"
             target="_blank"
@@ -113,3 +143,4 @@ export default function PrivacyPage() {
     </div>
   );
 }
+
