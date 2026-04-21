@@ -14,22 +14,6 @@ export default function CombatModule({ data }) {
   
   return (
     <div className="space-y-6">
-      <div className="card hero-header-bg overflow-hidden">
-        <div className="relative z-10 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-deadlock-muted mb-1">Combat Dossier</p>
-            <h3 className="text-2xl font-serif uppercase tracking-wider text-deadlock-text">Combat & KDA</h3>
-            <p className="text-xs text-deadlock-text-dim mt-2 max-w-2xl">
-              Fight output, survivability, and objective pressure distilled into a dossier-style combat summary.
-            </p>
-          </div>
-          <div className="text-right shrink-0">
-            <p className="text-[10px] uppercase tracking-[0.24em] text-deadlock-muted">Module Score</p>
-            <p className="font-mono text-3xl font-bold text-deadlock-accent">{data.score}/100</p>
-          </div>
-        </div>
-      </div>
-
       {/* Key Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Tooltip
@@ -79,7 +63,7 @@ export default function CombatModule({ data }) {
           }}
         >
           <StatBox
-            icon={<Sword className="w-4 h-4 text-deadlock-blue" />}
+            icon={<Zap className="w-4 h-4 text-deadlock-accent" />}
             label="KDA"
             value={Number(kda ?? 0).toFixed(2)}
             highlight={Number(kda ?? 0) >= 3}

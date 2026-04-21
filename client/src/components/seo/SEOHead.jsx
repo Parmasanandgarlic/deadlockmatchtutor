@@ -16,7 +16,11 @@ export default function SEOHead({
   schema,
   imageUrl = '/favicon.svg'
 }) {
-  const finalTitle = title ? `${title} · Deadlock AfterMatch` : DEFAULT_TITLE;
+  const finalTitle = title
+    ? /deadlock aftermatch/i.test(title)
+      ? title
+      : `${title} · Deadlock AfterMatch`
+    : DEFAULT_TITLE;
   const finalDescription = description || DEFAULT_DESC;
   const finalKeywords = keywords || DEFAULT_KEYWORDS;
 

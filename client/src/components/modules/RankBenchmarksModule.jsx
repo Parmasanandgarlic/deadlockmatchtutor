@@ -6,26 +6,22 @@ export default function RankBenchmarksModule({ data }) {
 
   return (
     <div className="space-y-6">
-      <div className="card hero-header-bg overflow-hidden">
-        <div className="relative z-10 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            {tierImageUrl ? (
-              <img src={tierImageUrl} alt={tierName} className="w-12 h-12 object-contain drop-shadow-[0_0_8px_rgba(255,173,28,0.25)]" />
-            ) : (
-              <ShieldCheck className="w-10 h-10 text-deadlock-accent" />
-            )}
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.28em] text-deadlock-muted">Rank-Calibrated Dossier</p>
-              <h3 className="text-2xl font-serif uppercase tracking-wider text-deadlock-text">{tierName || 'Unranked'}</h3>
-              <p className="text-xs text-deadlock-text-dim mt-1 max-w-2xl">
-                Your current match is compared against expected performance for players at this rank tier.
-              </p>
-            </div>
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          {tierImageUrl ? (
+            <img src={tierImageUrl} alt={tierName} className="w-12 h-12 object-contain" />
+          ) : (
+            <ShieldCheck className="w-10 h-10 text-deadlock-accent" />
+          )}
+          <div>
+            <p className="text-xs uppercase tracking-widest text-deadlock-muted">Rank-Calibrated Benchmark</p>
+            <p className="font-semibold">{tierName || 'Unranked'}</p>
           </div>
-          <div className="text-right shrink-0">
-            <p className="text-[10px] uppercase tracking-[0.24em] text-deadlock-muted">Module Score</p>
-            <p className="font-mono text-3xl font-bold text-deadlock-accent">{score}/100</p>
-          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-xs text-deadlock-muted">Module Score</p>
+          <p className="font-mono text-2xl font-bold text-deadlock-accent">{score}/100</p>
         </div>
       </div>
 

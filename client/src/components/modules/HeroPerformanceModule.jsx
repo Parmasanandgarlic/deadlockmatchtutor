@@ -1,63 +1,23 @@
-import { TrendingUp, Trophy, Target, Sword, Coins, Flame, Skull, Shield } from 'lucide-react';
+import { TrendingUp, Trophy, Target, Sword, Coins, Flame, Skull } from 'lucide-react';
 import { formatNumber } from '../../utils/formatters';
 import Tooltip from '../ui/Tooltip';
-import { useAssets } from '../../contexts/AssetContext';
 
-export default function HeroPerformanceModule({ data, meta }) {
-  const { heroesMap } = useAssets();
+export default function HeroPerformanceModule({ data }) {
+  if (!data) return null;
+
   const hasMatchStats = data.matchKda != null;
   const winrate = data.winrate ?? 0;
   const avgKda = data.avgKda ?? 0;
   const matchesPlayed = data.matchesPlayed ?? 0;
   const avgSouls = data.avgSouls ?? 0;
-  const heroId = meta?.heroId || meta?.hero_id;
-  const heroAsset = heroesMap?.[heroId];
-  const heroName = meta?.heroName || heroAsset?.name || 'Unknown Hero';
-  const heroImage = heroAsset?.images?.icon_image_small_webp || heroAsset?.images?.icon_image_small || heroAsset?.images?.icon_image_webp || heroAsset?.images?.icon_image;
 
-  const matchKdaLabel = data.matchKda != null ? Number(data.matchKda).toFixed(1) : '—';
+  const matchKdaLabel = data.matchKda != null ? Number(data.matchKda).toFixed(2) : '—';
   const soulsPerMinLabel = data.soulsPerMin != null ? formatNumber(data.soulsPerMin) : '—';
   const damagePerMinLabel = data.damagePerMin != null ? formatNumber(data.damagePerMin) : '—';
   const deathsLabel = data.deaths != null ? data.deaths : 0;
 
   return (
     <div className="space-y-6">
-      <div className="card hero-header-bg overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-4">
-          <div className="flex items-center gap-4">
-            <div className="relative w-16 h-16 border border-deadlock-border bg-black/40 overflow-hidden rounded-none flex items-center justify-center">
-              {heroImage ? (
-                <img
-                  src={heroImage}
-                  alt={heroName}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              ) : (
-                <Shield className="w-8 h-8 text-deadlock-amber/70" />
-              )}
-            </div>
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-deadlock-muted">Hero Dossier</p>
-              <h3 className="text-2xl font-serif text-deadlock-text uppercase tracking-wider">{heroName}</h3>
-              <p className="text-xs text-deadlock-text-dim mt-1">
-                {hasMatchStats
-                  ? 'This match is compared against your career baseline on this hero.'
-                  : 'Career data shown here is derived from the player-hero stats endpoint.'}
-              </p>
-            </div>
-          </div>
-          {data.note && (
-            <div className="md:ml-auto bg-black/30 border border-deadlock-border px-3 py-2 text-xs text-deadlock-text-dim max-w-xl">
-              {data.note}
-            </div>
-          )}
-        </div>
-      </div>
-
       {hasMatchStats && (
         <div>
           <div className="flex items-center justify-between mb-3">
@@ -193,6 +153,12 @@ export default function HeroPerformanceModule({ data, meta }) {
       {!hasMatchStats && (
         <div className="bg-deadlock-bg/70 border border-deadlock-border px-4 py-3 text-sm text-deadlock-text-dim">
           Match-specific stats were unavailable for this report, so only career values are shown.
+        </div>
+      )}
+
+      {data.note && (
+        <div className="bg-deadlock-bg rounded-lg p-4 text-sm text-deadlock-muted">
+          {data.note}
         </div>
       )}
     </div>

@@ -1,5 +1,5 @@
 import { formatNumber } from '../../utils/formatters';
-import { ShoppingBag, Coins, Box, TrendingUp, AlertCircle, Shield, ArrowUpRight } from 'lucide-react';
+import { ShoppingBag, Coins, Box, TrendingUp, AlertCircle, ArrowUpRight } from 'lucide-react';
 import Tooltip from '../ui/Tooltip';
 import TimelineGraph from '../dashboard/TimelineGraph';
 import { useAssets } from '../../contexts/AssetContext';
@@ -7,11 +7,7 @@ import { useAssets } from '../../contexts/AssetContext';
 export default function ItemizationModule({ data, meta }) {
   const { items = [], netWorth = 0, souls = 0, soulsPerMin = 0 } = data || {};
   const { itemsMap, isLoading } = useAssets();
-  const topItem = items[0];
-  const topItemAsset = topItem ? itemsMap?.[topItem.id] : null;
-  const topItemName = topItemAsset?.name || topItem?.name || 'No build data';
-  const topItemImg = topItemAsset?.images?.icon_image_small_webp || topItemAsset?.images?.icon_image_small || topItemAsset?.images?.icon_image_webp || topItemAsset?.images?.icon_image;
-  
+
   if (isLoading && items.length > 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 space-y-4">
@@ -22,32 +18,6 @@ export default function ItemizationModule({ data, meta }) {
   }
   return (
     <div className="space-y-6">
-      <div className="card hero-header-bg overflow-hidden">
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[1.2fr,0.8fr] gap-4 items-stretch">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-deadlock-muted mb-1">Build Dossier</p>
-            <h3 className="text-2xl font-serif uppercase tracking-wider text-deadlock-text">Itemization & Economy</h3>
-            <p className="text-xs text-deadlock-text-dim mt-2 max-w-2xl">
-              Your economy curve, build value, and item progression summarized into a dossier-style build report.
-            </p>
-          </div>
-          <div className="bg-black/30 border border-deadlock-border px-4 py-3 flex items-center gap-3">
-            <div className="w-14 h-14 border border-deadlock-amber/30 bg-deadlock-bg flex items-center justify-center overflow-hidden shrink-0">
-              {topItemImg ? (
-                <img src={topItemImg} alt={topItemName} className="w-full h-full object-contain" />
-              ) : (
-                <Shield className="w-7 h-7 text-deadlock-amber/70" />
-              )}
-            </div>
-            <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-[0.25em] text-deadlock-muted">Lead Item</p>
-              <p className="text-sm font-bold text-deadlock-text truncate">{topItemName}</p>
-              <p className="text-[10px] uppercase tracking-[0.22em] text-deadlock-text-dim mt-1">{items.length ? `${items.length} items tracked` : 'No tracked items yet'}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Key Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Tooltip
@@ -131,7 +101,7 @@ export default function ItemizationModule({ data, meta }) {
                   key={i}
                   content={{
                     term: itemName,
-                    definition: `Item cost: ${formatNumber(item.cost)} gold. Item effectiveness depends on timing and enemy composition.`,
+                    definition: `Item cost: ${formatNumber(itemCost)} gold. Item effectiveness depends on timing and enemy composition.`,
                     category: 'Build'
                   }}
                 >
