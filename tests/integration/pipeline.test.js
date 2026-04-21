@@ -71,6 +71,19 @@ const mockApiData = {
     assert.ok(r.recommendations.length > 0);
   });
 
+  await test('pipeline extracts items from matchInfo players', async () => {
+    const matchInfoWithItems = {
+      match_id: 12345,
+      duration_s: 2000,
+      players: [
+        { account_id: 12345, item_ids: [1001, 1002, 1003] },
+      ],
+    };
+    const r = await runPipeline(mockApiData, '12345', matchInfoWithItems);
+    assert.strictEqual(r.modules.itemization.items.length, 3);
+    assert.ok(!String(r.modules.buildPath.summary || '').includes('No items found for this match'));
+  });
+
   console.log(`\n  ${test.passed} passed / ${test.failed} failed`);
   if (test.failed > 0) process.exitCode = 1;
 })();

@@ -365,15 +365,28 @@ function roundTo(value, decimals = 1) {
  * Grades final build value against an expected souls/minute benchmark.
  */
 function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durationMinutes) {
+  const normalizeItems = (raw) => {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
+    if (Array.isArray(raw.items)) return raw.items;
+    if (Array.isArray(raw.item_ids)) return raw.item_ids;
+    if (Array.isArray(raw.itemIds)) return raw.itemIds;
+    return [];
+  };
+
   let items = [];
   
   // 1. Try matchInHistory (usually faster/cached)
   if (matchInHistory) {
-    items = matchInHistory.items || 
-            matchInHistory.item_ids || 
-            matchInHistory.build || 
-            matchInHistory.match_items || 
-            [];
+    items = normalizeItems(
+      matchInHistory.items ||
+      matchInHistory.item_ids ||
+      matchInHistory.itemIds ||
+      matchInHistory.build ||
+      matchInHistory.match_items ||
+      matchInHistory.matchItems ||
+      []
+    );
     
     if (items.length > 0) {
       logger.debug(`[Pipeline] Extracted ${items.length} items from matchInHistory`);
@@ -384,18 +397,27 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
   if (items.length === 0 && matchInfo && Array.isArray(matchInfo.players)) {
     const player = matchInfo.players.find(p => Number(p.account_id) === Number(accountId));
     if (player) {
-      items = player.items ||
-              player.build ||
-              player.item_ids ||
-              player.match_items ||
-              player.player_items ||
-              player.inventory ||
-              [];
+      items = normalizeItems(
+        player.items ||
+        player.item_ids ||
+        player.itemIds ||
+        player.match_items ||
+        player.matchItems ||
+        player.player_items ||
+        player.playerItems ||
+        player.inventory ||
+        player.final_build ||
+        player.finalBuild ||
+        player.build ||
+        []
+      );
 
       // Some responses nest items under stats or final_build
       if ((!items || items.length === 0) && Array.isArray(player.stats)) {
         const lastStats = player.stats[player.stats.length - 1];
-        if (lastStats && Array.isArray(lastStats.items)) items = lastStats.items;
+        if (lastStats) {
+          items = normalizeItems(lastStats.items || lastStats.item_ids || lastStats.itemIds);
+        }
       }
 
       if (items.length > 0) {
@@ -433,7 +455,8 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
           name: apiItem?.name ?? getItemName(item),
           cost: apiItem?.item_cost ?? 0,
           image: apiItem?.image || null,
-          image_webp: apiItem?.image_webp || null
+          image_webp: apiItem?.image_webp || null,
+          time_s: null,
         };
       }
       if (typeof item === 'string') {
@@ -442,20 +465,23 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
           name: item,
           cost: 0,
           image: null,
-          image_webp: null
+          image_webp: null,
+          time_s: null,
         };
       }
       const id = item.id ?? item.item_id ?? item.item ?? null;
       const apiItem = getItemData(id);
       const name = item.name ?? item.item_name ?? item.display_name ?? apiItem?.name ?? getItemName(id) ?? 'Unknown Item';
       const cost = item.cost ?? item.item_cost ?? item.price ?? apiItem?.item_cost ?? 0;
+      const time_s = item.time_s ?? item.buy_time_s ?? item.purchase_time_s ?? item.game_time_s ?? item.timeSeconds ?? item.time ?? null;
       
       return {
         id,
         name,
         cost,
         image: apiItem?.image || null,
-        image_webp: apiItem?.image_webp || null
+        image_webp: apiItem?.image_webp || null,
+        time_s: time_s != null ? Number(time_s) : null,
       };
     }),
     netWorth: Math.round(netWorth),

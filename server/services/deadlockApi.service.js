@@ -107,12 +107,6 @@ async function getMatchMetadata(matchId) {
  */
 async function getMatchInfo(matchId) {
   const cacheKey = redisClient.cacheKeys?.matchDetails?.(matchId);
-  const granularUrl = `${config.deadlockApi.baseUrl}/v1/matches/${matchId}/metadata`;
-  const granularParams = {
-    include_player_stats: true,
-    include_player_death_details: true,
-    include_player_items: true,
-  };
 
   // 1. Check Redis Cache
   try {
@@ -125,36 +119,39 @@ async function getMatchInfo(matchId) {
     logger.warn(`[Redis] Match info read failed for ${matchId}: ${err.message}`);
   }
 
-  // 2. Granular endpoint, retried once on 5xx/timeouts. The Deadlock community
-  //    API regularly returns transient 500s for this endpoint; a single retry
-  //    dramatically improves hit rate and prevents the dashboard from
-  //    collapsing to zeros.
+  // 2. Prefer the bulk metadata endpoint because it supports include_player_items,
+  //    include_player_stats, and include_player_death_details. Some match endpoints
+  //    (e.g. /matches/{match_id}/metadata) ignore these flags and will not return
+  //    item data, which breaks build-path grading.
   let lastErr = null;
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    try {
-      const { data } = await axios.get(granularUrl, {
-        params: granularParams,
-        timeout: 15000,
-      });
-      if (data && Object.keys(data).length > 0) {
-        logger.debug(`Fetched granular match info for ${matchId} (attempt ${attempt})`);
-        if (cacheKey) {
-          await redisClient.set(cacheKey, data, 3600).catch(() => {});
-        }
-        return data;
+  try {
+    const { data } = await matchesApi.bulkMetadata({
+      includeInfo: true,
+      includeMoreInfo: true,
+      includePlayerInfo: true,
+      includePlayerItems: true,
+      includePlayerStats: true,
+      includePlayerDeathDetails: true,
+      matchIds: [Number(matchId)],
+      limit: 1,
+    });
+
+    const match = Array.isArray(data) ? data[0] : data;
+    if (match && typeof match === 'object' && Object.keys(match).length > 0) {
+      logger.debug(`Fetched bulk match info for ${matchId}`);
+      if (cacheKey) {
+        await redisClient.set(cacheKey, match, 3600).catch(() => {});
       }
-      logger.warn(`[MatchInfo] Empty granular payload for ${matchId} (attempt ${attempt})`);
-    } catch (err) {
-      lastErr = err;
-      const status = err.response?.status;
-      const retriable = !status || status >= 500 || err.code === 'ECONNABORTED';
-      logger.warn(`[MatchInfo] Granular attempt ${attempt} failed for ${matchId} (status ${status || 'n/a'}): ${err.message}`);
-      if (!retriable || attempt === 2) break;
-      await new Promise((r) => setTimeout(r, 400));
+      return match;
     }
+    logger.warn(`[MatchInfo] Empty bulk payload for ${matchId}`);
+  } catch (err) {
+    lastErr = err;
+    const status = err.response?.status;
+    logger.warn(`[MatchInfo] Bulk metadata failed for ${matchId} (status ${status || 'n/a'}): ${err.message}`);
   }
 
-  // 3. Fall back to the generated client's basic metadata call.
+  // 3. Fall back to the generated client's basic metadata call (no item guarantees).
   try {
     const { data } = await matchesApi.metadata({ matchId: Number(matchId) });
     if (data && Object.keys(data).length > 0) {
