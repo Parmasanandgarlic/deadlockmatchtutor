@@ -102,7 +102,7 @@ api.interceptors.response.use(
     }
 
     // 1. Handle explicit backend error objects (JSON)
-    if (error.response?.data) {
+    if (error.response?.data && typeof error.response.data === 'object') {
       const { error: errorMsg, code, details } = error.response.data;
       
       if (errorMsg) {
@@ -116,8 +116,13 @@ api.interceptors.response.use(
         error.response.data.error = msg;
       }
 
-      if (code) error.errorCode = code;
-      if (details) error.details = details;
+      if (code) error.errorCode = String(code);
+      if (details) {
+        // Ensure details is a string for safe rendering
+        error.details = typeof details === 'object' 
+          ? JSON.stringify(details, null, 2) 
+          : String(details);
+      }
     }
     // 2. Handle HTTP 500s that didn't return JSON (redundant but safe)
     else if (error.response?.status >= 500) {

@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Flame, Skull, Hourglass, Compass, Search, ArrowRight, Github, Shield, History, X, Target } from 'lucide-react';
 import { resolvePlayer } from '../api/client';
 import SEOHead from '../components/seo/SEOHead';
+import { toErrorMessage } from '../utils/errorMessage';
 
 const features = [
   { icon: Flame, label: 'Economy Grading', desc: 'Net worth efficiency & farm scores' },
@@ -299,7 +300,7 @@ export default function LandingPage() {
                     System Exception
                   </h4>
                   <p className="text-xs text-deadlock-text-dim leading-normal font-medium italic">
-                    "{error.message}"
+                    "{toErrorMessage(error)}"
                   </p>
                 </div>
               </div>
@@ -317,16 +318,18 @@ export default function LandingPage() {
                   <div className="mt-3 p-3 bg-black/40 border border-deadlock-red/20 text-[10px] font-mono leading-relaxed space-y-1 overflow-x-auto">
                     <div className="flex justify-between border-b border-white/5 pb-1 mb-1">
                       <span className="text-deadlock-red/70 uppercase">Error Code</span>
-                      <span className="text-white">{error.code}</span>
+                      <span className="text-white">{String(error.errorCode || error.code || 'UNKNOWN')}</span>
                     </div>
                     <div className="flex justify-between border-b border-white/5 pb-1 mb-1">
                       <span className="text-deadlock-red/70 uppercase">HTTP Status</span>
-                      <span className="text-white">{error.status}</span>
+                      <span className="text-white">{String(error.status || 'N/A')}</span>
                     </div>
                     {error.details && (
                       <div className="pt-1">
                         <span className="text-deadlock-red/70 uppercase block mb-1">Raw Context</span>
-                        <span className="text-deadlock-text-dim block break-all">{error.details}</span>
+                        <span className="text-deadlock-text-dim block break-all whitespace-pre-wrap">
+                          {typeof error.details === 'object' ? JSON.stringify(error.details, null, 2) : String(error.details)}
+                        </span>
                       </div>
                     )}
                     <div className="pt-1 opacity-50 italic">
