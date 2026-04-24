@@ -34,8 +34,13 @@ process.on('unhandledRejection', (reason, promise) => {
 
 process.on('uncaughtException', (err) => {
   logger.error('Uncaught Exception:', err);
-  // Give the logger time to write before exiting
-  setTimeout(() => process.exit(1), 100);
+  // In serverless environments (e.g. Vercel), hard-exiting can cause a cascade of
+  // FUNCTION_INVOCATION_FAILED responses. Prefer staying alive and letting the
+  // request-level error handling respond whenever possible.
+  if (!process.env.VERCEL) {
+    // Give the logger time to write before exiting
+    setTimeout(() => process.exit(1), 100);
+  }
 });
 
 const app = express();

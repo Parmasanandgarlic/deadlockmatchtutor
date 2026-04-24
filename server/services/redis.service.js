@@ -39,22 +39,23 @@ class RedisClient {
 
   /** @private */
   async _doConnect() {
+    const allowRedisless =
+      process.env.ALLOW_REDISLESS === 'true' ||
+      process.env.ALLOW_REDISLESS === '1' ||
+      Boolean(process.env.VERCEL);
+    const enforceRedis = config.nodeEnv === 'production' && !allowRedisless;
+
     if (!config.redis.url) {
-      if (config.nodeEnv === 'production') {
-        logger.error(
-          'FATAL: REDIS_URL is not configured. Redis is REQUIRED in production ' +
-          'for rate-limiting, session storage, and caching. ' +
-          'Set the REDIS_URL environment variable and redeploy.'
-        );
-        // Give the logger time to flush before crashing
-        await new Promise((r) => setTimeout(r, 200));
-        process.exit(1);
+      if (enforceRedis) {
+        const msg =
+          'REDIS_URL is not configured. Running without Redis will disable shared caching and ' +
+          'session persistence across instances.';
+        const err = new Error(`FATAL: ${msg}`);
+        err.code = 'REDIS_NOT_CONFIGURED';
+        throw err;
       }
 
-      logger.warn(
-        'Redis URL not configured — running with in-memory stubs. ' +
-        'This is acceptable for local development only.'
-      );
+      logger.warn('[Redis] REDIS_URL not configured (degraded mode)');
       return false;
     }
 
@@ -100,10 +101,10 @@ class RedisClient {
       this.isConnected = false;
       this._connectPromise = null; // allow retry
 
-      if (config.nodeEnv === 'production') {
-        logger.error('FATAL: Redis connection failed in production. Exiting.');
-        await new Promise((r) => setTimeout(r, 200));
-        process.exit(1);
+      if (enforceRedis) {
+        const err = new Error(`FATAL: Redis connection failed: ${error.message}`);
+        err.code = 'REDIS_CONNECT_FAILED';
+        throw err;
       }
 
       return false;
