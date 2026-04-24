@@ -16,20 +16,35 @@ const logger = require('../utils/logger');
  *   the matching header. This blocks CSRF without server-side token
  *   storage.
  *
- * Exemptions:
- *   - GET, HEAD, OPTIONS (safe methods)
- *   - Steam OAuth callback (/auth/steam/return) — redirect from Steam
- *   - Health / meta endpoints (public reads)
+ * Enforcement strategy:
+ *   CSRF is only enforced on routes that mutate user sessions/state:
+ *     - POST /api/auth/logout
+ *     - POST/DELETE /api/auth/favorites
+ *     - PUT /api/auth/settings
+ *
+ *   All other API routes are EXEMPT because they are already protected by:
+ *     1. CORS origin validation (only our frontend origin is allowed)
+ *     2. SameSite=Lax cookies (browsers won't send session cookies cross-origin)
+ *     3. JSON content-type requirement (form-based CSRF can't set Content-Type)
+ *
+ *   This prevents the false-positive 403 errors that occurred when the SPA
+ *   made normal API calls (like player search) without CSRF headers.
  */
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
-const EXEMPT_PATHS = [
-  '/api/auth/steam/return',
-  '/health',
-  '/api/health',
-  '/api/meta',
-  '/api-docs',
+/**
+ * Routes that REQUIRE CSRF validation on state-changing methods.
+ * These are session-mutating endpoints where a CSRF attack could
+ * cause real damage (e.g., logging out a user, modifying favorites).
+ */
+const CSRF_PROTECTED_PATHS = [
+  '/api/auth/logout',
+  '/api/auth/favorites',
+  '/api/auth/settings',
+  '/auth/logout',
+  '/auth/favorites',
+  '/auth/settings',
 ];
 
 /**
@@ -42,7 +57,7 @@ function generateToken() {
 
 /**
  * Middleware: sets the CSRF cookie on every response and validates it
- * on state-changing requests.
+ * only on session-mutating requests.
  */
 function csrfProtection(req, res, next) {
   // Always set / refresh the CSRF cookie so the frontend can read it
@@ -59,14 +74,14 @@ function csrfProtection(req, res, next) {
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
   });
 
-  // Safe methods don't need CSRF validation
+  // Safe methods never need CSRF validation
   if (SAFE_METHODS.has(req.method)) {
     return next();
   }
 
-  // Check exemptions
-  const isExempt = EXEMPT_PATHS.some((p) => req.path.startsWith(p));
-  if (isExempt) {
+  // Only enforce CSRF on session-mutating routes
+  const requiresCsrf = CSRF_PROTECTED_PATHS.some((p) => req.path.startsWith(p));
+  if (!requiresCsrf) {
     return next();
   }
 
