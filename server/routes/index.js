@@ -6,10 +6,12 @@ const authRoutes = require('./auth.routes');
 const cronRoutes = require('./cron.routes');
 const trendsRoutes = require('./trends.routes');
 const metaRoutes = require('./meta.routes');
+const { getCsrfToken } = require('../middleware/csrf.middleware');
 
 const router = Router();
 
 router.get('/health', (_req, res) => res.json({ status: 'ok' }));
+router.get('/csrf', getCsrfToken);
 router.use('/auth', authRoutes);
 router.use('/players', playerRoutes);
 router.use('/matches', matchRoutes);

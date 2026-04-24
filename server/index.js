@@ -44,6 +44,7 @@ process.on('uncaughtException', (err) => {
 });
 
 const app = express();
+app.set('trust proxy', 1);
 
 // (Note: In Sentry v8+, Handlers.requestHandler is no longer required for basic tracking)
 
@@ -169,10 +170,9 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many authentication attempts. Please try again later.' },
-  keyGenerator: (req) => req.ip, // Rate limit by IP
 });
-app.use('/api/auth/steam', authLimiter);
-app.use('/api/auth/logout', authLimiter);
+app.use('/api/auth', authLimiter);
+app.use('/auth', authLimiter);
 
 // Request logging for production debugging
 app.use((req, res, next) => {
@@ -188,6 +188,7 @@ app.use((req, res, next) => {
 app.get('/health', (_req, res) => {
   res.json({ 
     status: 'ok', 
+    redis: redisClient.isReady() ? 'connected' : redisClient.isDegraded ? 'degraded' : 'disconnected',
     uptime: Math.floor(process.uptime()), 
     version: process.env.DEPLOYMENT_VERSION || '1.0.1-radar-timeline',
     timestamp: new Date().toISOString()

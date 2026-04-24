@@ -8,9 +8,8 @@ const logger = require('../utils/logger');
  * RedisClient — Singleton wrapper around ioredis.
  *
  * Architecture decisions:
- *   - Production REQUIRES Redis (rate-limiting, sessions, distributed cache).
- *     If REDIS_URL is missing in production, the process exits immediately.
- *   - Development falls back to a no-op stub so devs can run without Redis.
+ *   - Production requires Redis unless ALLOW_REDISLESS is explicitly enabled.
+ *   - Degraded mode uses an in-memory TTL fallback and exposes that state.
  *   - A connection guard (`_connectPromise`) prevents duplicate connections
  *     on Vercel cold-starts or rapid restarts.
  *   - SIGTERM / SIGINT handlers ensure clean disconnect.
@@ -19,6 +18,8 @@ class RedisClient {
   constructor() {
     this.client = null;
     this.isConnected = false;
+    this.isDegraded = false;
+    this.fallbackCache = new Map();
     this.cacheKeys = RedisClient.cacheKeys;
     /** @type {Promise<boolean>|null} guards against duplicate connect() calls */
     this._connectPromise = null;
@@ -41,8 +42,7 @@ class RedisClient {
   async _doConnect() {
     const allowRedisless =
       process.env.ALLOW_REDISLESS === 'true' ||
-      process.env.ALLOW_REDISLESS === '1' ||
-      Boolean(process.env.VERCEL);
+      process.env.ALLOW_REDISLESS === '1';
     const enforceRedis = config.nodeEnv === 'production' && !allowRedisless;
 
     if (!config.redis.url) {
@@ -55,7 +55,8 @@ class RedisClient {
         throw err;
       }
 
-      logger.warn('[Redis] REDIS_URL not configured (degraded mode)');
+      this.isDegraded = true;
+      logger.warn('[Redis] REDIS_URL not configured (explicit degraded mode enabled)');
       return false;
     }
 
@@ -95,6 +96,7 @@ class RedisClient {
       });
 
       await this.client.connect();
+      this.isDegraded = false;
       return this.isConnected;
     } catch (error) {
       logger.error('Failed to connect to Redis:', error.message);
@@ -107,6 +109,8 @@ class RedisClient {
         throw err;
       }
 
+      this.isDegraded = true;
+      logger.warn('[Redis] Using in-memory fallback cache after connection failure');
       return false;
     }
   }
@@ -117,6 +121,26 @@ class RedisClient {
    */
   isReady() {
     return this.isConnected && this.client !== null;
+  }
+
+  _getFallbackEntry(key) {
+    const entry = this.fallbackCache.get(key);
+    if (!entry) return null;
+    if (entry.expiresAt && entry.expiresAt <= Date.now()) {
+      this.fallbackCache.delete(key);
+      return null;
+    }
+    return entry;
+  }
+
+  _getFallback(key) {
+    return this._getFallbackEntry(key)?.value ?? null;
+  }
+
+  _setFallback(key, value, ttlSeconds = 3600) {
+    const expiresAt = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null;
+    this.fallbackCache.set(key, { value, expiresAt });
+    return true;
   }
 
   /**
@@ -141,7 +165,7 @@ class RedisClient {
   // ------------------------------------------------------------------
 
   async get(key) {
-    if (!this.isReady()) return null;
+    if (!this.isReady()) return this._getFallback(key);
     try {
       const data = await this.client.get(key);
       return data ? JSON.parse(data) : null;
@@ -152,7 +176,7 @@ class RedisClient {
   }
 
   async set(key, value, ttlSeconds = 3600) {
-    if (!this.isReady()) return false;
+    if (!this.isReady()) return this._setFallback(key, value, ttlSeconds);
     try {
       const serialized = JSON.stringify(value);
       await this.client.setex(key, ttlSeconds, serialized);
@@ -164,7 +188,7 @@ class RedisClient {
   }
 
   async del(key) {
-    if (!this.isReady()) return false;
+    if (!this.isReady()) return this.fallbackCache.delete(key);
     try {
       await this.client.del(key);
       return true;
@@ -175,7 +199,7 @@ class RedisClient {
   }
 
   async exists(key) {
-    if (!this.isReady()) return false;
+    if (!this.isReady()) return this._getFallbackEntry(key) !== null;
     try {
       const result = await this.client.exists(key);
       return result === 1;
@@ -190,7 +214,10 @@ class RedisClient {
   // ------------------------------------------------------------------
 
   async hget(key, field) {
-    if (!this.isReady()) return null;
+    if (!this.isReady()) {
+      const hash = this._getFallback(key);
+      return hash?.[field] ?? null;
+    }
     try {
       const data = await this.client.hget(key, field);
       return data ? JSON.parse(data) : null;
@@ -201,7 +228,11 @@ class RedisClient {
   }
 
   async hset(key, field, value, ttlSeconds = null) {
-    if (!this.isReady()) return false;
+    if (!this.isReady()) {
+      const hash = this._getFallback(key) || {};
+      hash[field] = value;
+      return this._setFallback(key, hash, ttlSeconds || 3600);
+    }
     try {
       const serialized = JSON.stringify(value);
       await this.client.hset(key, field, serialized);
@@ -216,7 +247,7 @@ class RedisClient {
   }
 
   async hgetall(key) {
-    if (!this.isReady()) return null;
+    if (!this.isReady()) return this._getFallback(key);
     try {
       const data = await this.client.hgetall(key);
       if (!data || Object.keys(data).length === 0) return null;
@@ -242,7 +273,12 @@ class RedisClient {
   // ------------------------------------------------------------------
 
   async lpush(key, ...values) {
-    if (!this.isReady()) return 0;
+    if (!this.isReady()) {
+      const list = this._getFallback(key) || [];
+      list.unshift(...values);
+      this._setFallback(key, list);
+      return list.length;
+    }
     try {
       const serialized = values.map(v => JSON.stringify(v));
       return await this.client.lpush(key, ...serialized);
@@ -253,7 +289,12 @@ class RedisClient {
   }
 
   async rpop(key) {
-    if (!this.isReady()) return null;
+    if (!this.isReady()) {
+      const list = this._getFallback(key) || [];
+      const value = list.pop() ?? null;
+      this._setFallback(key, list);
+      return value;
+    }
     try {
       const data = await this.client.rpop(key);
       return data ? JSON.parse(data) : null;
@@ -264,7 +305,7 @@ class RedisClient {
   }
 
   async llen(key) {
-    if (!this.isReady()) return 0;
+    if (!this.isReady()) return (this._getFallback(key) || []).length;
     try {
       return await this.client.llen(key);
     } catch (error) {
@@ -278,12 +319,20 @@ class RedisClient {
   // ------------------------------------------------------------------
 
   async incrementRateLimit(identifier, endpoint, windowMs) {
-    if (!this.isReady()) return { count: 0, resetTime: Date.now() + windowMs };
-    
     const key = `ratelimit:${identifier}:${endpoint}`;
     const now = Date.now();
     const windowStart = Math.floor(now / windowMs) * windowMs;
     const windowKey = `${key}:${windowStart}`;
+
+    if (!this.isReady()) {
+      const count = Number(this._getFallback(windowKey) || 0) + 1;
+      this._setFallback(windowKey, count, Math.ceil(windowMs / 1000));
+      return {
+        count,
+        resetTime: windowStart + windowMs,
+        remaining: Math.max(0, 100 - count),
+      };
+    }
 
     try {
       const multi = this.client.multi();

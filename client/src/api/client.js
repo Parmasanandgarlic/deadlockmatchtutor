@@ -9,8 +9,45 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
+  withCredentials: true,
   headers: { 'Content-Type': 'application/json' },
 });
+
+let csrfTokenPromise = null;
+
+function getCookie(name) {
+  if (typeof document === 'undefined') return null;
+  const prefix = `${name}=`;
+  const cookie = document.cookie
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(prefix));
+  return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : null;
+}
+
+function isUnsafeMethod(method = 'get') {
+  return !['get', 'head', 'options'].includes(method.toLowerCase());
+}
+
+async function getCsrfToken() {
+  const existing = getCookie('_csrf');
+  if (existing) return existing;
+
+  if (!csrfTokenPromise) {
+    csrfTokenPromise = axios
+      .get(`${API_BASE_URL}/csrf`, {
+        timeout: 10000,
+        withCredentials: true,
+        headers: { 'Content-Type': 'application/json' },
+      })
+      .then((response) => response.data?.csrfToken || getCookie('_csrf'))
+      .finally(() => {
+        csrfTokenPromise = null;
+      });
+  }
+
+  return csrfTokenPromise;
+}
 
 function warnOnContractMismatch(name, payload, contract) {
   if (!import.meta.env.DEV) return;
@@ -69,9 +106,17 @@ function warnOnContractMismatch(name, payload, contract) {
   }
 }
 
-// Request interceptor for diagnostic headers
-api.interceptors.request.use((config) => {
+// Request interceptor for diagnostic and CSRF headers
+api.interceptors.request.use(async (config) => {
   config.headers['X-Client-Timestamp'] = new Date().toISOString();
+
+  if (isUnsafeMethod(config.method)) {
+    const token = await getCsrfToken();
+    if (token) {
+      config.headers['X-CSRF-Token'] = token;
+    }
+  }
+
   return config;
 });
 

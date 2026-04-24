@@ -14,6 +14,25 @@
     { "source": "/api/(.*)", "destination": "/api/index" },
     { "source": "/((?!api).*)", "destination": "/index.html" }
   ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; connect-src 'self' https://api.deadlock-api.com https://assets.deadlock-api.com https://steamcommunity.com; img-src 'self' data: https://assets-bucket.deadlock-api.com https://assets.deadlock-api.com https://deadlock-api.com; font-src 'self' https://fonts.gstatic.com; form-action 'self'; upgrade-insecure-requests"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ],
   "crons": [
     {
       "path": "/api/cron/sync",
@@ -21,6 +40,7 @@
     }
   ],
   "env": {
-    "DEPLOYMENT_VERSION": "1.0.2-canonical-layout"
+    "DEPLOYMENT_VERSION": "1.0.2-canonical-layout",
+    "ALLOW_REDISLESS": "1"
   }
 }
