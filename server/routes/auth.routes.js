@@ -125,7 +125,7 @@ router.get('/me', async (req, res) => {
  *     description: Destroys the user session and logs them out
  *     tags: [Authentication]
  *     security:
- * checkAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: Successfully logged out
