@@ -107,8 +107,8 @@ app.use(csrfProtection);
   try {
     await redisClient.connect();
   } catch (err) {
-    // In production, redis.service.js will process.exit(1).
-    // In dev, we log and continue with degraded functionality.
+    // Redis is optional in some deployments (e.g. serverless). Log and continue
+    // so API routes can still respond in degraded mode.
     logger.error('Redis initialization error:', err.message);
   }
 })();
