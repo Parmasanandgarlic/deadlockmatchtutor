@@ -15,6 +15,8 @@ const {
   tickToSeconds, formatTime, clamp, safeDivide,
   normalizeSteamInput, steam64ToSteam32, steam32ToSteam64,
 } = require('../../server/utils/helpers');
+const fs = require('fs');
+const path = require('path');
 
 async function test(name, fn) {
   try { await fn(); console.log(`  PASS  ${name}`); test.passed++; }
@@ -130,6 +132,44 @@ test('Insights: never returns undefined severity or module', () => {
     assert.ok(i.severity, `insight "${i.title}" has no severity`);
     assert.ok(i.module, `insight "${i.title}" has no module`);
   }
+});
+
+// ---- UI regression guard ----
+test('Client: never renders raw {error} in JSX', () => {
+  const clientRoot = path.join(__dirname, '..', '..', 'client', 'src');
+  const exts = new Set(['.jsx', '.tsx']);
+
+  function walk(dir, out) {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const e of entries) {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) walk(full, out);
+      else if (exts.has(path.extname(e.name))) out.push(full);
+    }
+    return out;
+  }
+
+  const files = walk(clientRoot, []);
+  const offenders = [];
+  const jsxRawErrorPattern = />\s*\{\s*error\s*\}\s*</g;
+
+  for (const file of files) {
+    const text = fs.readFileSync(file, 'utf8');
+    if (!jsxRawErrorPattern.test(text)) continue;
+
+    const lines = text.split(/\r?\n/);
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].match(jsxRawErrorPattern)) {
+        offenders.push(`${path.relative(path.join(__dirname, '..', '..'), file)}:${i + 1}`);
+      }
+    }
+  }
+
+  assert.strictEqual(
+    offenders.length,
+    0,
+    `Found raw JSX {error} render(s). Use toErrorMessage(error) or error.message instead:\n- ${offenders.join('\n- ')}`
+  );
 });
 
 console.log(`\n  ${test.passed} passed / ${test.failed} failed`);

@@ -8,6 +8,7 @@ import MatchCard from '../components/matches/MatchCard';
 import MatchListToolbar from '../components/matches/MatchListToolbar';
 import MatchSummaryPanel from '../components/matches/MatchSummaryPanel';
 import { resolveMatchResult } from '../utils/match';
+import { toErrorMessage } from '../utils/errorMessage';
 
 const DEFAULT_FILTERS = {
   search: '',
@@ -126,7 +127,7 @@ export default function MatchListPage() {
 
         {error && !loading && (
           <div className="card text-center py-12">
-            <p className="text-deadlock-red mb-4">{error}</p>
+            <p className="text-deadlock-red mb-4">{toErrorMessage(error)}</p>
             <div className="flex items-center justify-center gap-4">
               <button onClick={refetch} className="btn-secondary flex items-center gap-2 text-sm">
                 <RefreshCw className="w-4 h-4" /> Retry
