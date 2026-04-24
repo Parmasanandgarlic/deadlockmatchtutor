@@ -1,4 +1,4 @@
-import { AlertTriangle, AlertCircle, Info, CheckCircle, Clock, MapPin, Crosshair, Brain } from 'lucide-react';
+import { AlertTriangle, AlertCircle, Info, CheckCircle, Clock, MapPin, Crosshair, Brain, TrendingUp, BarChart3, Swords, Wrench } from 'lucide-react';
 import { SEVERITY_CONFIG, MODULE_LABELS } from '../../utils/constants';
 
 const SEVERITY_ICONS = {
@@ -15,6 +15,10 @@ const CATEGORY_ICONS = {
   mapMovement: MapPin,
   fightTiming: Crosshair,
   decisionQuality: Brain,
+  matchupAwareness: Swords,
+  buildPath: Wrench,
+  trend: TrendingUp,
+  metaContext: BarChart3,
 };
 
 const CATEGORY_LABELS = {
@@ -23,6 +27,10 @@ const CATEGORY_LABELS = {
   mapMovement: 'Map Movement',
   fightTiming: 'Fight Timing',
   decisionQuality: 'Decision Quality',
+  matchupAwareness: 'Matchup Intel',
+  buildPath: 'Build Path',
+  trend: 'Performance Trend',
+  metaContext: 'Meta Context',
 };
 
 export default function InsightCard({ insight }) {
@@ -64,14 +72,142 @@ export default function InsightCard({ insight }) {
           <p className="text-xs text-deadlock-text-dim leading-relaxed mb-3">
             {insight.detail}
           </p>
+
+          {/* Evidence badge — shows the data backing this insight */}
+          {insight.evidence && (
+            <EvidenceBadge evidence={insight.evidence} />
+          )}
+
           {insight.action && (
-            <div className="bg-black/30 border border-deadlock-accent/20 rounded-lg p-3">
+            <div className="bg-black/30 border border-deadlock-accent/20 rounded-lg p-3 mt-2">
               <p className="text-xs text-deadlock-accent font-semibold mb-1">ACTION FOR NEXT GAME:</p>
               <p className="text-xs text-deadlock-text-dim leading-relaxed">{insight.action}</p>
             </div>
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Evidence Badge — compact data visualization showing the specific
+ * numbers or events backing an insight. Makes the difference between
+ * "fortune cookie wisdom" and data-driven coaching.
+ */
+function EvidenceBadge({ evidence }) {
+  if (!evidence?.data) return null;
+
+  const renderContent = () => {
+    switch (evidence.type) {
+      case 'stat':
+        return (
+          <div className="flex items-center gap-3 flex-wrap">
+            {evidence.data.soulsPerMin != null && (
+              <Stat label="Souls/min" value={evidence.data.soulsPerMin} />
+            )}
+            {evidence.data.threshold != null && (
+              <Stat label="Benchmark" value={evidence.data.threshold} />
+            )}
+            {evidence.data.deficit != null && (
+              <Stat label="Deficit" value={`-${evidence.data.deficit}`} negative />
+            )}
+          </div>
+        );
+      case 'economy':
+        return (
+          <div className="flex items-center gap-3 flex-wrap">
+            <Stat label="Net Worth" value={evidence.data.netWorth?.toLocaleString()} />
+            <Stat label="Expected" value={evidence.data.expected?.toLocaleString()} />
+            {evidence.data.behindBy && (
+              <Stat label="Behind" value={`-${evidence.data.behindBy?.toLocaleString()}`} negative />
+            )}
+          </div>
+        );
+      case 'deaths':
+        return (
+          <div className="flex items-center gap-3 flex-wrap">
+            <Stat label="Deaths" value={evidence.data.totalDeaths || evidence.data.deaths} negative />
+            {evidence.data.deathInterval && (
+              <Stat label="Every" value={`${evidence.data.deathInterval}s`} />
+            )}
+            {evidence.data.estimatedLostSouls && (
+              <Stat label="Lost Souls" value={`-${evidence.data.estimatedLostSouls}`} negative />
+            )}
+          </div>
+        );
+      case 'matchup':
+        return (
+          <div className="flex items-center gap-2 flex-wrap">
+            {evidence.data.counters?.map((c, i) => (
+              <span key={i} className="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded">
+                ⚔️ {c.heroName}
+              </span>
+            ))}
+          </div>
+        );
+      case 'meta':
+        return (
+          <div className="flex items-center gap-3 flex-wrap">
+            <Stat label="Win Rate" value={`${evidence.data.winRate?.toFixed(1)}%`}
+              negative={evidence.data.winRate < 49} />
+            <span className={`text-[10px] px-2 py-0.5 rounded border ${
+              evidence.data.tier === 'S' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+              evidence.data.tier === 'D' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+              'bg-blue-500/10 text-blue-400 border-blue-500/20'
+            }`}>
+              {evidence.data.tier}-Tier
+            </span>
+          </div>
+        );
+      case 'trend':
+        return (
+          <div className="flex items-center gap-3 flex-wrap">
+            {evidence.data.trendSlug && (
+              <span className={`text-[10px] px-2 py-0.5 rounded border ${
+                evidence.data.trendSlug === 'declining' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                evidence.data.trendSlug === 'improving' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                'bg-blue-500/10 text-blue-400 border-blue-500/20'
+              }`}>
+                {evidence.data.trendSlug === 'declining' ? '📉' : '📈'} {evidence.data.recentMatches} games
+              </span>
+            )}
+            {evidence.data.lossStreak > 0 && (
+              <Stat label="Loss Streak" value={evidence.data.lossStreak} negative />
+            )}
+          </div>
+        );
+      case 'compound':
+        return (
+          <div className="flex items-center gap-3 flex-wrap">
+            <Stat label="Deaths" value={evidence.data.deaths} negative />
+            <Stat label="SPM" value={evidence.data.soulsPerMin} />
+            <Stat label="Est. Deficit" value={`-${evidence.data.estimatedDeficit}`} negative />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const content = renderContent();
+  if (!content) return null;
+
+  return (
+    <div className="bg-black/20 border border-white/5 rounded-lg px-3 py-2 mb-2">
+      <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-deadlock-muted mb-1.5">Evidence</p>
+      {content}
+    </div>
+  );
+}
+
+function Stat({ label, value, negative = false }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-[9px] uppercase tracking-wider text-deadlock-muted">{label}</span>
+      <span className={`text-xs font-mono font-bold ${negative ? 'text-red-400' : 'text-white'}`}>
+        {value}
+      </span>
     </div>
   );
 }

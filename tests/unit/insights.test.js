@@ -74,7 +74,7 @@ test('each insight has required fields', () => {
   const bench = { kdaDiff: 0, benchmarkKda: 2 };
   const meta = { duration: 1500, won: true };
   const r = generateInsights(heroPerf, item, combat, bench, meta);
-  const required = ['severity', 'module', 'category', 'title', 'detail', 'action', 'impact'];
+  const required = ['severity', 'module', 'category', 'title', 'detail', 'action', 'impact', 'evidence'];
   for (const insight of r) {
     for (const field of required) {
       assert.ok(insight[field] !== undefined, `insight "${insight.title}" missing field "${field}"`);

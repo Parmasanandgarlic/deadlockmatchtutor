@@ -16,6 +16,7 @@ const { analyzeMatchupDifficulty } = require('./analyzers/matchupDifficulty.anal
 const { analyzeBuildPath } = require('./analyzers/buildPath.analyzer');
 const { analyzeDecisionQuality } = require('./analyzers/decisionQuality.analyzer');
 const { buildMmrHistory } = require('../services/mmrHistory.service');
+const { getMetaContext } = require('../services/metaContext.service');
 
 /**
  * Master ETL Pipeline (API-based)
@@ -154,13 +155,35 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
     { rankBenchmarks, matchupDifficulty, buildPath, decisionQuality, temporal }
   );
 
-  // ---- Insights v2 (with meta context for Deadlock-specific intelligence) ----
+  // ---- Meta Context (hero tier, win rate, item build intelligence) ----
+  let metaContext = null;
+  try {
+    metaContext = await getMetaContext({
+      heroId,
+      heroStats,
+      matchHistory,
+      rankPredict: rankPredictSummary,
+    });
+  } catch (err) {
+    logger.warn(`Meta context generation failed: ${err.message}`);
+  }
+
+  // ---- Insights v3 (event-grounded coaching with full module context) ----
   const insights = generateInsights(
     heroPerformance,
     itemization,
     combat,
     benchmarks,
-    { duration: durationSeconds, won }
+    {
+      duration: durationSeconds,
+      won,
+      heroName: getHeroName(heroId),
+      roleBenchmarks,
+      matchupDifficulty,
+      buildPath,
+      temporal,
+      metaContext,
+    }
   );
 
   // ---- Overall Score (weighted: core modules + decision quality) ----
@@ -193,6 +216,7 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
       playerStats,
       mmrHistory,
       temporal,
+      metaContext,
     },
     overall,
     modules: {
