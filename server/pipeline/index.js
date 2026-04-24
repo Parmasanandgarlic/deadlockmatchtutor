@@ -3,6 +3,7 @@ const { computeOverallScore } = require('./scoring.engine');
 const { getHeroName, getHeroData } = require('../utils/heroes');
 const { getRankInfo } = require('../utils/ranks');
 const { getItemName, getItemData } = require('../utils/items');
+const { itemAssetFields } = require('../utils/itemAssets');
 const { clamp } = require('../utils/helpers');
 const logger = require('../utils/logger');
 const { HERO_ROLES, ROLE_BENCHMARKS } = require('../data/hero-roles');
@@ -488,12 +489,24 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
       // Handle different item formats from API
       if (typeof item === 'number') {
         const apiItem = getItemData(item);
+        const assetFields = itemAssetFields(apiItem);
         return {
           id: item,
           name: apiItem?.name ?? getItemName(item),
-          cost: apiItem?.item_cost ?? 0,
-          image: apiItem?.image || null,
-          image_webp: apiItem?.image_webp || null,
+          cost: apiItem?.cost ?? apiItem?.item_cost ?? 0,
+          ...assetFields,
+          time_s: null,
+        };
+      }
+      if (typeof item === 'string' && /^\d+$/.test(item.trim())) {
+        const id = Number(item);
+        const apiItem = getItemData(id);
+        const assetFields = itemAssetFields(apiItem);
+        return {
+          id,
+          name: apiItem?.name ?? getItemName(id),
+          cost: apiItem?.cost ?? apiItem?.item_cost ?? 0,
+          ...assetFields,
           time_s: null,
         };
       }
@@ -510,15 +523,15 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
       const id = item.id ?? item.item_id ?? item.item ?? null;
       const apiItem = getItemData(id);
       const name = item.name ?? item.item_name ?? item.display_name ?? apiItem?.name ?? getItemName(id) ?? 'Unknown Item';
-      const cost = item.cost ?? item.item_cost ?? item.price ?? apiItem?.item_cost ?? 0;
+      const cost = item.cost ?? item.item_cost ?? item.price ?? apiItem?.cost ?? apiItem?.item_cost ?? 0;
       const time_s = item.time_s ?? item.buy_time_s ?? item.purchase_time_s ?? item.game_time_s ?? item.timeSeconds ?? item.time ?? null;
+      const assetFields = itemAssetFields(item, apiItem);
       
       return {
         id,
         name,
         cost,
-        image: apiItem?.image || null,
-        image_webp: apiItem?.image_webp || null,
+        ...assetFields,
         time_s: time_s != null ? Number(time_s) : null,
       };
     }),

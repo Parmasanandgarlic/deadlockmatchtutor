@@ -148,6 +148,34 @@ export function getHeroImage(hero, type = 'small') {
   return `https://assets-bucket.deadlock-api.com/assets-api-res/${types[type] || types.small}`;
 }
 
+const ASSET_API_RES_BASE = 'https://assets-bucket.deadlock-api.com/assets-api-res/';
+
+function normalizeAssetUrl(url) {
+  if (typeof url !== 'string') return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  if (/^(https?:)?\/\//.test(trimmed) || trimmed.startsWith('data:') || trimmed.startsWith('/')) {
+    return trimmed;
+  }
+  return `${ASSET_API_RES_BASE}${trimmed.replace(/^\/+/, '')}`;
+}
+
+function firstString(...values) {
+  for (const value of values) {
+    const url = normalizeAssetUrl(value);
+    if (url) return url;
+  }
+  return null;
+}
+
+function itemFallbackFolder(item) {
+  const slot = String(item?.item_slot_type || item?.slot || item?.type || '').toLowerCase();
+  if (slot.includes('weapon')) return 'mods_weapon';
+  if (slot.includes('spirit') || slot.includes('tech')) return 'mods_tech';
+  if (slot.includes('vital') || slot.includes('armor')) return 'mods_armor';
+  return 'mods_utility';
+}
+
 /**
  * Get official Deadlock API item/mod image URL.
  */
@@ -156,14 +184,41 @@ export function getItemImage(item) {
   
   // Use API image if available
   if (typeof item === 'object') {
-    const apiImg = item.image_webp || item.image;
+    const images = item.images || {};
+    const apiImg = firstString(
+      item.image_webp,
+      item.image,
+      item.icon_image_small_webp,
+      item.icon_image_small,
+      item.icon_webp,
+      item.icon,
+      item.shop_image_webp,
+      item.shop_image,
+      item.thumbnail_webp,
+      item.thumbnail,
+      images.image_webp,
+      images.image,
+      images.icon_image_small_webp,
+      images.icon_image_small,
+      images.icon_webp,
+      images.icon,
+      images.small_webp,
+      images.small,
+      images.shop_image_webp,
+      images.shop_image,
+      images.large_webp,
+      images.large
+    );
     if (apiImg) return apiImg;
   }
 
-  const itemName = typeof item === 'string' ? item : item.name;
+  const itemName =
+    typeof item === 'string'
+      ? item
+      : item.name || item.item_name || item.display_name || item.class_name;
   if (!itemName) return null;
   
   // Basic normalization — exact mapping might require a dictionary if names don't map cleanly
   const safeName = itemName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-  return `https://assets-bucket.deadlock-api.com/assets-api-res/images/mods/${safeName}.png`;
+  return `${ASSET_API_RES_BASE}images/upgrades/${itemFallbackFolder(item)}/${safeName}.png`;
 }

@@ -4,6 +4,7 @@
  * using mocked API data (no external calls).
  */
 const { runPipeline } = require('../../server/pipeline');
+const { setApiItemNames } = require('../../server/utils/items');
 const assert = require('assert');
 
 function test(name, fn) {
@@ -35,6 +36,36 @@ const mockApiData = {
   playerCard: {},
   heroId: 2,
 };
+
+setApiItemNames([
+  {
+    id: 1001,
+    name: 'Monster Rounds',
+    cost: 800,
+    item_tier: 1,
+    item_slot_type: 'weapon',
+    image: 'https://assets-bucket.deadlock-api.com/assets-api-res/images/upgrades/mods_weapon/reaper_rounds.png',
+    image_webp: 'https://assets-bucket.deadlock-api.com/assets-api-res/images/upgrades/mods_weapon/reaper_rounds.webp',
+  },
+  {
+    id: 1002,
+    name: 'Enduring Spirit',
+    cost: 800,
+    item_tier: 1,
+    item_slot_type: 'vitality',
+    image: 'https://assets-bucket.deadlock-api.com/assets-api-res/images/upgrades/mods_armor/resilience.png',
+    image_webp: 'https://assets-bucket.deadlock-api.com/assets-api-res/images/upgrades/mods_armor/resilience.webp',
+  },
+  {
+    id: 1003,
+    name: 'Superior Cooldown',
+    cost: 3200,
+    item_tier: 3,
+    item_slot_type: 'spirit',
+    image: 'https://assets-bucket.deadlock-api.com/assets-api-res/images/upgrades/mods_tech/spiritual_flow.png',
+    image_webp: 'https://assets-bucket.deadlock-api.com/assets-api-res/images/upgrades/mods_tech/spiritual_flow.webp',
+  },
+]);
 
 (async () => {
   await test('pipeline returns complete structure', async () => {
@@ -105,6 +136,11 @@ const mockApiData = {
     };
     const r = await runPipeline(mockApiData, '12345', matchInfoWithItems);
     assert.strictEqual(r.modules.itemization.items.length, 3);
+    assert.strictEqual(r.modules.itemization.items[0].name, 'Monster Rounds');
+    assert.strictEqual(r.modules.itemization.items[0].cost, 800);
+    assert.strictEqual(r.modules.itemization.items[0].image_webp, 'https://assets-bucket.deadlock-api.com/assets-api-res/images/upgrades/mods_weapon/reaper_rounds.webp');
+    assert.strictEqual(r.modules.itemization.items[0].slot, 'weapon');
+    assert.strictEqual(r.modules.itemization.items[2].tier, 3);
     assert.ok(!String(r.modules.buildPath.summary || '').includes('No items found for this match'));
   });
 

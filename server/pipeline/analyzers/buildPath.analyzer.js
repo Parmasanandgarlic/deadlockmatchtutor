@@ -1,5 +1,6 @@
 const { clamp } = require('../../utils/helpers');
 const { getItemName, getItemData } = require('../../utils/items');
+const { itemAssetFields } = require('../../utils/itemAssets');
 
 /**
  * Build Path Optimization Analyzer.
@@ -47,6 +48,7 @@ function extractItemMeta(item) {
   if (item == null) return null;
   if (typeof item === 'number') {
     const meta = getItemData(item);
+    const { image, image_webp } = itemAssetFields(meta);
     return {
       id: item,
       name: meta?.name || getItemName(item),
@@ -54,6 +56,23 @@ function extractItemMeta(item) {
       tier: Number(meta?.item_tier ?? meta?.tier ?? 0),
       slot: normalizeSlot(meta?.item_slot_type || meta?.slot || meta?.slot_type),
       time: 0,
+      image,
+      image_webp,
+    };
+  }
+  if (typeof item === 'string' && /^\d+$/.test(item.trim())) {
+    const id = Number(item);
+    const meta = getItemData(id);
+    const { image, image_webp } = itemAssetFields(meta);
+    return {
+      id,
+      name: meta?.name || getItemName(id),
+      cost: Number(meta?.cost ?? meta?.item_cost ?? 0),
+      tier: Number(meta?.item_tier ?? meta?.tier ?? 0),
+      slot: normalizeSlot(meta?.item_slot_type || meta?.slot || meta?.slot_type),
+      time: 0,
+      image,
+      image_webp,
     };
   }
   if (typeof item === 'string') {
@@ -66,7 +85,8 @@ function extractItemMeta(item) {
   const tier = Number(item.tier ?? item.item_tier ?? meta?.item_tier ?? meta?.tier ?? 0);
   const slot = normalizeSlot(item.slot || item.item_slot_type || meta?.item_slot_type || meta?.slot);
   const time = Number(item.time_s ?? item.game_time_s ?? item.timeSeconds ?? item.time ?? 0);
-  return { id, name, cost, tier, slot, time };
+  const { image, image_webp } = itemAssetFields(item, meta);
+  return { id, name, cost, tier, slot, time, image, image_webp };
 }
 
 function costFromTier(tier) {
@@ -219,10 +239,22 @@ function analyzeBuildPath({ items = [], role = 'brawler', durationSeconds = 0 } 
     expectedSlotBalance: expectedDist,
     tierProgression,
     firstT3Item: firstT3Item
-      ? { id: firstT3Item.id, name: firstT3Item.name, timeSeconds: firstT3Item.time }
+      ? {
+          id: firstT3Item.id,
+          name: firstT3Item.name,
+          timeSeconds: firstT3Item.time,
+          image: firstT3Item.image,
+          image_webp: firstT3Item.image_webp,
+        }
       : null,
     firstT4Item: firstT4Item
-      ? { id: firstT4Item.id, name: firstT4Item.name, timeSeconds: firstT4Item.time }
+      ? {
+          id: firstT4Item.id,
+          name: firstT4Item.name,
+          timeSeconds: firstT4Item.time,
+          image: firstT4Item.image,
+          image_webp: firstT4Item.image_webp,
+        }
       : null,
     underutilizedSlots,
     overusedSlots,

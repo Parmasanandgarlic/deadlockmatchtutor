@@ -1,8 +1,46 @@
-import { formatNumber } from '../../utils/formatters';
-import { ShoppingBag, Coins, Box, TrendingUp, AlertCircle, ArrowUpRight } from 'lucide-react';
+import { formatNumber, getItemImage } from '../../utils/formatters';
+import { ShoppingBag, Coins, TrendingUp, AlertCircle, ArrowUpRight } from 'lucide-react';
 import Tooltip from '../ui/Tooltip';
 import TimelineGraph from '../dashboard/TimelineGraph';
 import { useAssets } from '../../contexts/AssetContext';
+import ItemIcon from '../ui/ItemIcon';
+
+function normalizeItem(item) {
+  if (item == null) return {};
+  if (typeof item === 'number') return { id: item };
+  if (typeof item === 'string') {
+    const trimmed = item.trim();
+    return /^\d+$/.test(trimmed) ? { id: Number(trimmed) } : { name: item };
+  }
+  return item;
+}
+
+function mergeDefined(base, next) {
+  const merged = { ...(base || {}) };
+  for (const [key, value] of Object.entries(next || {})) {
+    if (value !== null && value !== undefined && value !== '') {
+      merged[key] = value;
+    }
+  }
+  return merged;
+}
+
+function resolveItem(item, itemsMap) {
+  const normalized = normalizeItem(item);
+  const itemId = normalized.id ?? normalized.item_id ?? normalized.itemId ?? normalized.item ?? null;
+  const itemAsset = itemId != null ? itemsMap?.[itemId] || itemsMap?.[String(itemId)] : null;
+  const hydrated = mergeDefined(itemAsset, normalized);
+  const rawName = normalized.name || normalized.item_name || normalized.display_name;
+  const assetName = itemAsset?.name || itemAsset?.item_name || itemAsset?.display_name;
+  const generatedName = itemId != null ? `Item #${itemId}` : null;
+  const itemName = assetName || (rawName && rawName !== generatedName ? rawName : null) || rawName || generatedName || 'Unknown Item';
+  const itemCost = normalized.cost ?? normalized.item_cost ?? normalized.price ?? itemAsset?.cost ?? itemAsset?.item_cost ?? 0;
+  const tier = normalized.tier ?? normalized.item_tier ?? itemAsset?.item_tier ?? itemAsset?.tier ?? null;
+  const slot = normalized.slot ?? normalized.item_slot_type ?? itemAsset?.item_slot_type ?? itemAsset?.slot ?? null;
+  const itemImg = getItemImage(hydrated) || getItemImage(itemAsset) || getItemImage(normalized);
+
+  return { hydrated, itemName, itemCost, tier, slot, itemImg };
+}
 
 export default function ItemizationModule({ data, meta }) {
   const { items = [], netWorth = 0, souls = 0, soulsPerMin = 0 } = data || {};
@@ -90,11 +128,8 @@ export default function ItemizationModule({ data, meta }) {
         {items && items.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
             {items.map((item, i) => {
-              const itemAsset = itemsMap?.[item.id];
-              const itemName = itemAsset?.name || item.name || 'Unknown Item';
-              const itemImg = itemAsset?.images?.icon_image_small_webp || itemAsset?.images?.icon_image_small;
-              const itemCost = item.cost ?? itemAsset?.item_cost ?? 0;
-              const rarityHint = itemAsset?.tier || itemAsset?.rarity || itemAsset?.grade || null;
+              const { itemName, itemImg, itemCost, tier, slot } = resolveItem(item, itemsMap);
+              const itemMeta = [tier ? `Tier ${tier}` : null, slot ? String(slot) : null].filter(Boolean).join(' / ');
               
               return (
                 <Tooltip
@@ -108,30 +143,14 @@ export default function ItemizationModule({ data, meta }) {
                   <div className="relative bg-deadlock-bg rounded-none border border-deadlock-border p-3 cursor-help hover:border-deadlock-amber/40 hover:bg-deadlock-bg/80 transition-all duration-200 overflow-hidden group">
                     <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-deadlock-amber/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="flex items-start gap-3">
-                      {itemImg ? (
-                        <div className="w-14 h-14 shrink-0 overflow-hidden border border-white/5 bg-black/40 flex items-center justify-center">
-                          <img
-                            src={itemImg}
-                            alt={itemName}
-                            className="w-full h-full object-contain p-1"
-                            onError={(e) => {
-                              e.currentTarget.onerror = null;
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-14 h-14 shrink-0 overflow-hidden border border-deadlock-border bg-deadlock-surface flex items-center justify-center text-deadlock-muted">
-                          <Box className="w-6 h-6" />
-                        </div>
-                      )}
+                      <ItemIcon src={itemImg} alt={itemName} className="w-14 h-14" imageClassName="p-1" />
                       <div className="min-w-0 flex-1 text-left">
                         <div className="flex items-start justify-between gap-2">
                           <p className="text-xs font-bold uppercase tracking-[0.18em] text-deadlock-text truncate">{itemName}</p>
                           <ArrowUpRight className="w-3.5 h-3.5 text-deadlock-muted shrink-0" />
                         </div>
                         <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-deadlock-muted">
-                          {rarityHint ? `Tier ${rarityHint}` : 'Item artifact'}
+                          {itemMeta || 'Item artifact'}
                         </p>
                         <div className="mt-2 flex items-center justify-between gap-2">
                           <span className="font-mono text-sm text-deadlock-amber">{formatNumber(itemCost)}</span>

@@ -1,4 +1,7 @@
 import { Hammer, Clock, ListOrdered } from 'lucide-react';
+import { getItemImage } from '../../utils/formatters';
+import { useAssets } from '../../contexts/AssetContext';
+import ItemIcon from '../ui/ItemIcon';
 
 const SLOT_COLORS = {
   weapon:   'bg-deadlock-red/30 text-deadlock-red',
@@ -15,7 +18,33 @@ function formatTime(seconds) {
   return `${m}:${s}`;
 }
 
+function mergeDefined(base, next) {
+  const merged = { ...(base || {}) };
+  for (const [key, value] of Object.entries(next || {})) {
+    if (value !== null && value !== undefined && value !== '') {
+      merged[key] = value;
+    }
+  }
+  return merged;
+}
+
+function hydrateItem(item, itemsMap) {
+  if (!item) return null;
+  const itemId = item.id ?? item.item_id ?? item.itemId ?? item.item ?? null;
+  const itemAsset = itemId != null ? itemsMap?.[itemId] || itemsMap?.[String(itemId)] : null;
+  const hydrated = mergeDefined(itemAsset, item);
+  const name = itemAsset?.name || itemAsset?.item_name || item.name || item.item_name || (itemId ? `Item #${itemId}` : 'Unknown Item');
+
+  return {
+    ...hydrated,
+    id: itemId,
+    name,
+    imageUrl: getItemImage(hydrated) || getItemImage(itemAsset) || getItemImage(item),
+  };
+}
+
 export default function BuildPathModule({ data }) {
+  const { itemsMap } = useAssets();
   if (!data) return null;
   const {
     score,
@@ -33,6 +62,8 @@ export default function BuildPathModule({ data }) {
     completenessScore,
     summary,
   } = data;
+  const hydratedFirstT3Item = hydrateItem(firstT3Item, itemsMap);
+  const hydratedFirstT4Item = hydrateItem(firstT4Item, itemsMap);
 
   return (
     <div className="space-y-6">
@@ -87,8 +118,8 @@ export default function BuildPathModule({ data }) {
             <Clock className="w-3.5 h-3.5" /> Power Spike Timing
           </p>
           <div className="space-y-1 text-sm">
-            <Row label="First Tier-3 item" value={firstT3Item ? `${firstT3Item.name} at ${formatTime(firstT3Item.timeSeconds)}` : 'Not reached'} />
-            <Row label="First Tier-4 item" value={firstT4Item ? `${firstT4Item.name} at ${formatTime(firstT4Item.timeSeconds)}` : 'Not reached'} />
+            <SpikeRow label="First Tier-3 item" item={hydratedFirstT3Item} />
+            <SpikeRow label="First Tier-4 item" item={hydratedFirstT4Item} />
           </div>
         </div>
         <div className="bg-deadlock-bg rounded-lg p-3">
@@ -148,6 +179,24 @@ function Row({ label, value }) {
     <div className="flex items-center justify-between gap-3">
       <span className="text-deadlock-muted text-xs">{label}</span>
       <span className="font-mono text-xs text-right">{value}</span>
+    </div>
+  );
+}
+
+function SpikeRow({ label, item }) {
+  if (!item) {
+    return <Row label={label} value="Not reached" />;
+  }
+
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-deadlock-muted text-xs">{label}</span>
+      <div className="min-w-0 flex-1 flex items-center justify-end gap-2">
+        <ItemIcon src={item.imageUrl} alt={item.name} className="w-8 h-8" imageClassName="p-1" />
+        <span className="font-mono text-xs text-right truncate">
+          {item.name} at {formatTime(item.timeSeconds)}
+        </span>
+      </div>
     </div>
   );
 }

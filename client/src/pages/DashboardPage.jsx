@@ -78,6 +78,11 @@ export default function DashboardPage() {
 
   if (!analysis) return null;
 
+  const temporal = analysis.meta?.temporal;
+  const mmrHistory = analysis.meta?.mmrHistory;
+  const hasTemporal = Boolean(temporal && temporal.sampleSize !== 0);
+  const hasMmrHistory = Boolean(mmrHistory?.current);
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <SEOHead title={dynamicTitle} description={dynamicDesc} robots="noindex,nofollow" schema={dashboardSchema} />
@@ -145,10 +150,16 @@ export default function DashboardPage() {
         )}
 
         {/* Temporal + MMR history (from meta) */}
-        {(analysis.meta?.temporal || analysis.meta?.mmrHistory) && (
+        {(hasTemporal || hasMmrHistory) && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {analysis.meta?.temporal && <TemporalTrendCard temporal={analysis.meta.temporal} />}
-            {analysis.meta?.mmrHistory && <MmrHistoryCard mmr={analysis.meta.mmrHistory} />}
+            {hasTemporal && (
+              <TemporalTrendCard
+                temporal={temporal}
+                expanded={!hasMmrHistory}
+                className={!hasMmrHistory ? 'lg:col-span-2' : ''}
+              />
+            )}
+            {hasMmrHistory && <MmrHistoryCard mmr={mmrHistory} />}
           </div>
         )}
 
@@ -159,4 +170,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-

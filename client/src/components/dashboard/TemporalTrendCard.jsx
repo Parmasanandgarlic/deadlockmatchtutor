@@ -7,7 +7,7 @@ const TREND_STYLES = {
   stable:    { color: 'text-deadlock-muted', Icon: Minus, label: 'Stable' },
 };
 
-export default function TemporalTrendCard({ temporal }) {
+export default function TemporalTrendCard({ temporal, className = '', expanded = false }) {
   if (!temporal || temporal.sampleSize === 0) return null;
   const { recentForm, trendLabel, streak, heatmap = [], comparisonVsAvg, summary } = temporal;
   const style = TREND_STYLES[trendLabel] || TREND_STYLES.stable;
@@ -20,9 +20,11 @@ export default function TemporalTrendCard({ temporal }) {
     won: h.won,
   }));
 
+  const chartHeightClass = expanded ? 'h-52 lg:h-56' : 'h-36';
+
   return (
-    <div className="card">
-      <div className="flex items-center justify-between mb-3">
+    <div className={`card h-full ${className}`}>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
           <Activity className="w-5 h-5 text-deadlock-accent" />
           <h2 className="text-lg font-semibold">Temporal Form</h2>
@@ -36,7 +38,7 @@ export default function TemporalTrendCard({ temporal }) {
       <p className="text-sm text-deadlock-text-dim mb-4">{summary}</p>
 
       {recentForm && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+        <div className={`grid grid-cols-2 md:grid-cols-4 ${expanded ? 'gap-3' : 'gap-2'} mb-4`}>
           <Metric label="Avg KDA" value={recentForm.avgKda} />
           <Metric label="Avg Souls/min" value={recentForm.avgSoulsPerMin} />
           <Metric label="Win Rate" value={recentForm.winRate != null ? `${recentForm.winRate}%` : '—'} />
@@ -49,7 +51,7 @@ export default function TemporalTrendCard({ temporal }) {
       )}
 
       {chartData.length >= 2 && (
-        <div className="h-36 mb-3">
+        <div className={`${chartHeightClass} mb-3`}>
           <ResponsiveContainer>
             <LineChart data={chartData}>
               <CartesianGrid stroke="#2a2a35" strokeDasharray="3 3" />
@@ -63,7 +65,7 @@ export default function TemporalTrendCard({ temporal }) {
       )}
 
       {comparisonVsAvg && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+        <div className={`grid grid-cols-2 md:grid-cols-4 ${expanded ? 'gap-3' : 'gap-2'} text-xs`}>
           <DeltaPill label="KDA vs avg" delta={comparisonVsAvg.kdaDelta} />
           <DeltaPill label="SPM vs avg" delta={comparisonVsAvg.spmDelta} />
           <DeltaPill label="Kills vs avg" delta={comparisonVsAvg.killsDelta} />
