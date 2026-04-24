@@ -29,6 +29,7 @@ function calculateTrendSlug(values) {
   
   // Meaningful threshold for 'improving' or 'declining'
   const average = sumY / n;
+  if (!Number.isFinite(average) || average === 0) return 'stable';
   const percentageChangePerMatch = (slope / average) * 100;
   
   if (percentageChangePerMatch > 1) return 'improving';
@@ -69,18 +70,20 @@ async function getPlayerProfileTrends(accountId, limit = 10) {
     const spms = [];
     
     let totalWins = 0;
+    let decidedMatches = 0;
     let validMatches = 0;
 
     analyses.forEach((analysis) => {
       const data = analysis.data;
       if (!data || !data.modules) return;
 
-      const score = data.overall?.score || 0;
+      const score = data.overall?.impactScore ?? data.overall?.score ?? 0;
       const kda = data.modules.combat?.kda || 0;
       const spm = data.modules.itemization?.soulsPerMin || 0;
-      const won = data.meta?.won === true;
+      const won = typeof data.meta?.won === 'boolean' ? data.meta.won : null;
 
-      if (won) totalWins++;
+      if (won === true) totalWins++;
+      if (won !== null) decidedMatches++;
       
       timeline.push({
         matchId: String(analysis.match_id),
@@ -113,7 +116,7 @@ async function getPlayerProfileTrends(accountId, limit = 10) {
     const avgScore = Math.round(scores.reduce((a, b) => a + b, 0) / validMatches);
     const avgKda = Math.round((kdas.reduce((a, b) => a + b, 0) / validMatches) * 10) / 10;
     const avgSpm = Math.round(spms.reduce((a, b) => a + b, 0) / validMatches);
-    const winrate = Math.round((totalWins / validMatches) * 100);
+    const winrate = decidedMatches > 0 ? Math.round((totalWins / decidedMatches) * 100) : null;
 
     // Compute trends
     const scoreTrend = calculateTrendSlug(scores);
@@ -145,5 +148,6 @@ async function getPlayerProfileTrends(accountId, limit = 10) {
 }
 
 module.exports = {
+  calculateTrendSlug,
   getPlayerProfileTrends
 };

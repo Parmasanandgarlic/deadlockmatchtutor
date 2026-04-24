@@ -25,7 +25,8 @@ export default function LandingPage() {
     const saved = localStorage.getItem('deadlock_search_history');
     if (saved) {
       try {
-        setHistory(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        setHistory(Array.isArray(parsed) ? parsed.filter(Boolean).slice(0, 3) : []);
       } catch (e) {
         setHistory([]);
       }
@@ -230,6 +231,7 @@ export default function LandingPage() {
                   <div className="p-2 border-b border-deadlock-border bg-deadlock-blue/5 flex items-center justify-between">
                     <span className="text-[9px] font-bold text-deadlock-blue uppercase tracking-widest pl-2">Recent Searches</span>
                     <button 
+                      type="button"
                       onClick={clearHistory}
                       className="text-[9px] font-bold text-deadlock-text-dim/50 hover:text-deadlock-red uppercase tracking-widest px-2 py-1 transition-colors"
                     >
@@ -449,7 +451,7 @@ export default function LandingPage() {
         </section>
 
         <div className="mt-20 flex gap-6 opacity-30">
-          <a href="https://github.com/Parmasanandgarlic/deadlockmatchtutor" target="_blank" className="hover:opacity-100 transition-opacity"><Github /></a>
+          <a href="https://github.com/Parmasanandgarlic/deadlockmatchtutor" target="_blank" rel="noreferrer" className="hover:opacity-100 transition-opacity"><Github /></a>
           <Link to="/about" className="text-[10px] font-bold uppercase tracking-widest hover:opacity-100 transition-opacity">Repository</Link>
           <Link to="/privacy" className="text-[10px] font-bold uppercase tracking-widest hover:opacity-100 transition-opacity">Privacy Policy</Link>
         </div>

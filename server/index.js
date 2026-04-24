@@ -5,6 +5,7 @@ const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const fs = require('fs');
+const path = require('path');
 const cookieParser = require('cookie-parser');
 const config = require('./config');
 const logger = require('./utils/logger');
@@ -56,11 +57,11 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-      imgSrc: ["'self'", 'data:', 'https://assets-bucket.deadlock-api.com', 'https://deadlock-api.com'],
-      connectSrc: ["'self'", 'https://api.deadlock-api.com', 'https://steamcommunity.com'],
+      imgSrc: ["'self'", 'data:', 'https://assets-bucket.deadlock-api.com', 'https://assets.deadlock-api.com', 'https://deadlock-api.com'],
+      connectSrc: ["'self'", 'https://api.deadlock-api.com', 'https://assets.deadlock-api.com', 'https://steamcommunity.com'],
     },
   },
 }));
@@ -110,7 +111,7 @@ const swaggerOptions = {
       }
     ]
   },
-  apis: ['./routes/*.js'], // Scan route files for JSDoc annotations
+  apis: [path.join(__dirname, 'routes/*.js')], // Scan route files for JSDoc annotations
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
@@ -150,9 +151,6 @@ app.get('/health', (_req, res) => {
 // Mounting on both ensures we catch all variations safely.
 app.use('/api', routes);
 app.use('/', routes); 
-
-// 3. Swagger Documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // --------------- Error Handling ---------------
 

@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const authService = require('../services/auth.service');
-const steamService = require('../services/steam.service');
 const logger = require('../utils/logger');
+const config = require('../config');
 
 const router = Router();
 

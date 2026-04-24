@@ -3,17 +3,24 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { runAnalysis, getCachedAnalysis } from '../api/client';
 
 const PROGRESS_STAGES = [
-  'Fetching Match Data...',
-  'Downloading Replay...',
-  'Decompressing Replay...',
-  'Parsing Demo File...',
-  'Analyzing Economy...',
-  'Analyzing Itemization...',
-  'Analyzing Combat...',
-  'Analyzing Objectives...',
-  'Generating Insights...',
-  'Finalizing Report...',
+  'Fetching match data...',
+  'Loading player profile...',
+  'Refreshing hero and item metadata...',
+  'Analyzing hero performance...',
+  'Analyzing itemization...',
+  'Analyzing combat impact...',
+  'Calibrating rank benchmarks...',
+  'Evaluating matchup difficulty...',
+  'Generating insights...',
+  'Finalizing report...',
 ];
+
+const PROCESSING_RETRY_MS = 3000;
+const MAX_PROCESSING_POLLS = 8;
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export default function useMatchAnalysis() {
   const [progressStage, setProgressStage] = useState(0);
@@ -24,7 +31,18 @@ export default function useMatchAnalysis() {
   const queryClient = useQueryClient();
 
   const analysisMutation = useMutation({
-    mutationFn: ({ matchId, accountId }) => runAnalysis(matchId, accountId),
+    mutationFn: async ({ matchId, accountId }) => {
+      for (let attempt = 0; attempt <= MAX_PROCESSING_POLLS; attempt += 1) {
+        const data = await runAnalysis(matchId, accountId);
+        if (data?.code !== 'PROCESSING') return data;
+
+        setProgressText('Analysis is already running. Checking again shortly...');
+        setProgressStage(Math.min(PROGRESS_STAGES.length - 2, 7));
+        await wait(PROCESSING_RETRY_MS);
+      }
+
+      throw new Error('Analysis is still in progress. Please refresh this report in a few moments.');
+    },
     onSuccess: (data, { matchId, accountId }) => {
       setAnalysis(data);
       // Globally cache result

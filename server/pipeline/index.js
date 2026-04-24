@@ -3,6 +3,7 @@ const { computeOverallScore } = require('./scoring.engine');
 const { getHeroName, getHeroData } = require('../utils/heroes');
 const { getRankInfo } = require('../utils/ranks');
 const { getItemName, getItemData } = require('../utils/items');
+const { clamp } = require('../utils/helpers');
 const logger = require('../utils/logger');
 const { HERO_ROLES, ROLE_BENCHMARKS } = require('../data/hero-roles');
 const { analyzeMatchPerformance } = require('./analyzers/match-performance.analyzer');
@@ -47,9 +48,14 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
   // Derive match-level context (duration, result) with robust fallbacks.
   const durationSeconds = Number(
     matchInfo?.duration_s ||
+    matchInfo?.duration_seconds ||
+    matchInfo?.duration ||
     matchInfo?.match_duration_s ||
+    matchInfo?.match_duration ||
     matchInHistory?.match_duration_s ||
+    matchInHistory?.duration_seconds ||
     matchInHistory?.duration_s ||
+    matchInHistory?.duration ||
     0
   );
   const durationMinutes = durationSeconds > 0 ? durationSeconds / 60 : 0;
@@ -85,13 +91,13 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
   }, analysisContext);
 
   // ---- Module 2: Itemization Analysis ----
-  const itemization = analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durationMinutes);
+  const itemization = analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durationMinutes, playerStats);
 
   // ---- Module 3: Combat & KDA Analysis (enriched with granular playerStats) ----
   const combat = analyzeCombatFromStats(matchInHistory, durationMinutes, playerStats);
 
   // ---- Module 4: Benchmark Comparison (match vs career) ----
-  const benchmarks = compareAgainstBenchmarks(matchInHistory, normalizedHeroStats, durationMinutes);
+  const benchmarks = compareAgainstBenchmarks(matchInHistory, normalizedHeroStats, durationMinutes, playerStats);
 
   // ---- Advanced Modules ----
   const rankPredictSummary = summarizeRankPrediction(rankPredict);
@@ -280,41 +286,57 @@ function perMinute(value, durationMinutes) {
   return value / durationMinutes;
 }
 
+function findPlayerInMatchInfo(matchInfo, accountId) {
+  if (!matchInfo || !Array.isArray(matchInfo.players)) return null;
+  return matchInfo.players.find(
+    (p) => Number(p.account_id ?? p.accountId) === Number(accountId)
+  ) || null;
+}
+
+function pickNumber(...values) {
+  for (const value of values) {
+    if (value == null || value === '') continue;
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return 0;
+}
+
 /**
  * Extract Deadlock-specific granular player stats from match metadata.
  * The Deadlock API returns these only when `include_player_stats=true` is
  * requested. Fields vary slightly across versions so we try several aliases.
  */
 function extractGranularPlayerStats(matchInfo, accountId, durationMinutes) {
-  if (!matchInfo || !Array.isArray(matchInfo.players)) return {};
-  const player = matchInfo.players.find(
-    (p) => Number(p.account_id) === Number(accountId)
-  );
+  const player = findPlayerInMatchInfo(matchInfo, accountId);
   if (!player) return {};
 
-  const kills = Number(player.kills ?? player.player_kills ?? 0);
-  const deaths = Number(player.deaths ?? player.player_deaths ?? 0);
-  const assists = Number(player.assists ?? player.player_assists ?? 0);
-  const netWorth = Number(
-    player.net_worth ?? player.networth ?? player.souls ?? 0
+  const kills = pickNumber(player.kills, player.player_kills);
+  const deaths = pickNumber(player.deaths, player.player_deaths);
+  const assists = pickNumber(player.assists, player.player_assists);
+  const netWorth = pickNumber(player.net_worth, player.networth, player.souls);
+  const damageDealt = pickNumber(
+    player.net_damage_dealt,
+    player.player_damage,
+    player.damage,
+    player.hero_damage
   );
-  const damageDealt = Number(
-    player.net_damage_dealt ?? player.player_damage ?? player.damage ?? player.hero_damage ?? 0
+  const damageTaken = pickNumber(
+    player.damage_taken,
+    player.net_damage_taken,
+    player.hero_damage_taken
   );
-  const damageTaken = Number(
-    player.damage_taken ?? player.net_damage_taken ?? player.hero_damage_taken ?? 0
+  const healing = pickNumber(player.healing, player.hero_healing, player.self_healing);
+  const lastHits = pickNumber(player.last_hits);
+  const denies = pickNumber(player.denies);
+  const objectiveDamage = pickNumber(
+    player.obj_damage,
+    player.objective_damage,
+    player.hero_damage_to_objectives
   );
-  const healing = Number(
-    player.healing ?? player.hero_healing ?? player.self_healing ?? 0
-  );
-  const lastHits = Number(player.last_hits ?? 0);
-  const denies = Number(player.denies ?? 0);
-  const objectiveDamage = Number(
-    player.obj_damage ?? player.objective_damage ?? player.hero_damage_to_objectives ?? 0
-  );
-  const maxHealth = Number(player.max_health ?? 0);
-  const level = Number(player.level ?? player.hero_level ?? 0);
-  const souls = Number(player.souls ?? player.net_worth ?? 0);
+  const maxHealth = pickNumber(player.max_health);
+  const level = pickNumber(player.level, player.hero_level);
+  const souls = pickNumber(player.souls, player.net_worth, player.networth);
 
   // Positioning Score: damage dealt vs damage taken ratio normalised to 0-100.
   // Dealing 2x what you take = 85; 1:1 = 50; taking 2x more than dealing = 20.
@@ -342,6 +364,7 @@ function extractGranularPlayerStats(matchInfo, accountId, durationMinutes) {
     maxHealth: maxHealth || null,
     level: level || null,
     souls: souls || null,
+    team: player.team ?? player.player_team ?? null,
     positioningScore,
   };
 }
@@ -364,7 +387,7 @@ function roundTo(value, decimals = 1) {
  * Module 2 – Itemization.
  * Grades final build value against an expected souls/minute benchmark.
  */
-function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durationMinutes) {
+function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durationMinutes, playerStats = {}) {
   const normalizeItems = (raw) => {
     if (!raw) return [];
     if (Array.isArray(raw)) return raw;
@@ -395,7 +418,7 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
 
   // 2. Fallback to full matchInfo players list if history items were missing
   if (items.length === 0 && matchInfo && Array.isArray(matchInfo.players)) {
-    const player = matchInfo.players.find(p => Number(p.account_id) === Number(accountId));
+    const player = findPlayerInMatchInfo(matchInfo, accountId);
     if (player) {
       items = normalizeItems(
         player.items ||
@@ -430,8 +453,23 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
     logger.warn(`[Pipeline] No item data found for match ${matchInHistory?.match_id || 'unknown'} and player ${accountId}`);
   }
 
-  const netWorth = Number(matchInHistory?.net_worth ?? matchInHistory?.netWorth ?? matchInHistory?.souls ?? 0);
-  const souls = Number(matchInHistory?.souls ?? matchInHistory?.last_hits ?? 0);
+  const player = findPlayerInMatchInfo(matchInfo, accountId);
+  const netWorth = pickNumber(
+    playerStats.netWorth,
+    playerStats.souls,
+    matchInHistory?.net_worth,
+    matchInHistory?.netWorth,
+    matchInHistory?.souls,
+    player?.net_worth,
+    player?.networth,
+    player?.souls
+  );
+  const souls = pickNumber(
+    playerStats.souls,
+    matchInHistory?.souls,
+    player?.souls,
+    matchInHistory?.last_hits
+  );
   const soulsPerMin = perMinute(netWorth, durationMinutes);
 
   // Strong benchmark: ~700 souls/min (good core hero), weak: ~350.
@@ -496,7 +534,19 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
  * Grades fight output in THIS match (damage/min, KDA, death rate).
  */
 function analyzeCombatFromStats(matchInHistory, durationMinutes, playerStats = {}) {
-  if (!matchInHistory) {
+  const kills = pickNumber(playerStats.kills, matchInHistory?.player_kills, matchInHistory?.kills);
+  const deaths = pickNumber(playerStats.deaths, matchInHistory?.player_deaths, matchInHistory?.deaths);
+  const assists = pickNumber(playerStats.assists, matchInHistory?.player_assists, matchInHistory?.assists);
+  const damage = pickNumber(
+    playerStats.damageDealt,
+    matchInHistory?.player_damage,
+    matchInHistory?.damage,
+    matchInHistory?.hero_damage
+  );
+  const objectiveDamage = pickNumber(playerStats.objectiveDamage, matchInHistory?.objective_damage);
+  const hasCombatData = Boolean(matchInHistory) || kills > 0 || deaths > 0 || assists > 0 || damage > 0;
+
+  if (!hasCombatData) {
     return {
       score: 50,
       kills: 0,
@@ -506,17 +556,16 @@ function analyzeCombatFromStats(matchInHistory, durationMinutes, playerStats = {
       damage: 0,
       damagePerMin: 0,
       deathsPerMin: 0,
+      objectiveDamage: 0,
+      objectiveScore: 0,
       note: 'Match data not available.',
     };
   }
 
-  const kills = matchInHistory.player_kills ?? matchInHistory.kills ?? 0;
-  const deaths = matchInHistory.player_deaths ?? matchInHistory.deaths ?? 0;
-  const assists = matchInHistory.player_assists ?? matchInHistory.assists ?? 0;
-  const damage = matchInHistory.player_damage ?? matchInHistory.damage ?? matchInHistory.hero_damage ?? 0;
   const kda = deaths > 0 ? (kills + assists) / deaths : kills + assists;
   const damagePerMin = perMinute(damage, durationMinutes);
   const deathsPerMin = perMinute(deaths, durationMinutes);
+  const objectiveScore = clamp((objectiveDamage / 8000) * 100, 0, 100);
 
   let score = 50;
   score += Math.min(kda / 5 * 25, 25);                   // KDA component
@@ -542,7 +591,8 @@ function analyzeCombatFromStats(matchInHistory, durationMinutes, playerStats = {
     damageTakenPerMin: playerStats?.damageTakenPerMin ?? null,
     healing: playerStats?.healing ?? null,
     healingPerMin: playerStats?.healingPerMin ?? null,
-    objectiveDamage: playerStats?.objectiveDamage ?? null,
+    objectiveDamage,
+    objectiveScore: Math.round(objectiveScore),
     positioningScore: playerStats?.positioningScore ?? null,
   };
 }
@@ -552,11 +602,11 @@ function analyzeCombatFromStats(matchInHistory, durationMinutes, playerStats = {
  * Compares THIS match's KDA and souls-per-min to the player's career averages
  * on this hero. If career data is missing, falls back to community benchmarks.
  */
-function compareAgainstBenchmarks(matchInHistory, normalizedHeroStats, durationMinutes) {
-  const kills = matchInHistory?.player_kills ?? matchInHistory?.kills ?? 0;
-  const deaths = matchInHistory?.player_deaths ?? matchInHistory?.deaths ?? 0;
-  const assists = matchInHistory?.player_assists ?? matchInHistory?.assists ?? 0;
-  const netWorth = matchInHistory?.net_worth ?? matchInHistory?.netWorth ?? 0;
+function compareAgainstBenchmarks(matchInHistory, normalizedHeroStats, durationMinutes, playerStats = {}) {
+  const kills = pickNumber(playerStats.kills, matchInHistory?.player_kills, matchInHistory?.kills);
+  const deaths = pickNumber(playerStats.deaths, matchInHistory?.player_deaths, matchInHistory?.deaths);
+  const assists = pickNumber(playerStats.assists, matchInHistory?.player_assists, matchInHistory?.assists);
+  const netWorth = pickNumber(playerStats.netWorth, playerStats.souls, matchInHistory?.net_worth, matchInHistory?.netWorth);
   const matchKda = deaths > 0 ? (kills + assists) / deaths : kills + assists;
   const matchSoulsPerMin = perMinute(netWorth, durationMinutes);
 

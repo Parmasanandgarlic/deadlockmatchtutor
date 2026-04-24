@@ -3,6 +3,7 @@
  * Tests the trend aggregation math in isolation with no external dependencies.
  */
 const assert = require('assert');
+const { calculateTrendSlug } = require('../../server/services/trends.service');
 
 function test(name, fn) {
   try { fn(); console.log(`  PASS  ${name}`); test.passed++; }
@@ -11,26 +12,6 @@ function test(name, fn) {
 test.passed = 0; test.failed = 0;
 
 console.log('\n[Unit] trends.service.js');
-
-// We test the calculateTrendSlug function directly by extracting the logic
-// Since it's not exported, we duplicate the algorithm here for unit coverage
-function calculateTrendSlug(values) {
-  if (!values || values.length < 2) return 'stable';
-  const ordered = [...values].reverse();
-  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-  const n = ordered.length;
-  ordered.forEach((y, x) => {
-    sumX += x; sumY += y; sumXY += (x * y); sumX2 += (x * x);
-  });
-  const denominator = (n * sumX2) - (sumX * sumX);
-  if (denominator === 0) return 'stable';
-  const slope = ((n * sumXY) - (sumX * sumY)) / denominator;
-  const average = sumY / n;
-  const percentageChangePerMatch = (slope / average) * 100;
-  if (percentageChangePerMatch > 1) return 'improving';
-  if (percentageChangePerMatch < -1) return 'declining';
-  return 'stable';
-}
 
 test('calculateTrendSlug: empty array returns stable', () => {
   assert.strictEqual(calculateTrendSlug([]), 'stable');
@@ -68,6 +49,10 @@ test('calculateTrendSlug: null input returns stable', () => {
 test('calculateTrendSlug: denominator zero edge case returns stable', () => {
   // Two identical values
   assert.strictEqual(calculateTrendSlug([42, 42]), 'stable');
+});
+
+test('calculateTrendSlug: zero baseline stays stable', () => {
+  assert.strictEqual(calculateTrendSlug([0, 0, 0]), 'stable');
 });
 
 console.log(`\n  ${test.passed} passed / ${test.failed} failed`);

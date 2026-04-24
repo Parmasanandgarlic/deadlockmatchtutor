@@ -11,6 +11,10 @@ const configuration = new Configuration({
 
 const playersApi = new PlayersApi(configuration);
 const matchesApi = new MatchesApi(configuration);
+const ASSETS_API_BASE_URL = 'https://assets.deadlock-api.com/v2';
+const ASSET_CACHE_TTL_SECONDS = 24 * 60 * 60;
+const ASSET_CACHE_TTL_MS = ASSET_CACHE_TTL_SECONDS * 1000;
+const assetMemoryCache = new Map();
 
 function normalizeMatchHistory(data) {
   if (Array.isArray(data)) return data;
@@ -19,6 +23,30 @@ function normalizeMatchHistory(data) {
   if (Array.isArray(data?.items)) return data.items;
   if (Array.isArray(data?.data)) return data.data;
   return [];
+}
+
+async function fetchAssetList(label, path, redisKey) {
+  const now = Date.now();
+  const memoryHit = assetMemoryCache.get(label);
+  if (memoryHit && now - memoryHit.fetchedAt < ASSET_CACHE_TTL_MS) {
+    return memoryHit.data;
+  }
+
+  const cached = redisKey ? await redisClient.get(redisKey).catch(() => null) : null;
+  if (Array.isArray(cached) && cached.length > 0) {
+    assetMemoryCache.set(label, { data: cached, fetchedAt: now });
+    return cached;
+  }
+
+  const { data } = await axios.get(`${ASSETS_API_BASE_URL}/${path}`, { timeout: 10000 });
+  const list = Array.isArray(data) ? data : [];
+  if (list.length > 0) {
+    assetMemoryCache.set(label, { data: list, fetchedAt: now });
+    if (redisKey) {
+      await redisClient.set(redisKey, list, ASSET_CACHE_TTL_SECONDS).catch(() => false);
+    }
+  }
+  return list;
 }
 
 async function fetchMatchHistoryFromApi(accountId) {
@@ -308,9 +336,9 @@ async function getPlayerCard(accountId) {
  */
 async function getHeroes() {
   try {
-    const { data } = await axios.get('https://assets.deadlock-api.com/v2/heroes');
+    const data = await fetchAssetList('heroes', 'heroes', redisClient.cacheKeys?.heroData?.());
     logger.debug('Fetched heroes from Deadlock Assets API');
-    return Array.isArray(data) ? data : [];
+    return data;
   } catch (err) {
     logger.warn(`Failed to fetch heroes from API: ${err.message}. Using static mapping.`);
     return [];
@@ -323,9 +351,9 @@ async function getHeroes() {
  */
 async function getItems() {
   try {
-    const { data } = await axios.get('https://assets.deadlock-api.com/v2/items');
+    const data = await fetchAssetList('items', 'items', redisClient.cacheKeys?.itemData?.());
     logger.debug('Fetched items from Deadlock Assets API');
-    return Array.isArray(data) ? data : [];
+    return data;
   } catch (err) {
     logger.warn(`Failed to fetch items from API: ${err.message}. Using static mapping.`);
     return [];
@@ -338,10 +366,10 @@ async function getItems() {
  */
 async function getRanks() {
   try {
-    const { data } = await axios.get('https://assets.deadlock-api.com/v2/ranks');
+    const data = await fetchAssetList('ranks', 'ranks', redisClient.cacheKeys?.rankData?.());
     logger.debug('Fetched ranks from Deadlock Assets API');
     // Return as-is (array of { tier, name, images: { small_webp, large_webp, ... } })
-    return Array.isArray(data) ? data : [];
+    return data;
   } catch (err) {
     logger.warn(`Failed to fetch ranks from API: ${err.message}. Using empty array.`);
     return [];

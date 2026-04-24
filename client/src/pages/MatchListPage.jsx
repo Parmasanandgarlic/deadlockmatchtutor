@@ -7,6 +7,7 @@ import SEOHead from '../components/seo/SEOHead';
 import MatchCard from '../components/matches/MatchCard';
 import MatchListToolbar from '../components/matches/MatchListToolbar';
 import MatchSummaryPanel from '../components/matches/MatchSummaryPanel';
+import { resolveMatchResult } from '../utils/match';
 
 const DEFAULT_FILTERS = {
   search: '',
@@ -253,11 +254,5 @@ function startTimeOf(m) {
 }
 
 function resolveResult(m) {
-  if (m.match_result != null && m.player_team != null) {
-    return m.match_result === m.player_team;
-  }
-  if (m.player_team_won != null) return m.player_team_won;
-  if (m.won != null) return m.won;
-  return null;
+  return resolveMatchResult(m);
 }
-

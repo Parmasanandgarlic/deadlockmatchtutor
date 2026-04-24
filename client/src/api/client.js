@@ -217,16 +217,14 @@ export async function getRanks() {
   return data;
 }
 
-// ---- Assets (Direct from Deadlock CDN) ----
+// ---- Assets (via backend metadata cache) ----
 
 export async function getDeadlockHeroes() {
-  const { data } = await axios.get('https://assets.deadlock-api.com/v2/heroes');
-  return data;
+  return getHeroes();
 }
 
 export async function getDeadlockItems() {
-  const { data } = await axios.get('https://assets.deadlock-api.com/v2/items');
-  return data;
+  return getItems();
 }
 
 export default api;

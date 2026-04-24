@@ -66,6 +66,30 @@ const mockApiData = {
     assert.ok(r.modules.combat.note || typeof r.modules.combat.score === 'number');
   });
 
+  await test('pipeline uses match metadata when history row is missing', async () => {
+    const matchInfo = {
+      match_id: 12345,
+      duration_s: 1800,
+      players: [
+        {
+          account_id: 12345,
+          hero_id: 2,
+          kills: 8,
+          deaths: 3,
+          assists: 12,
+          net_worth: 26000,
+          hero_damage: 21000,
+          objective_damage: 7000,
+        },
+      ],
+    };
+    const data = { ...mockApiData, matchInHistory: null, matchInfo };
+    const r = await runPipeline(data, '12345', matchInfo);
+    assert.strictEqual(r.modules.combat.kills, 8);
+    assert.strictEqual(r.modules.itemization.netWorth, 26000);
+    assert.ok(r.modules.combat.objectiveScore > 0);
+  });
+
   await test('pipeline generates at least one recommendation', async () => {
     const r = await runPipeline(mockApiData, '12345', mockApiData.matchInfo);
     assert.ok(r.recommendations.length > 0);

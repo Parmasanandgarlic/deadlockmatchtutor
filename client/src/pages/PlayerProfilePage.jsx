@@ -62,8 +62,8 @@ const CustomTooltip = ({ active, payload, label }) => {
         <div className="space-y-1">
           <div className="flex justify-between gap-4">
             <span className="text-gray-400">Result:</span>
-            <span className={`font-bold ${data.won ? 'text-green-400' : 'text-red-400'}`}>
-              {data.won ? 'Victory' : 'Defeat'}
+            <span className={`font-bold ${data.won == null ? 'text-gray-400' : data.won ? 'text-green-400' : 'text-red-400'}`}>
+              {data.won == null ? 'Unknown' : data.won ? 'Victory' : 'Defeat'}
             </span>
           </div>
           <div className="flex justify-between gap-4">
@@ -129,7 +129,7 @@ export default function PlayerProfilePage() {
               <br />
               Matches analyzed: <span className="text-[#ffad1c] font-bold">{trendsData.matchesAnalyzed || 0}</span>
             </p>
-            <Link to={`/player/${accountId}`} className="inline-block bg-[#1a2130] hover:bg-[#20293b] text-[#ffad1c] px-6 py-2 border border-[#3b7db2]/50 font-serif transition-colors">
+            <Link to={`/matches/${accountId}`} className="inline-block bg-[#1a2130] hover:bg-[#20293b] text-[#ffad1c] px-6 py-2 border border-[#3b7db2]/50 font-serif transition-colors">
               Analyze Recent Matches
             </Link>
           </div>
@@ -168,7 +168,7 @@ export default function PlayerProfilePage() {
       {/* Header */}
       <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between border-b-2 border-[#1a2130] pb-4">
         <div>
-          <Link to={`/player/${accountId}`} className="text-[#3b7db2] hover:text-[#ffad1c] font-sans text-sm mb-2 inline-flex items-center transition-colors">
+          <Link to={`/matches/${accountId}`} className="text-[#3b7db2] hover:text-[#ffad1c] font-sans text-sm mb-2 inline-flex items-center transition-colors">
             &larr; Back to Match History
           </Link>
           <h1 className="text-4xl font-serif text-white uppercase tracking-wider mt-2">
@@ -192,7 +192,7 @@ export default function PlayerProfilePage() {
           <div className="bg-[#151921] p-5 border-l-4 border-[#3b7db2] rounded-r-md shadow-lg">
             <div className="text-sm text-gray-400 font-sans uppercase mb-1">Win Rate</div>
             <div className="flex items-end justify-between">
-              <div className="text-3xl font-serif text-white">{averages.winrate}%</div>
+              <div className="text-3xl font-serif text-white">{averages.winrate == null ? '--' : `${averages.winrate}%`}</div>
               {/* Could add trend if calculated */}
             </div>
           </div>

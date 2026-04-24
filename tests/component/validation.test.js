@@ -54,6 +54,13 @@ test('requireNumericParam: numeric accepted', () => {
   assert.strictEqual(called, true);
 });
 
+test('requireNumericParam: exponent notation rejected', () => {
+  const mw = requireNumericParam('id');
+  const res = mockRes();
+  mw({ params: { id: '1e3' } }, res, () => {});
+  assert.strictEqual(res.statusCode, 400);
+});
+
 test('validateSteamInput: empty rejected', () => {
   const res = mockRes();
   validateSteamInput({ params: {}, query: {}, body: { steamInput: '' } }, res, () => {});

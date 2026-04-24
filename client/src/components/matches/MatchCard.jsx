@@ -7,20 +7,12 @@ import {
   formatDateTime,
 } from '../../utils/formatters';
 import { useAssets } from '../../contexts/AssetContext';
+import { resolveMatchResult } from '../../utils/match';
 
 export default function MatchCard({ match, accountId }) {
   const { heroesMap } = useAssets();
   
-  // match_result: winning team (0 or 1); player_team: which team the player was on.
-  // Fallback to legacy player_team_won/won fields if present.
-  let won = null;
-  if (match.match_result != null && match.player_team != null) {
-    won = match.match_result === match.player_team;
-  } else if (match.player_team_won != null) {
-    won = match.player_team_won;
-  } else if (match.won != null) {
-    won = match.won;
-  }
+  const won = resolveMatchResult(match);
 
   const heroAsset = heroesMap?.[match.hero_id];
   const heroName = match.hero_name || heroAsset?.name || 'Unknown Hero';

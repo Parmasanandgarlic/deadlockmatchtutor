@@ -1,7 +1,6 @@
 const passport = require('passport');
 const SteamStrategy = require('passport-steam').Strategy;
 const session = require('express-session');
-const cookieParser = require('cookie-parser');
 const crypto = require('crypto');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
@@ -14,14 +13,30 @@ const { createClient } = require('@supabase/supabase-js');
 let supabase = null;
 const getSupabaseClient = () => {
   if (!supabase) {
-    if (!config.getSupabaseClient().url || !config.getSupabaseClient().serviceRoleKey) {
+    const isConfigured =
+      config.supabase.url &&
+      config.supabase.url !== 'https://placeholder.supabase.co' &&
+      config.supabase.serviceRoleKey;
+
+    if (!isConfigured) {
       logger.warn('Supabase not configured - some auth features will be disabled');
       return null;
     }
-    supabase = createClient(config.getSupabaseClient().url, config.getSupabaseClient().serviceRoleKey);
+    supabase = createClient(config.supabase.url, config.supabase.serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
   }
   return supabase;
 };
+
+function getAuthBaseUrl() {
+  return process.env.AUTH_CALLBACK_BASE_URL || (config.isDev
+    ? `http://localhost:${config.port}`
+    : 'https://www.aftermatch.xyz');
+}
 
 class AuthService {
   constructor() {
@@ -36,12 +51,24 @@ class AuthService {
       return false;
     }
 
+    if (!config.isDev && !process.env.SESSION_SECRET) {
+      logger.error('SESSION_SECRET is required when Steam authentication is enabled in production.');
+      return false;
+    }
+
+    if (!getSupabaseClient()) {
+      logger.warn('Supabase service role key missing. Steam authentication disabled.');
+      return false;
+    }
+
+    const authBaseUrl = getAuthBaseUrl();
+
     // Configure Passport with Steam strategy
     this.passport.use(
       new SteamStrategy(
         {
-          returnURL: `${config.isDev ? 'http://localhost:5173' : 'https://www.aftermatch.xyz'}/auth/steam/return`,
-          realm: `${config.isDev ? 'http://localhost:5173' : 'https://www.aftermatch.xyz'}`,
+          returnURL: `${authBaseUrl}/api/auth/steam/return`,
+          realm: authBaseUrl,
           apiKey: process.env.STEAM_API_KEY,
         },
         async (identifier, profile, done) => {
@@ -50,7 +77,7 @@ class AuthService {
             
             // Extract profile data
             const userData = {
-              steam_id: parseInt(steamId),
+              steam_id: steamId,
               steam_username: profile.displayName,
               avatar_url: profile.photos?.[2]?.value || profile.photos?.[0]?.value,
               profile_url: profile._json.profileurl,
@@ -58,7 +85,12 @@ class AuthService {
             };
 
             // Get or create user in database
-            const { data, error } = await getSupabaseClient().rpc('get_or_create_user', {
+            const db = getSupabaseClient();
+            if (!db) {
+              return done(new Error('Authentication database is not configured.'));
+            }
+
+            const { data, error } = await db.rpc('get_or_create_user', {
               p_steam_id: userData.steam_id,
               p_username: userData.steam_username,
               p_avatar_url: userData.avatar_url,
@@ -96,7 +128,10 @@ class AuthService {
     // Deserialize user from session
     this.passport.deserializeUser(async (id, done) => {
       try {
-        const { data, error } = await supabase
+        const db = getSupabaseClient();
+        if (!db) return done(null, false);
+
+        const { data, error } = await db
           .from('users')
           .select('*')
           .eq('id', id)
@@ -199,7 +234,7 @@ class AuthService {
 
   isAuthenticated() {
     return (req, res, next) => {
-      if (req.isAuthenticated()) {
+      if (typeof req.isAuthenticated === 'function' && req.isAuthenticated()) {
         return next();
       }
       
@@ -215,7 +250,10 @@ class AuthService {
     if (!req.user) return null;
     
     try {
-      const { data, error } = await supabase
+      const db = getSupabaseClient();
+      if (!db) return null;
+
+      const { data, error } = await db
         .from('users')
         .select('id, steam_id, steam_username, avatar_url, profile_url, is_premium, settings')
         .eq('id', req.user.id)
@@ -240,7 +278,10 @@ class AuthService {
 
   async getUserProfile(accountId) {
     try {
-      const { data, error } = await supabase
+      const db = getSupabaseClient();
+      if (!db) return null;
+
+      const { data, error } = await db
         .from('player_profiles')
         .select('*')
         .eq('account_id', accountId)
@@ -256,7 +297,10 @@ class AuthService {
 
   async updateUserSettings(userId, settings) {
     try {
-      const { data, error } = await supabase
+      const db = getSupabaseClient();
+      if (!db) return null;
+
+      const { data, error } = await db
         .from('users')
         .update({ settings, updated_at: new Date().toISOString() })
         .eq('id', userId)
@@ -273,7 +317,10 @@ class AuthService {
 
   async addToFavorites(userId, favoriteType, targetId, notes = null) {
     try {
-      const { data, error } = await supabase
+      const db = getSupabaseClient();
+      if (!db) return null;
+
+      const { data, error } = await db
         .from('favorites')
         .insert({
           user_id: userId,
@@ -294,7 +341,10 @@ class AuthService {
 
   async removeFromFavorites(userId, favoriteType, targetId) {
     try {
-      const { error } = await supabase
+      const db = getSupabaseClient();
+      if (!db) return false;
+
+      const { error } = await db
         .from('favorites')
         .delete()
         .eq('user_id', userId)
@@ -311,7 +361,10 @@ class AuthService {
 
   async getUserFavorites(userId, favoriteType = null) {
     try {
-      let query = supabase
+      const db = getSupabaseClient();
+      if (!db) return [];
+
+      let query = db
         .from('favorites')
         .select('*')
         .eq('user_id', userId)
@@ -332,7 +385,10 @@ class AuthService {
 
   async trackEvent(userId, eventType, eventData, ipAddress, userAgent) {
     try {
-      await supabase
+      const db = getSupabaseClient();
+      if (!db) return;
+
+      await db
         .from('usage_analytics')
         .insert({
           user_id: userId,

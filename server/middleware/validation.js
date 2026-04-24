@@ -23,13 +23,21 @@ function requireParam(paramName, source = 'params') {
 /**
  * Validate that a value looks like a numeric ID.
  */
+function isValidNumericId(value) {
+  if (typeof value !== 'string' && typeof value !== 'number') return false;
+  const text = String(value).trim();
+  if (!/^\d+$/.test(text)) return false;
+  const parsed = Number(text);
+  return Number.isSafeInteger(parsed) && parsed >= 0;
+}
+
 function requireNumericParam(paramName, source = 'params') {
   return (req, res, next) => {
     const value = req[source]?.[paramName];
-    if (!value || isNaN(Number(value))) {
+    if (!isValidNumericId(value)) {
       return res.status(400).json({
         error: 'Bad Request',
-        message: `Parameter "${paramName}" must be a numeric value.`,
+        message: `Parameter "${paramName}" must be a non-negative integer ID.`,
       });
     }
     next();
@@ -88,4 +96,4 @@ function validateSteamInput(req, res, next) {
   next();
 }
 
-module.exports = { requireParam, requireNumericParam, validateSteamInput };
+module.exports = { requireParam, requireNumericParam, validateSteamInput, isValidNumericId };

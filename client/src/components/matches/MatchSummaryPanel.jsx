@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Trophy, Swords, Clock, Flame } from 'lucide-react';
 import Tooltip from '../ui/Tooltip';
 import { useAssets } from '../../contexts/AssetContext';
+import { resolveMatchResult } from '../../utils/match';
 
 /**
  * Aggregate summary panel computed client-side over the match list.
@@ -119,15 +120,7 @@ function computeStats(matches, heroesMap) {
   const heroCounts = new Map(); // heroName → { count, wins }
 
   for (const m of matches) {
-    // Determine result
-    let won = null;
-    if (m.match_result != null && m.player_team != null) {
-      won = m.match_result === m.player_team;
-    } else if (m.player_team_won != null) {
-      won = m.player_team_won;
-    } else if (m.won != null) {
-      won = m.won;
-    }
+    const won = resolveMatchResult(m);
     if (won === true) wins++;
     else if (won === false) losses++;
 

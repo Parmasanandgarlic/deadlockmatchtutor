@@ -7,7 +7,12 @@ export default function PerformanceRadar({ modules }) {
   const matchFarming = modules.itemization?.score || 0;
   const matchFighting = modules.combat?.score || 0;
   const matchConsistency = modules.benchmarks?.score || 0;
-  const matchObjectives = modules.combat?.objectiveScore || 0;
+  const rankObjective = modules.rankBenchmarks?.comparisons?.find((c) => c.metric === 'Objective Damage')?.score;
+  const matchObjectives =
+    modules.combat?.objectiveScore ??
+    rankObjective ??
+    modules.heroPerformance?.metrics?.objectiveScore ??
+    0;
   const matchPositioning = modules.combat?.positioningScore || 50;
   const matchSurvival = Math.max(0, 100 - ((modules.combat?.deaths || 0) * 8));
 
