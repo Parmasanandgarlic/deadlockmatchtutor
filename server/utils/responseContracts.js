@@ -73,10 +73,37 @@ function validateAgainstSchema(value, schema, path = 'response', issues = []) {
   return issues;
 }
 
+/**
+ * Validate data against a schema and warn on mismatches.
+ *
+ * IMPORTANT: This runs in ALL environments, not just dev.
+ * In production, contract mismatches indicate API drift that
+ * will cause broken UIs — we need to catch them proactively.
+ *
+ * @param {string} name — identifier for the data being validated
+ * @param {*} value — the data to validate
+ * @param {Object} schema — the expected schema
+ * @returns {string[]} — list of issues found
+ */
 function warnOnContractMismatch(name, value, schema) {
   const issues = validateAgainstSchema(value, schema, name, []);
   if (issues.length > 0) {
-    logger.warn(`[Contract] ${name} shape mismatch:\n- ${issues.join('\n- ')}`);
+    const message = `[Contract] ${name} shape mismatch:\n- ${issues.join('\n- ')}`;
+    logger.warn(message);
+
+    // In production, escalate to Sentry so we get alerted to API drift
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        const Sentry = require('@sentry/node');
+        Sentry.captureMessage(message, {
+          level: 'warning',
+          tags: { component: 'contract-validation', schema: name },
+          extra: { issues, valueType: typeof value },
+        });
+      } catch {
+        // Sentry not available — warn already logged above
+      }
+    }
   }
   return issues;
 }

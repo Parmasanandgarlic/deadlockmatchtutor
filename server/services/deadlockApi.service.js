@@ -4,6 +4,7 @@ const config = require('../config');
 const logger = require('../utils/logger');
 const redisClient = require('./redis.service');
 const { warnOnContractMismatch, MATCH_HISTORY_SCHEMA } = require('../utils/responseContracts');
+const { ApiUnavailableError } = require('../utils/apiAdapter');
 
 const configuration = new Configuration({
   basePath: config.deadlockApi.baseUrl,
@@ -96,12 +97,24 @@ async function getMatchHistory(accountId, { bypassCache = false } = {}) {
       throw new Error('Invalid account ID. Please check the Steam ID and try again.');
     }
     if (err.response?.status === 500) {
-      throw new Error('Deadlock API is currently experiencing issues. Please try again later.');
+      throw new ApiUnavailableError(
+        'Deadlock API is currently experiencing issues. Please try again later.',
+        500,
+        'getMatchHistory'
+      );
     }
     if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
-      throw new Error('Deadlock API timed out while loading match history. Please try again in a moment.');
+      throw new ApiUnavailableError(
+        'Deadlock API timed out while loading match history. Please try again in a moment.',
+        408,
+        'getMatchHistory'
+      );
     }
-    throw new Error('Failed to fetch match history from Deadlock API.');
+    throw new ApiUnavailableError(
+      'Failed to fetch match history from Deadlock API.',
+      err.response?.status || 0,
+      'getMatchHistory'
+    );
   }
 }
 
@@ -121,10 +134,18 @@ async function getMatchMetadata(matchId) {
       throw new Error('Match not found. It may have expired or the ID is incorrect.');
     }
     if (err.response?.status === 500) {
-      logger.warn(`Match metadata 500 error for match ${matchId}. Continuing without it.`);
-      return {};
+      // FAIL FAST: Don't silently return {} — callers need to know data is missing.
+      throw new ApiUnavailableError(
+        `Match metadata unavailable for match ${matchId} (API 500).`,
+        500,
+        'getMatchMetadata'
+      );
     }
-    throw new Error('Failed to fetch match metadata from Deadlock API.');
+    throw new ApiUnavailableError(
+      'Failed to fetch match metadata from Deadlock API.',
+      err.response?.status || 0,
+      'getMatchMetadata'
+    );
   }
 }
 
@@ -197,10 +218,13 @@ async function getMatchInfo(matchId) {
     }
   }
 
-  // 4. Give up gracefully so the pipeline can fall back to matchInHistory.
+  // 4. Fail explicitly — callers must handle the absence of match info.
   if (lastErr?.response?.status === 404) throw new Error('Match not found.');
-  logger.warn(`Match info unavailable for ${matchId}; continuing with match-history fallback.`);
-  return {};
+  throw new ApiUnavailableError(
+    `Match info unavailable for ${matchId}. All API endpoints failed.`,
+    lastErr?.response?.status || 0,
+    'getMatchInfo'
+  );
 }
 
 /**

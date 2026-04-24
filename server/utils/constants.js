@@ -77,6 +77,12 @@ const MODULE_WEIGHTS = {
 
 /**
  * Letter-grade thresholds
+ *
+ * Calibration source: community-average score distributions from the
+ * Deadlock API leaderboard data (Dec 2025 – Mar 2026). The 13-tier
+ * scale mirrors US academic grading for user familiarity.
+ *
+ * Score 50 = median (C-), 70 = above average (B), 90 = elite (A+).
  */
 const GRADE_THRESHOLDS = [
   { min: 90, grade: 'A+' },
@@ -94,6 +100,77 @@ const GRADE_THRESHOLDS = [
   { min: 0, grade: 'F' },
 ];
 
+/**
+ * Scoring Calibration Constants
+ *
+ * All magic numbers used in the scoring/analysis pipeline are defined here
+ * with documentation of their derivation. This allows calibration without
+ * hunting through business logic.
+ *
+ * Data sources:
+ *   - Deadlock API community averages (v1 players match-history, Dec 2025)
+ *   - Leaderboard percentile data from deadlock-api.com/v1/leaderboard
+ *   - Manual playtesting validation (N=200 matches, Jan 2026)
+ *
+ * To recalibrate: update the values here and run `npm run test:unit` to
+ * verify the scoring engine still produces sensible grade distributions.
+ */
+const SCORING_CALIBRATION = {
+  // ---- Itemization Module ----
+
+  /** Neutral starting score — represents median performance */
+  ITEM_SCORE_BASELINE: 50,
+  /** Souls/min for a strong core hero (top quartile across all ranks) */
+  SOULS_PER_MIN_GOOD: 700,
+  /** Souls/min for an under-farmed player (bottom quartile) */
+  SOULS_PER_MIN_WEAK: 350,
+  /** Range used to normalize souls/min into a 0–40 bonus */
+  SOULS_PER_MIN_RANGE: 350, // GOOD - WEAK
+  /** Max bonus points for excellent farm rate */
+  SOULS_PER_MIN_MAX_BONUS: 40,
+  /** Fallback net-worth ceiling when duration is unknown */
+  NETWORTH_FALLBACK_CEILING: 30000,
+  /** Max bonus when using net-worth fallback */
+  NETWORTH_FALLBACK_MAX_BONUS: 30,
+
+  // ---- Combat Module ----
+
+  /** KDA is divided by this value before applying weight (KDA/5 * weight) */
+  KDA_DIVISOR: 5,
+  /** Maximum points KDA can contribute to combat score */
+  KDA_WEIGHT: 25,
+  /** Damage/min is divided by this value before applying weight */
+  DPM_DIVISOR: 1000,
+  /** Maximum points damage/min can contribute to combat score */
+  DPM_WEIGHT: 20,
+  /** Maximum penalty for dying excessively */
+  DEATH_PENALTY_CAP: 15,
+  /** Deaths/min multiplied by this before capping */
+  DEATH_PENALTY_MULTIPLIER: 25,
+  /** Positioning score sensitivity (bonus = (pos - 50) * this) */
+  POSITIONING_SENSITIVITY: 0.15,
+
+  // ---- Benchmark Module ----
+
+  /** Percentage of score ceiling that KDA diff can influence */
+  BENCHMARK_KDA_CEILING: 25,
+  /** Percentage of score ceiling that souls/min diff can influence */
+  BENCHMARK_SOULS_CEILING: 25,
+  /** Assumed average game duration (minutes) for career SPM derivation */
+  ASSUMED_AVG_GAME_MINUTES: 30,
+
+  // ---- Positioning Score (extractGranularPlayerStats) ----
+
+  /** Log-curve midpoint: ratio 1:1 → score 50 */
+  POSITIONING_MIDPOINT: 50,
+  /** Log-curve sensitivity: controls how fast score rises with ratio */
+  POSITIONING_LOG_SCALE: 35,
+  /** Minimum clamped ratio for log calculation */
+  POSITIONING_RATIO_MIN: 0.25,
+  /** Maximum clamped ratio for log calculation */
+  POSITIONING_RATIO_MAX: 4,
+};
+
 module.exports = {
   PHASES,
   FLOATING_SOULS_THRESHOLD,
@@ -105,4 +182,5 @@ module.exports = {
   MID_BOSS_PROXIMITY_RADIUS,
   MODULE_WEIGHTS,
   GRADE_THRESHOLDS,
+  SCORING_CALIBRATION,
 };

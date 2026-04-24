@@ -11,6 +11,10 @@ CREATE TABLE IF NOT EXISTS analyses (
 CREATE INDEX IF NOT EXISTS idx_analyses_updated_at ON analyses(updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_analyses_match_account ON analyses(match_id, account_id);
 
+-- Player-first index: enables efficient queries for all analyses by a given player.
+-- The composite PK (match_id, account_id) only helps when match_id is the leading column.
+CREATE INDEX IF NOT EXISTS idx_analyses_account_id ON analyses(account_id, updated_at DESC);
+
 -- Enable Row Level Security (optional, can be disabled for server-side use)
 ALTER TABLE analyses ENABLE ROW LEVEL SECURITY;
 

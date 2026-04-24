@@ -7,6 +7,8 @@ const { itemAssetFields } = require('../utils/itemAssets');
 const { clamp } = require('../utils/helpers');
 const logger = require('../utils/logger');
 const { HERO_ROLES, ROLE_BENCHMARKS } = require('../data/hero-roles');
+const { SCORING_CALIBRATION } = require('../utils/constants');
+const { normalizePlayer, normalizeMatchInfo, normalizeMatchHistoryEntry, normalizeHeroStats: normalizeHeroStatsAdapter } = require('../utils/apiAdapter');
 const { analyzeMatchPerformance } = require('./analyzers/match-performance.analyzer');
 const { analyzeRankBenchmarks } = require('./analyzers/rankBenchmarks.analyzer');
 const { analyzeTemporal } = require('./analyzers/temporal.analyzer');
@@ -217,19 +219,12 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
  * 0-100 (percent) depending on the endpoint / version. Normalise to 0-100 by
  * assuming anything ≤ 1 is a fraction.
  */
+/**
+ * Delegate to the centralized apiAdapter for hero stats normalization.
+ * Kept as a local alias for backward compatibility with callers in this file.
+ */
 function normalizeHeroStats(raw) {
-  if (!raw || typeof raw !== 'object') {
-    return { winrate: 0, matchesPlayed: 0, avgKda: 0, avgSouls: 0, avgDamage: 0 };
-  }
-  let winrate = raw.win_rate ?? raw.winrate ?? 0;
-  if (winrate > 0 && winrate <= 1) winrate = winrate * 100; // fraction → percent
-  return {
-    winrate,
-    matchesPlayed: raw.matches_played ?? raw.matches ?? 0,
-    avgKda: raw.avg_kda ?? raw.kda ?? 0,
-    avgSouls: raw.avg_souls ?? raw.avg_net_worth ?? 0,
-    avgDamage: raw.avg_damage ?? raw.avg_hero_damage ?? 0,
-  };
+  return normalizeHeroStatsAdapter(raw);
 }
 
 /**
@@ -473,13 +468,14 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
   );
   const soulsPerMin = perMinute(netWorth, durationMinutes);
 
-  // Strong benchmark: ~700 souls/min (good core hero), weak: ~350.
-  let score = 50;
+  // Documented thresholds — see SCORING_CALIBRATION in constants.js
+  const SC = SCORING_CALIBRATION;
+  let score = SC.ITEM_SCORE_BASELINE;
   if (soulsPerMin > 0) {
-    score += Math.min(((soulsPerMin - 350) / 350) * 40, 40); // up to +40 for 700+ soul/min
+    score += Math.min(((soulsPerMin - SC.SOULS_PER_MIN_WEAK) / SC.SOULS_PER_MIN_RANGE) * SC.SOULS_PER_MIN_MAX_BONUS, SC.SOULS_PER_MIN_MAX_BONUS);
   } else if (netWorth > 0) {
     // Fallback when duration unknown
-    score += Math.min((netWorth / 30000) * 30, 30);
+    score += Math.min((netWorth / SC.NETWORTH_FALLBACK_CEILING) * SC.NETWORTH_FALLBACK_MAX_BONUS, SC.NETWORTH_FALLBACK_MAX_BONUS);
   }
   score = Math.max(0, Math.min(100, score));
 
@@ -580,13 +576,14 @@ function analyzeCombatFromStats(matchInHistory, durationMinutes, playerStats = {
   const deathsPerMin = perMinute(deaths, durationMinutes);
   const objectiveScore = clamp((objectiveDamage / 8000) * 100, 0, 100);
 
-  let score = 50;
-  score += Math.min(kda / 5 * 25, 25);                   // KDA component
-  score += Math.min(damagePerMin / 1000 * 20, 20);       // damage/min component
-  score -= Math.min(deathsPerMin * 25, 15);              // penalty for dying often
+  const SC = SCORING_CALIBRATION;
+  let score = SC.ITEM_SCORE_BASELINE;
+  score += Math.min(kda / SC.KDA_DIVISOR * SC.KDA_WEIGHT, SC.KDA_WEIGHT);
+  score += Math.min(damagePerMin / SC.DPM_DIVISOR * SC.DPM_WEIGHT, SC.DPM_WEIGHT);
+  score -= Math.min(deathsPerMin * SC.DEATH_PENALTY_MULTIPLIER, SC.DEATH_PENALTY_CAP);
   // Bonus for strong positioning (damage dealt >> damage taken)
   if (playerStats?.positioningScore != null) {
-    score += (playerStats.positioningScore - 50) * 0.15; // up to +7.5 / -7.5
+    score += (playerStats.positioningScore - SC.POSITIONING_MIDPOINT) * SC.POSITIONING_SENSITIVITY;
   }
   score = Math.max(0, Math.min(100, score));
 
@@ -626,16 +623,17 @@ function compareAgainstBenchmarks(matchInHistory, normalizedHeroStats, durationM
   const careerKda = normalizedHeroStats.avgKda || 0;
   // Derive career souls-per-min only if we have an avg duration, otherwise fall back to 550.
   const avgSouls = normalizedHeroStats.avgSouls || 0;
-  const careerSoulsPerMin = avgSouls > 0 ? avgSouls / 30 : 0; // assume 30-min avg games if unknown
+  const careerSoulsPerMin = avgSouls > 0 ? avgSouls / SCORING_CALIBRATION.ASSUMED_AVG_GAME_MINUTES : 0;
   const careerWinrate = normalizedHeroStats.winrate || 0;
 
   const kdaDiff = matchKda - careerKda;
   const soulsDiff = matchSoulsPerMin - careerSoulsPerMin;
 
   // Personalised percentile: how THIS match compares to your own average.
-  let score = 50;
-  if (careerKda > 0) score += Math.min((kdaDiff / careerKda) * 25, 25);
-  if (careerSoulsPerMin > 0) score += Math.min((soulsDiff / careerSoulsPerMin) * 25, 25);
+  const SC = SCORING_CALIBRATION;
+  let score = SC.ITEM_SCORE_BASELINE;
+  if (careerKda > 0) score += Math.min((kdaDiff / careerKda) * SC.BENCHMARK_KDA_CEILING, SC.BENCHMARK_KDA_CEILING);
+  if (careerSoulsPerMin > 0) score += Math.min((soulsDiff / careerSoulsPerMin) * SC.BENCHMARK_SOULS_CEILING, SC.BENCHMARK_SOULS_CEILING);
   score = Math.max(0, Math.min(100, score));
 
   return {

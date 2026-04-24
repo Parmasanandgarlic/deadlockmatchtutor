@@ -1,7 +1,8 @@
 const { Router } = require('express');
 const authService = require('../services/auth.service');
-const logger = require('../utils/logger');
+const steamService = require('../services/steam.service');
 const config = require('../config');
+const logger = require('../utils/logger');
 
 const router = Router();
 
@@ -124,7 +125,7 @@ router.get('/me', async (req, res) => {
  *     description: Destroys the user session and logs them out
  *     tags: [Authentication]
  *     security:
- *       - cookieAuth: []
+ * checkAuth: []
  *     responses:
  *       200:
  *         description: Successfully logged out

@@ -6,6 +6,7 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const cookieParser = require('cookie-parser');
 const config = require('./config');
 const logger = require('./utils/logger');
@@ -15,6 +16,7 @@ const swaggerJsdoc = require('swagger-jsdoc');
 const Sentry = require('@sentry/node');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { serviceKeyGuard } = require('./middleware/security.middleware');
+const { csrfProtection } = require('./middleware/csrf.middleware');
 const authService = require('./services/auth.service');
 const redisClient = require('./services/redis.service');
 
@@ -53,12 +55,25 @@ try {
 
 // --------------- Middleware ---------------
 
+// CSP Nonce generation — must come before helmet so the nonce is available
+app.use((req, res, next) => {
+  res.locals.cspNonce = crypto.randomBytes(16).toString('base64');
+  next();
+});
+
+// Security headers with hardened CSP
+// SECURITY FIX: Removed 'unsafe-inline' and 'unsafe-eval' from scriptSrc.
+// These directives completely negate CSP's XSS protection.
+// Scripts that need inline execution must use the per-request nonce.
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      scriptSrc: [
+        "'self'",
+        (req, res) => `'nonce-${res.locals.cspNonce}'`,
+      ],
+      styleSrc: ["'self'", 'https://fonts.googleapis.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com'],
       imgSrc: ["'self'", 'data:', 'https://assets-bucket.deadlock-api.com', 'https://assets.deadlock-api.com', 'https://deadlock-api.com'],
       connectSrc: ["'self'", 'https://api.deadlock-api.com', 'https://assets.deadlock-api.com', 'https://steamcommunity.com'],
@@ -76,8 +91,22 @@ if (config.isDev) {
   app.use(morgan('dev', { stream: { write: (msg) => logger.http(msg.trim()) } }));
 }
 
-// Initialize Redis connection
-redisClient.connect().catch(err => logger.error('Redis connection failed:', err.message));
+// CSRF Protection — validates state-changing requests have matching tokens.
+// Must come after cookieParser so req.cookies is populated.
+app.use(csrfProtection);
+
+// Initialize Redis connection (async, with proper error handling)
+// The connection guard in redis.service.js prevents duplicate connections
+// on serverless cold-starts.
+(async () => {
+  try {
+    await redisClient.connect();
+  } catch (err) {
+    // In production, redis.service.js will process.exit(1).
+    // In dev, we log and continue with degraded functionality.
+    logger.error('Redis initialization error:', err.message);
+  }
+})();
 
 // Initialize authentication service
 const authConfigured = authService.initialize();
@@ -117,6 +146,7 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+// General API rate limiter
 const limiter = rateLimit({
   windowMs: config.rateLimit.windowMs,
   max: config.rateLimit.max,
@@ -125,6 +155,19 @@ const limiter = rateLimit({
   message: { error: 'Too many requests, please try again later.' },
 });
 app.use('/api', limiter);
+
+// SECURITY FIX: Stricter rate limiter for authentication endpoints.
+// Without this, brute force attacks on session tokens are trivial.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,  // 15-minute window
+  max: 10,                     // 10 attempts per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many authentication attempts. Please try again later.' },
+  keyGenerator: (req) => req.ip, // Rate limit by IP
+});
+app.use('/api/auth/steam', authLimiter);
+app.use('/api/auth/logout', authLimiter);
 
 // Request logging for production debugging
 app.use((req, res, next) => {
