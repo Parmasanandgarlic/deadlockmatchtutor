@@ -1,4 +1,4 @@
-const { Configuration, PlayersApi, MatchesApi } = require('../deadlock_api_client');
+const { Configuration, PlayersApi, MatchesApi, AnalyticsApi } = require('../deadlock_api_client');
 const axios = require('axios');
 const config = require('../config');
 const logger = require('../utils/logger');
@@ -15,6 +15,7 @@ const configuration = new Configuration({
 
 const playersApi = new PlayersApi(configuration);
 const matchesApi = new MatchesApi(configuration);
+const analyticsApi = new AnalyticsApi(configuration);
 const ASSETS_API_BASE_URL = 'https://assets.deadlock-api.com/v2';
 const ASSET_CACHE_TTL_SECONDS = 24 * 60 * 60;
 const ASSET_CACHE_TTL_MS = ASSET_CACHE_TTL_SECONDS * 1000;
@@ -388,6 +389,23 @@ async function getItems() {
 }
 
 /**
+ * Fetch global hero stats from Analytics API.
+ * Used for building global tier lists.
+ * @returns {Promise<Array>} Array of global hero stats
+ */
+async function getGlobalHeroStats() {
+  try {
+    const { data } = await apiBreaker.call(() => analyticsApi.heroStats());
+    logger.debug('Fetched global hero stats from Analytics API');
+    const arr = Array.isArray(data) ? data : [];
+    return arr;
+  } catch (err) {
+    logger.error(`Failed to fetch global hero stats: ${err.message}`);
+    return [];
+  }
+}
+
+/**
  * Fetch rank data from Deadlock Assets API.
  * @returns {Promise<Array>} Array of rank objects with tier, name, images
  */
@@ -412,6 +430,7 @@ module.exports = {
   getPlayerRankPredict,
   getPlayerAccountStats,
   getPlayerCard,
+  getGlobalHeroStats,
   getHeroes,
   getItems,
   getRanks,

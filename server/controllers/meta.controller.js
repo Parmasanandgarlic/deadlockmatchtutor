@@ -1,4 +1,5 @@
 const { getHeroes, getItems, getRanks } = require('../services/deadlockApi.service');
+const { fetchGlobalTierList } = require('../services/metaContext.service');
 const logger = require('../utils/logger');
 
 /**
@@ -55,4 +56,19 @@ async function getRanksHandler(req, res, next) {
   }
 }
 
-module.exports = { getHeroesHandler, getItemsHandler, getRanksHandler };
+/**
+ * GET /api/meta/tierlist
+ * Fetch global hero tier list
+ */
+async function getTierListHandler(req, res, next) {
+  try {
+    const tierList = await fetchGlobalTierList();
+    res.setHeader('Cache-Control', META_CACHE_HEADER);
+    res.json(tierList);
+  } catch (err) {
+    logger.error(`Failed to serve tier list: ${err.message}`);
+    res.status(500).json({ error: 'Failed to fetch tier list' });
+  }
+}
+
+module.exports = { getHeroesHandler, getItemsHandler, getRanksHandler, getTierListHandler };

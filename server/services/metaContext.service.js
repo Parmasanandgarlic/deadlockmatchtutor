@@ -3,6 +3,7 @@ const redisClient = require('./redis.service');
 const { getHeroName } = require('../utils/heroes');
 const { getItemName } = require('../utils/items');
 const { HERO_ROLES } = require('../data/hero-roles');
+const { getGlobalHeroStats } = require('./deadlockApi.service');
 
 /**
  * Meta Context Service — "What's Strong Right Now"
@@ -247,10 +248,24 @@ async function cacheTierList(allHeroStats) {
   return tierList;
 }
 
+/**
+ * Fetch the global tier list (cache-first, fallback to API).
+ * Used by the /resources page.
+ */
+async function fetchGlobalTierList() {
+  const cached = await redisClient.get(CACHE_KEYS.heroTierList());
+  if (cached) return cached;
+
+  const allHeroStats = await getGlobalHeroStats();
+  const tierList = await cacheTierList(allHeroStats);
+  return tierList;
+}
+
 module.exports = {
   getMetaContext,
   buildHeroTierList,
   deriveItemBuildStats,
   cacheTierList,
+  fetchGlobalTierList,
   TIER_THRESHOLDS,
 };

@@ -284,6 +284,11 @@ export async function getRanks() {
   return data;
 }
 
+export async function getTierList() {
+  const { data } = await fetchWithDedup('/meta/tierlist');
+  return data;
+}
+
 // ---- Assets (via backend metadata cache) ----
 
 export async function getDeadlockHeroes() {

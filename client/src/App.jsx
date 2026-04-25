@@ -19,6 +19,7 @@ const PlayerProfilePage = lazy(() => import('./pages/PlayerProfilePage'));
 const FaqPage = lazy(() => import('./pages/FaqPage'));
 const UpdatesPage = lazy(() => import('./pages/UpdatesPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const ResourcesPage = lazy(() => import('./pages/ResourcesPage'));
 
 export default function App() {
   return (
@@ -46,6 +47,7 @@ export default function App() {
               <Route path="/about" element={<AboutPage />} />
               <Route path="/faq" element={<FaqPage />} />
               <Route path="/updates" element={<UpdatesPage />} />
+              <Route path="/resources" element={<ResourcesPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>

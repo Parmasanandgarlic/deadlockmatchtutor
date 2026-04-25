@@ -61,6 +61,10 @@ export default function Header() {
           </span>
         </Link>
         <nav role="navigation" aria-label="Primary navigation" className="flex items-center gap-3 text-sm text-deadlock-text-dim">
+          <Link to="/resources" className="hidden sm:inline-flex items-center gap-1.5 hover:text-deadlock-accent transition-colors duration-300 relative group/nav font-semibold text-deadlock-amber">
+            Meta Tier List
+            <span className="absolute -bottom-1 left-0 w-full h-px bg-deadlock-amber/50 group-hover/nav:bg-deadlock-amber transition-colors duration-300" />
+          </Link>
           <Link to="/about" className="hidden sm:inline-flex items-center gap-1.5 hover:text-deadlock-accent transition-colors duration-300 relative group/nav">
             <Code2 className="w-4 h-4" /> Open Source
             <span className="absolute -bottom-1 left-0 w-0 h-px bg-deadlock-amber group-hover/nav:w-full transition-all duration-300" />
