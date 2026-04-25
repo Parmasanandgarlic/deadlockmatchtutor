@@ -60,9 +60,17 @@ export default function Header() {
             <span className="text-white/60">AfterMatch</span>
           </span>
         </Link>
-        <nav className="flex items-center gap-3 text-sm text-deadlock-text-dim">
+        <nav role="navigation" aria-label="Primary navigation" className="flex items-center gap-3 text-sm text-deadlock-text-dim">
           <Link to="/about" className="hidden sm:inline-flex items-center gap-1.5 hover:text-deadlock-accent transition-colors duration-300 relative group/nav">
             <Code2 className="w-4 h-4" /> Open Source
+            <span className="absolute -bottom-1 left-0 w-0 h-px bg-deadlock-amber group-hover/nav:w-full transition-all duration-300" />
+          </Link>
+          <Link to="/faq" className="hidden md:inline-flex items-center gap-1.5 hover:text-deadlock-accent transition-colors duration-300 relative group/nav">
+            FAQ
+            <span className="absolute -bottom-1 left-0 w-0 h-px bg-deadlock-amber group-hover/nav:w-full transition-all duration-300" />
+          </Link>
+          <Link to="/updates" className="hidden md:inline-flex items-center gap-1.5 hover:text-deadlock-accent transition-colors duration-300 relative group/nav">
+            Updates
             <span className="absolute -bottom-1 left-0 w-0 h-px bg-deadlock-amber group-hover/nav:w-full transition-all duration-300" />
           </Link>
           <Link to="/privacy" className="hidden sm:inline-flex items-center gap-1.5 hover:text-deadlock-accent transition-colors duration-300 relative group/nav">
@@ -73,6 +81,7 @@ export default function Header() {
             href="https://github.com/Parmasanandgarlic/deadlockmatchtutor"
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="Open Deadlock AfterMatch on GitHub"
             className="inline-flex items-center gap-1.5 hover:text-deadlock-accent transition-colors duration-300 relative group/nav"
           >
             <Github className="w-4 h-4" /> <span className="hidden sm:inline">GitHub</span>

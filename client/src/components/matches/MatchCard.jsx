@@ -50,7 +50,11 @@ export default function MatchCard({ match, accountId }) {
           {avatarUrl ? (
             <img
               src={avatarUrl}
-              alt={heroName}
+              alt={`${heroName} hero icon`}
+              width="36"
+              height="36"
+              loading="lazy"
+              decoding="async"
               className="w-9 h-9 rounded-full border border-deadlock-border object-cover bg-black shrink-0"
               onError={(e) => {
                 e.currentTarget.onerror = null;

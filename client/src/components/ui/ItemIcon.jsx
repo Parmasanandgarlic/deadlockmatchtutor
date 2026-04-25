@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Box } from 'lucide-react';
 
-export default function ItemIcon({ src, alt, className = '', imageClassName = '' }) {
+export default function ItemIcon({ src, alt, className = '', imageClassName = '', width = 64, height = 64 }) {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -15,7 +15,9 @@ export default function ItemIcon({ src, alt, className = '', imageClassName = ''
       {src && !failed ? (
         <img
           src={src}
-          alt={alt || ''}
+          alt={alt || 'Deadlock item icon'}
+          width={width}
+          height={height}
           loading="lazy"
           decoding="async"
           className={`w-full h-full object-contain ${imageClassName}`}

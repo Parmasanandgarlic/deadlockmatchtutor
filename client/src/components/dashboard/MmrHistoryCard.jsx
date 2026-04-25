@@ -80,7 +80,15 @@ function RankBox({ label, info }) {
   return (
     <div className="bg-deadlock-bg rounded-lg p-2 flex items-center gap-2">
       {info.imageUrl ? (
-        <img src={info.imageUrl} alt={info.name} className="w-8 h-8 object-contain" />
+        <img
+          src={info.imageUrl}
+          alt={`${info.name} rank badge`}
+          width="32"
+          height="32"
+          loading="lazy"
+          decoding="async"
+          className="w-8 h-8 object-contain"
+        />
       ) : null}
       <div className="text-left">
         <p className="text-[10px] uppercase tracking-widest text-deadlock-muted">{label}</p>

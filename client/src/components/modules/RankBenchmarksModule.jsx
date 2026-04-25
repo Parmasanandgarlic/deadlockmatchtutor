@@ -10,7 +10,15 @@ export default function RankBenchmarksModule({ data }) {
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           {tierImageUrl ? (
-            <img src={tierImageUrl} alt={tierName} className="w-12 h-12 object-contain" />
+            <img
+              src={tierImageUrl}
+              alt={`${tierName} rank benchmark badge`}
+              width="48"
+              height="48"
+              loading="lazy"
+              decoding="async"
+              className="w-12 h-12 object-contain"
+            />
           ) : (
             <ShieldCheck className="w-10 h-10 text-deadlock-accent" />
           )}

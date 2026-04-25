@@ -16,6 +16,7 @@ import MmrHistoryCard from '../components/dashboard/MmrHistoryCard';
 import GuideModal from '../components/ui/GuideModal';
 import { PRIORITY_CONFIG } from '../utils/constants';
 import { toErrorMessage } from '../utils/errorMessage';
+import { absoluteUrl, breadcrumbSchema, organizationSchema, websiteSchema } from '../utils/seo';
 
 export default function DashboardPage() {
   const { matchId, accountId } = useParams();
@@ -32,8 +33,8 @@ export default function DashboardPage() {
   }, [loading, analysis]);
 
   const dynamicTitle = analysis?.meta
-    ? `${analysis.meta.heroName} · Grade ${analysis.overall?.letterGrade || ''}`.trim()
-    : `Match #${matchId}`;
+    ? `Deadlock Match Report ${analysis.meta.heroName} Grade ${analysis.overall?.letterGrade || ''}`.trim()
+    : `Deadlock Match Report ${matchId}`;
 
   const dynamicDesc = analysis?.meta
     ? `Deadlock match dossier for ${analysis.meta.heroName}: grade ${analysis.overall?.letterGrade}, ${analysis.modules?.heroPerformance?.matchKda} match KDA, ${analysis.modules?.itemization?.soulsPerMin} souls/min, ranked benchmarks, item build, and combat breakdown.`
@@ -41,8 +42,14 @@ export default function DashboardPage() {
 
   const dashboardSchema = analysis
     ? [
+        organizationSchema(),
+        websiteSchema(),
+        breadcrumbSchema([
+          { name: 'Home', path: '/' },
+          { name: 'Match History', path: `/matches/${accountId}` },
+          { name: 'Match Report', path: `/dashboard/${matchId}/${accountId}` },
+        ]),
         {
-          '@context': 'https://schema.org',
           '@type': 'WebPage',
           name: `Deadlock match report: ${analysis.meta.heroName}`,
           description: dynamicDesc,
@@ -85,7 +92,13 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <SEOHead title={dynamicTitle} description={dynamicDesc} robots="noindex,nofollow" schema={dashboardSchema} />
+      <SEOHead
+        title={dynamicTitle}
+        description={dynamicDesc}
+        canonical={absoluteUrl(`/dashboard/${matchId}/${accountId}`)}
+        robots="noindex,nofollow"
+        schema={dashboardSchema}
+      />
 
       <div className="osic-dossier-bg p-6 lg:p-10 rounded-lg">
         <div className="flex items-center justify-between mb-6">

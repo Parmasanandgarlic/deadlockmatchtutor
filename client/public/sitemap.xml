@@ -3,7 +3,7 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://www.aftermatch.xyz/</loc>
-    <lastmod>2026-04-21</lastmod>
+    <lastmod>2026-04-24</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aftermatch.xyz/" />
@@ -11,15 +11,31 @@
   </url>
   <url>
     <loc>https://www.aftermatch.xyz/about</loc>
-    <lastmod>2026-04-21</lastmod>
+    <lastmod>2026-04-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aftermatch.xyz/about" />
     <xhtml:link rel="alternate" hreflang="en" href="https://www.aftermatch.xyz/about" />
   </url>
   <url>
+    <loc>https://www.aftermatch.xyz/faq</loc>
+    <lastmod>2026-04-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aftermatch.xyz/faq" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aftermatch.xyz/faq" />
+  </url>
+  <url>
+    <loc>https://www.aftermatch.xyz/updates</loc>
+    <lastmod>2026-04-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aftermatch.xyz/updates" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aftermatch.xyz/updates" />
+  </url>
+  <url>
     <loc>https://www.aftermatch.xyz/privacy</loc>
-    <lastmod>2026-04-21</lastmod>
+    <lastmod>2026-04-24</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aftermatch.xyz/privacy" />

@@ -9,6 +9,7 @@ import MatchListToolbar from '../components/matches/MatchListToolbar';
 import MatchSummaryPanel from '../components/matches/MatchSummaryPanel';
 import { resolveMatchResult } from '../utils/match';
 import { toErrorMessage } from '../utils/errorMessage';
+import { absoluteUrl, breadcrumbSchema, organizationSchema, websiteSchema } from '../utils/seo';
 
 const DEFAULT_FILTERS = {
   search: '',
@@ -32,13 +33,20 @@ export default function MatchListPage() {
     [matches, filters, heroesMap]
   );
 
-  const matchListSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'WebPage',
-    name: `Deadlock match history for account ${accountId}`,
-    description:
-      'Recent Deadlock matches for a player account. Open a match to view the full AfterMatch dossier and performance grades.',
-  };
+  const matchListSchema = [
+    organizationSchema(),
+    websiteSchema(),
+    breadcrumbSchema([
+      { name: 'Home', path: '/' },
+      { name: 'Match History', path: `/matches/${accountId}` },
+    ]),
+    {
+      '@type': 'WebPage',
+      name: `Deadlock match history for account ${accountId}`,
+      description:
+        'Recent Deadlock matches for a player account. Open a match to view the full AfterMatch dossier and performance grades.',
+    },
+  ];
 
   if (!accountId) {
     return (
@@ -71,8 +79,9 @@ export default function MatchListPage() {
       />
       <div className="relative z-10 max-w-5xl mx-auto px-4 py-8">
         <SEOHead
-          title={`Matches · ${accountId}`}
-          description="Browse recent Deadlock matches for this account. Open any match to see AfterMatch grades and actionable insights."
+          title={`Deadlock Match History for Player ${accountId}`}
+          description="Browse recent Deadlock matches for this player account, then open a match report with grades, insights, item timing, and trends."
+          canonical={absoluteUrl(`/matches/${accountId}`)}
           robots="noindex,nofollow"
           schema={matchListSchema}
         />
@@ -86,7 +95,7 @@ export default function MatchListPage() {
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-2xl font-bold mb-1">Recent Matches</h2>
+            <h1 className="text-2xl font-bold mb-1">Deadlock Match History</h1>
             <p className="text-deadlock-text-dim">
               Account ID: <span className="font-mono text-deadlock-accent">{accountId}</span>
             </p>

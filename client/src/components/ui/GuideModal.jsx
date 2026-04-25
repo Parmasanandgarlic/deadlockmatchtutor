@@ -24,7 +24,12 @@ export default function GuideModal({ isOpen, onClose }) {
       />
       
       {/* Modal Container */}
-      <div className="relative w-full max-w-2xl max-h-[90vh] bg-deadlock-bg border border-deadlock-border shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden animate-reveal">
+      <div
+        className="relative w-full max-w-2xl max-h-[90vh] bg-deadlock-bg border border-deadlock-border shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden animate-reveal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="guide-title"
+      >
         {/* Decorative Corners */}
         <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-deadlock-amber/40" />
         <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-deadlock-amber/40" />
@@ -35,11 +40,12 @@ export default function GuideModal({ isOpen, onClose }) {
         <div className="flex items-center justify-between p-6 border-b border-deadlock-border bg-deadlock-surface/30">
           <div className="flex items-center gap-3">
             <Info className="w-5 h-5 text-deadlock-amber" />
-            <h2 className="text-xl font-serif tracking-[0.2em] text-white">How to Read Your Report</h2>
+            <h2 id="guide-title" className="text-xl font-serif tracking-[0.2em] text-white">How to Read Your Report</h2>
           </div>
           <button 
             onClick={onClose}
             className="p-2 text-deadlock-muted hover:text-deadlock-amber transition-colors"
+            aria-label="Close report guide"
           >
             <X className="w-6 h-6" />
           </button>

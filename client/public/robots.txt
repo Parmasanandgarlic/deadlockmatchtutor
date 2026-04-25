@@ -6,6 +6,14 @@ Disallow: /matches/
 Disallow: /player/
 Disallow: /dashboard/
 Disallow: /report/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /internal/
+
+Allow: /about
+Allow: /faq
+Allow: /updates
+Allow: /privacy
 
 Sitemap: https://www.aftermatch.xyz/sitemap.xml
 Host: www.aftermatch.xyz

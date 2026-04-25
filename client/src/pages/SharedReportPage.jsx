@@ -7,14 +7,15 @@ import InsightDeck from '../components/dashboard/InsightDeck';
 import ModuleTabs from '../components/dashboard/ModuleTabs';
 import { Loader2 } from 'lucide-react';
 import { toErrorMessage } from '../utils/errorMessage';
+import { absoluteUrl, breadcrumbSchema, organizationSchema, websiteSchema } from '../utils/seo';
 
 export default function SharedReportPage() {
   const { matchId, accountId } = useParams();
   const { analysis, loading, error, loadCached } = useMatchAnalysis();
 
   const dynamicTitle = analysis?.meta
-    ? `Shared report · ${analysis.meta.heroName} grade ${analysis.overall?.letterGrade || ''}`.trim()
-    : `Shared report · #${matchId}`;
+    ? `Shared Deadlock Report ${analysis.meta.heroName} Grade ${analysis.overall?.letterGrade || ''}`.trim()
+    : `Shared Deadlock Report ${matchId}`;
 
   const dynamicDesc = analysis?.meta
     ? `View the detailed Deadlock post-match report for ${analysis.meta.heroName}. Grade ${analysis.overall?.letterGrade} with ${analysis.modules?.heroPerformance?.matchKda} match KDA.`
@@ -22,8 +23,13 @@ export default function SharedReportPage() {
 
   const reportSchema = analysis
     ? [
+        organizationSchema(),
+        websiteSchema(),
+        breadcrumbSchema([
+          { name: 'Home', path: '/' },
+          { name: 'Shared Report', path: `/report/${matchId}/${accountId}` },
+        ]),
         {
-          '@context': 'https://schema.org',
           '@type': 'WebPage',
           name: `Shared Deadlock match report: ${analysis.meta.heroName}`,
           description: dynamicDesc,
@@ -63,7 +69,13 @@ export default function SharedReportPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <SEOHead title={dynamicTitle} description={dynamicDesc} robots="noindex,nofollow" schema={reportSchema} />
+      <SEOHead
+        title={dynamicTitle}
+        description={dynamicDesc}
+        canonical={absoluteUrl(`/report/${matchId}/${accountId}`)}
+        robots="noindex,nofollow"
+        schema={reportSchema}
+      />
 
       <div className="mb-4 text-center">
         <span className="badge bg-deadlock-accent/15 text-deadlock-accent text-xs">Shared Report</span>

@@ -9,6 +9,9 @@ import SharedReportPage from './pages/SharedReportPage';
 import PrivacyPage from './pages/PrivacyPage';
 import AboutPage from './pages/AboutPage';
 import PlayerProfilePage from './pages/PlayerProfilePage';
+import FaqPage from './pages/FaqPage';
+import UpdatesPage from './pages/UpdatesPage';
+import NotFoundPage from './pages/NotFoundPage';
 import { AssetProvider } from './contexts/AssetContext';
 
 export default function App() {
@@ -21,8 +24,11 @@ export default function App() {
             <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" />
           </filter>
         </svg>
+        <a href="#main-content" className="skip-link">
+          Skip to content
+        </a>
         <Header />
-        <main className="flex-1">
+        <main id="main-content" className="flex-1">
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/matches/:accountId" element={<MatchListPage />} />
@@ -31,6 +37,9 @@ export default function App() {
             <Route path="/report/:matchId/:accountId" element={<SharedReportPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/faq" element={<FaqPage />} />
+            <Route path="/updates" element={<UpdatesPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
         <Footer />

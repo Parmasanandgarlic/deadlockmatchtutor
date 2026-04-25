@@ -86,7 +86,11 @@ function RankBadge({ current, peak }) {
         {currentImg ? (
           <img
             src={currentImg}
-            alt={currentName}
+            alt={`${currentName} predicted rank badge`}
+            width="80"
+            height="80"
+            loading="eager"
+            decoding="async"
             className="relative w-20 h-20 object-contain drop-shadow-[0_0_8px_rgba(255,173,28,0.35)]"
           />
         ) : (
@@ -105,7 +109,17 @@ function RankBadge({ current, peak }) {
         </span>
         {peakName && peakName !== currentName && (
           <span className="flex items-center gap-1.5 mt-1 text-[11px] text-deadlock-text-dim">
-            {peakImg && <img src={peakImg} alt="" className="w-4 h-4 opacity-80" />}
+            {peakImg && (
+              <img
+                src={peakImg}
+                alt={`${peakName} peak rank badge`}
+                width="16"
+                height="16"
+                loading="lazy"
+                decoding="async"
+                className="w-4 h-4 opacity-80"
+              />
+            )}
             <span className="uppercase tracking-[0.2em] text-deadlock-muted">Peak:</span>
             <span className="font-semibold text-deadlock-text">{peakName}</span>
           </span>
@@ -147,7 +161,15 @@ function HeroCard({ hero }) {
       <div className="flex items-center gap-3">
         <div className="w-12 h-12 shrink-0 bg-black/40 border border-white/5 flex items-center justify-center overflow-hidden">
           {hero.heroImage ? (
-            <img src={hero.heroImage} alt={hero.heroName} className="w-full h-full object-cover" />
+            <img
+              src={hero.heroImage}
+              alt={`${hero.heroName} hero portrait`}
+              width="48"
+              height="48"
+              loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover"
+            />
           ) : (
             <Swords className="w-6 h-6 text-deadlock-muted" />
           )}

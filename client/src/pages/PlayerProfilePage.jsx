@@ -16,6 +16,7 @@ import {
   ReferenceLine
 } from 'recharts';
 import SEOHead from '../components/seo/SEOHead';
+import { absoluteUrl, breadcrumbSchema, organizationSchema, websiteSchema } from '../utils/seo';
 
 // Helper component for trend indicators
 const TrendBadge = ({ trend }) => {
@@ -123,7 +124,8 @@ export default function PlayerProfilePage() {
         <div className="max-w-3xl mx-auto py-4 text-center">
           <div className="bg-[#151921] border border-[#ffad1c] rounded-sm p-8 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#151921] via-[#ffad1c] to-[#151921]"></div>
-            <h2 className="font-serif text-2xl text-white mb-2">Insufficient Intel for Trends</h2>
+            <h1 className="font-serif text-2xl text-white mb-2">Deadlock Player Trends</h1>
+            <p className="font-serif text-lg text-white/80 mb-2">Insufficient Intel for Trends</p>
             <p className="text-gray-400 font-sans mb-6">
               {trendsData.message || 'We need more analyzed matches to generate reliable trend data.'}
               <br />
@@ -150,16 +152,24 @@ export default function PlayerProfilePage() {
   return (
     <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <SEOHead 
-        title={`Player trends · ${accountId}`}
-        description="Deadlock player trends and profile dossier: rank prediction, top heroes, and rolling performance signals."
+        title={`Deadlock Player Trends and Dossier ${accountId}`}
+        description="Review Deadlock player trends, ranked profile details, top heroes, rolling impact score, KDA, Souls per minute, and recent form."
+        canonical={absoluteUrl(`/player/${accountId}`)}
         robots="noindex,nofollow"
-        schema={{
-          '@context': 'https://schema.org',
-          '@type': 'WebPage',
-          name: `Deadlock player trends for account ${accountId}`,
-          description:
-            'Player profile dossier and rolling performance trends (impact score, KDA, Souls/Min) based on analyzed matches.',
-        }}
+        schema={[
+          organizationSchema(),
+          websiteSchema(),
+          breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: 'Player Trends', path: `/player/${accountId}` },
+          ]),
+          {
+            '@type': 'WebPage',
+            name: `Deadlock player trends for account ${accountId}`,
+            description:
+              'Player profile dossier and rolling performance trends (impact score, KDA, Souls/Min) based on analyzed matches.',
+          },
+        ]}
       />
 
       {/* Ranked rank + career stats + top heroes */}

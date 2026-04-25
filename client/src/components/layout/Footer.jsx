@@ -81,17 +81,19 @@ export default function Footer() {
 
           {/* Right: Navigation & Status */}
           <div className="flex flex-wrap gap-16">
-            <div className="flex flex-col gap-4">
+            <nav role="navigation" aria-label="Footer navigation" className="flex flex-col gap-4">
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-white mb-2 flex items-center gap-2">
                 <span className="w-3 h-px bg-deadlock-amber/50" />
                 Navigation
               </span>
               <Link to="/about" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors">About</Link>
+              <Link to="/faq" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors">FAQ</Link>
+              <Link to="/updates" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors">Updates</Link>
               <Link to="/privacy" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors">Privacy</Link>
-              <a href="https://github.com/Parmasanandgarlic/deadlockmatchtutor" target="_blank" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors flex items-center gap-2">
+              <a href="https://github.com/Parmasanandgarlic/deadlockmatchtutor" target="_blank" rel="noopener noreferrer" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors flex items-center gap-2">
                 <Github className="w-4 h-4" /> GitHub
               </a>
-            </div>
+            </nav>
 
             <div className="flex flex-col gap-4">
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-white mb-2 flex items-center gap-2">

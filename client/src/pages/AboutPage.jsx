@@ -1,26 +1,36 @@
 import { Github, GitPullRequest, Code2, Users, Heart, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import SEOHead from '../components/seo/SEOHead';
+import {
+  absoluteUrl,
+  breadcrumbSchema,
+  faqSchema,
+  howToSchema,
+  organizationSchema,
+  speakableSchema,
+  websiteSchema,
+} from '../utils/seo';
 
 const values = [
   {
     icon: Code2,
     title: 'Open Source',
-    description: 'Every line of code is public on GitHub. Fork it, audit it, learn from it — no black boxes.',
+    description: 'Every line of code is public on GitHub. Fork it, audit it, learn from it, and improve it.',
   },
   {
     icon: GitPullRequest,
     title: 'Community Driven',
-    description: 'Bug reports, feature requests, and pull requests are welcome. This tool is built by players, for players.',
+    description: 'Bug reports, feature requests, and pull requests are welcome. This tool is built by players.',
   },
   {
     icon: Users,
     title: 'Privacy-Minded',
-    description: 'No paywalls, no ads. The only input you provide is a Steam profile URL or ID to fetch match data.',
+    description: 'No paywalls and no ads. The only input you provide is a Steam profile URL or ID to fetch match data.',
   },
   {
     icon: Heart,
     title: 'Free Forever',
-    description: 'No premium tiers. Post-match analytics should be accessible to every Deadlock player.',
+    description: 'Post-match analytics should be accessible to every Deadlock player.',
   },
 ];
 
@@ -33,72 +43,68 @@ const techStack = [
   { name: 'Deadlock API', category: 'Data Source' },
 ];
 
+const aboutFaqs = [
+  {
+    question: 'What is Deadlock AfterMatch?',
+    answer:
+      'Deadlock AfterMatch is a free, open-source Deadlock post-match analytics dashboard. It turns match data into clear grades, player dossiers, and actionable mistakes to help players improve.',
+  },
+  {
+    question: 'Where is the source code?',
+    answer: 'The source code is hosted publicly on GitHub at Parmasanandgarlic/deadlockmatchtutor.',
+  },
+];
+
 export default function AboutPage() {
   const aboutSchema = [
+    organizationSchema(),
+    websiteSchema(),
+    breadcrumbSchema([
+      { name: 'Home', path: '/' },
+      { name: 'About', path: '/about' },
+    ]),
     {
-      '@context': 'https://schema.org',
       '@type': 'SoftwareApplication',
       name: 'Deadlock AfterMatch',
       applicationCategory: 'GameApplication',
       operatingSystem: 'Web',
-      url: 'https://www.aftermatch.xyz/',
+      url: absoluteUrl('/'),
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-      description: 'Open-source post-match analytics dashboard for Deadlock.',
+      description:
+        'Deadlock AfterMatch is a free post-match analytics dashboard for Deadlock players who want match grades, reports, and performance trends.',
     },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'Organization',
-      name: 'Deadlock AfterMatch Contributors',
-      url: 'https://www.aftermatch.xyz/',
-      sameAs: ['https://github.com/Parmasanandgarlic/deadlockmatchtutor'],
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'FAQPage',
-      mainEntity: [
-        {
-          '@type': 'Question',
-          name: 'What is Deadlock AfterMatch?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Deadlock AfterMatch is a free, open-source Deadlock post-match analytics dashboard. It turns match data into clear grades, player dossiers, and actionable mistakes to help you improve.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'Where is the source code?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'The source code is hosted publicly on GitHub at Parmasanandgarlic/deadlockmatchtutor.',
-          },
-        },
-      ],
-    },
+    faqSchema(aboutFaqs),
+    howToSchema(),
+    speakableSchema('/about'),
   ];
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
       <SEOHead
-        title="About · Open Source"
-        description="Learn what Deadlock AfterMatch is, what it does, and how to contribute to the open-source project."
+        title="About Deadlock AfterMatch Open Source Analytics Tool"
+        description="Learn what Deadlock AfterMatch is, who it serves, when it started, what problem it solves, how data works, and how to contribute."
+        canonical={absoluteUrl('/about')}
         imageUrl="/images/bg-scene.png"
         schema={aboutSchema}
       />
 
       <header className="mb-8">
         <h1 className="text-3xl font-extrabold mb-2">
-          <span className="text-deadlock-accent">Open</span> Source
+          About <span className="text-deadlock-accent">Deadlock AfterMatch</span>
         </h1>
         <p className="text-deadlock-text-dim text-lg">
-          Deadlock AfterMatch is a community-built, open-source project. Anyone can contribute.
+          Deadlock AfterMatch is a community-built, open-source analytics tool for Deadlock players.
         </p>
-        <p className="mt-4 text-sm text-deadlock-muted">
-          TLDR: AfterMatch is a free Deadlock post-match analytics tool. Contribute by filing issues or submitting pull
-          requests on GitHub.
-        </p>
+        <section
+          aria-label="Deadlock AfterMatch product definition"
+          className="answer-block mt-4 text-sm text-deadlock-muted leading-relaxed space-y-2"
+        >
+          <p>Deadlock AfterMatch was founded as a public open-source project in 2026.</p>
+          <p>Deadlock AfterMatch serves Deadlock players who want clearer post-match review without manual stat digging.</p>
+          <p>Deadlock AfterMatch solves the problem of scattered match data by converting it into grades, dossiers, and concise coaching notes.</p>
+        </section>
       </header>
 
-      {/* GitHub CTA */}
       <a
         href="https://github.com/Parmasanandgarlic/deadlockmatchtutor"
         target="_blank"
@@ -117,21 +123,19 @@ export default function AboutPage() {
         <ExternalLink className="w-5 h-5 text-deadlock-muted group-hover:text-deadlock-accent transition-colors shrink-0" />
       </a>
 
-      {/* Values */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+      <section aria-label="Project values" className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
         {values.map(({ icon: Icon, title, description }) => (
           <article key={title} className="card">
             <div className="flex items-center gap-2 mb-2">
               <Icon className="w-5 h-5 text-deadlock-accent" />
-              <h3 className="font-bold text-deadlock-text">{title}</h3>
+              <h2 className="font-bold text-deadlock-text text-base">{title}</h2>
             </div>
             <p className="text-sm text-deadlock-text-dim leading-relaxed">{description}</p>
           </article>
         ))}
       </section>
 
-      {/* Tech Stack */}
-      <section className="card mb-8">
+      <section aria-label="Technology stack" className="card mb-8">
         <h2 className="font-bold text-deadlock-text mb-4">What is Deadlock AfterMatch built with?</h2>
         <div className="flex flex-wrap gap-2">
           {techStack.map(({ name, category }) => (
@@ -146,8 +150,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* How to Contribute */}
-      <section className="card">
+      <section aria-label="How to contribute" className="card">
         <h2 className="font-bold text-deadlock-text mb-4">How can you contribute to Deadlock AfterMatch?</h2>
         <ol className="space-y-3 text-sm text-deadlock-text-dim">
           <li className="flex items-start gap-3">
@@ -179,7 +182,7 @@ export default function AboutPage() {
           </li>
         </ol>
         <p className="mt-4 text-sm text-deadlock-muted">
-          Even small contributions — typo fixes, documentation improvements, or bug reports — are valuable.
+          Even small contributions, such as typo fixes, documentation improvements, or bug reports, are valuable.
         </p>
         <p className="mt-4 text-sm text-deadlock-muted">
           For questions or concerns, email us at{' '}
@@ -188,8 +191,15 @@ export default function AboutPage() {
           </a>
           .
         </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link to="/faq" className="btn-secondary text-xs">
+            Read FAQ
+          </Link>
+          <Link to="/updates" className="btn-secondary text-xs">
+            View Updates
+          </Link>
+        </div>
       </section>
     </div>
   );
 }
-

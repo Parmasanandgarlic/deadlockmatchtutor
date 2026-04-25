@@ -1,13 +1,11 @@
 import { useEffect } from 'react';
+import { DEFAULT_IMAGE_PATH, SITE_NAME, SITE_URL } from '../../utils/seo';
 
-const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://www.aftermatch.xyz';
-const SITE_NAME = 'Deadlock AfterMatch';
-const DEFAULT_TITLE = 'Deadlock AfterMatch — Post-Match Performance Grading & Player Dossiers';
+const DEFAULT_TITLE = 'Deadlock AfterMatch Match Analyzer';
 const DEFAULT_DESC =
-  'Open-source Deadlock analytics with dossier-style match reports, ranked player profiles, top heroes, item builds, combat grades, and benchmark comparisons.';
+  'Analyze Deadlock matches with free post-match grades, player dossiers, itemization notes, combat insights, and objective review.';
 const DEFAULT_KEYWORDS =
   'Deadlock, Deadlock analytics, Deadlock tracker, post-match report, player dossier, ranked profile, KDA, item build, hero stats, benchmark comparison, Valve';
-const DEFAULT_IMAGE_PATH = '/images/bg-scene.png';
 
 function stripContext(value) {
   if (!value || typeof value !== 'object') return value;
@@ -31,10 +29,6 @@ function normalizeSchema(schema) {
   return null;
 }
 
-/**
- * SEOHead - Injects SEO tags, Open Graph meta, canonical URL, robots directives,
- * and JSON-LD schema into the document head (SPA-friendly).
- */
 export default function SEOHead({
   title,
   description = DEFAULT_DESC,
@@ -46,18 +40,12 @@ export default function SEOHead({
   robots,
   lang = 'en',
 }) {
-  const finalTitle = title
-    ? /deadlock aftermatch/i.test(title)
-      ? title
-      : `${title} · ${SITE_NAME}`
-    : DEFAULT_TITLE;
-
+  const finalTitle = title || DEFAULT_TITLE;
   const finalDescription = description || DEFAULT_DESC;
   const finalKeywords = keywords || DEFAULT_KEYWORDS;
 
   useEffect(() => {
-    const resolvedCanonical =
-      canonical || new URL(window.location.pathname + window.location.search, SITE_URL).toString();
+    const resolvedCanonical = canonical || new URL(window.location.pathname || '/', SITE_URL).toString();
 
     const resolvedImageUrl = (() => {
       try {
@@ -97,7 +85,6 @@ export default function SEOHead({
       element.setAttribute('href', href);
     };
 
-    // Standard Meta
     setMetaTag('name', 'description', finalDescription);
     setMetaTag('name', 'keywords', finalKeywords);
     setMetaTag(
@@ -106,10 +93,8 @@ export default function SEOHead({
       robots || 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1'
     );
 
-    // Canonical
     setLinkTag('canonical', resolvedCanonical);
 
-    // Open Graph
     setMetaTag('property', 'og:title', finalTitle);
     setMetaTag('property', 'og:description', finalDescription);
     setMetaTag('property', 'og:type', type);
@@ -118,13 +103,11 @@ export default function SEOHead({
     setMetaTag('property', 'og:site_name', SITE_NAME);
     setMetaTag('property', 'og:locale', 'en_US');
 
-    // Twitter
     setMetaTag('name', 'twitter:card', 'summary_large_image');
     setMetaTag('name', 'twitter:title', finalTitle);
     setMetaTag('name', 'twitter:description', finalDescription);
     setMetaTag('name', 'twitter:image', resolvedImageUrl);
 
-    // Structured Data
     const normalizedSchema = normalizeSchema(schema);
     let scriptTag = document.head.querySelector('script[id="json-ld-schema"]');
 

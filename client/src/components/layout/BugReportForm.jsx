@@ -36,14 +36,19 @@ export default function BugReportForm({ isOpen, onClose }) {
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-lg bg-deadlock-bg border border-deadlock-border shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col max-h-[90vh]">
+      <div
+        className="relative w-full max-w-lg bg-deadlock-bg border border-deadlock-border shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col max-h-[90vh]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="bug-report-title"
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-deadlock-border bg-deadlock-surface/30">
           <div className="flex items-center gap-3">
             <Bug className="w-5 h-5 text-deadlock-red" />
-            <h2 className="text-xl font-serif tracking-[0.2em] text-white">Bug Report</h2>
+            <h2 id="bug-report-title" className="text-xl font-serif tracking-[0.2em] text-white">Bug Report</h2>
           </div>
-          <button onClick={onClose} className="p-2 text-deadlock-muted hover:text-deadlock-amber transition-colors">
+          <button onClick={onClose} className="p-2 text-deadlock-muted hover:text-deadlock-amber transition-colors" aria-label="Close bug report form">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -68,10 +73,10 @@ export default function BugReportForm({ isOpen, onClose }) {
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Severity */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-[0.2em] text-deadlock-muted mb-3">
+                <label id="bug-severity-label" className="block text-xs font-bold uppercase tracking-[0.2em] text-deadlock-muted mb-3">
                   Severity
                 </label>
-                <div className="flex gap-2">
+                <div className="flex gap-2" role="radiogroup" aria-labelledby="bug-severity-label">
                   {[
                     { value: 'low', label: 'Low', color: 'text-deadlock-green' },
                     { value: 'medium', label: 'Medium', color: 'text-deadlock-amber' },
@@ -81,6 +86,8 @@ export default function BugReportForm({ isOpen, onClose }) {
                       key={option.value}
                       type="button"
                       onClick={() => setSeverity(option.value)}
+                      role="radio"
+                      aria-checked={severity === option.value}
                       className={`flex-1 px-3 py-2 border transition-colors ${
                         severity === option.value
                           ? `border-deadlock-border bg-deadlock-surface ${option.color}`
@@ -95,10 +102,11 @@ export default function BugReportForm({ isOpen, onClose }) {
 
               {/* Area */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-[0.2em] text-deadlock-muted mb-3">
+                <label htmlFor="bug-area" className="block text-xs font-bold uppercase tracking-[0.2em] text-deadlock-muted mb-3">
                   Affected Area
                 </label>
                 <select
+                  id="bug-area"
                   value={area}
                   onChange={(e) => setArea(e.target.value)}
                   className="input-field w-full"
@@ -115,10 +123,11 @@ export default function BugReportForm({ isOpen, onClose }) {
 
               {/* Title */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-[0.2em] text-deadlock-muted mb-3">
+                <label htmlFor="bug-title" className="block text-xs font-bold uppercase tracking-[0.2em] text-deadlock-muted mb-3">
                   Bug Title
                 </label>
                 <input
+                  id="bug-title"
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
@@ -130,10 +139,11 @@ export default function BugReportForm({ isOpen, onClose }) {
 
               {/* Description */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-[0.2em] text-deadlock-muted mb-3">
+                <label htmlFor="bug-description" className="block text-xs font-bold uppercase tracking-[0.2em] text-deadlock-muted mb-3">
                   What Happened?
                 </label>
                 <textarea
+                  id="bug-description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Describe the bug in detail..."
@@ -144,10 +154,11 @@ export default function BugReportForm({ isOpen, onClose }) {
 
               {/* Steps */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-[0.2em] text-deadlock-muted mb-3">
+                <label htmlFor="bug-steps" className="block text-xs font-bold uppercase tracking-[0.2em] text-deadlock-muted mb-3">
                   Steps to Reproduce
                 </label>
                 <textarea
+                  id="bug-steps"
                   value={steps}
                   onChange={(e) => setSteps(e.target.value)}
                   placeholder="1. Go to...&#10;2. Click on...&#10;3. See error..."

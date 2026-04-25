@@ -32,14 +32,19 @@ export default function FeedbackForm({ isOpen, onClose }) {
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-lg bg-deadlock-bg border border-deadlock-border shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col max-h-[90vh]">
+      <div
+        className="relative w-full max-w-lg bg-deadlock-bg border border-deadlock-border shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col max-h-[90vh]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="feedback-title"
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-deadlock-border bg-deadlock-surface/30">
           <div className="flex items-center gap-3">
             <MessageSquare className="w-5 h-5 text-deadlock-accent" />
-            <h2 className="text-xl font-serif tracking-[0.2em] text-white">Feedback</h2>
+            <h2 id="feedback-title" className="text-xl font-serif tracking-[0.2em] text-white">Feedback</h2>
           </div>
-          <button onClick={onClose} className="p-2 text-deadlock-muted hover:text-deadlock-amber transition-colors">
+          <button onClick={onClose} className="p-2 text-deadlock-muted hover:text-deadlock-amber transition-colors" aria-label="Close feedback form">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -64,15 +69,18 @@ export default function FeedbackForm({ isOpen, onClose }) {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Rating */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-[0.2em] text-deadlock-muted mb-3">
+                <label id="feedback-rating-label" className="block text-xs font-bold uppercase tracking-[0.2em] text-deadlock-muted mb-3">
                   Overall Rating
                 </label>
-                <div className="flex gap-2">
+                <div className="flex gap-2" role="radiogroup" aria-labelledby="feedback-rating-label">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
                       type="button"
                       onClick={() => setRating(star)}
+                      role="radio"
+                      aria-checked={rating === star}
+                      aria-label={`${star} star rating`}
                       className={`p-2 transition-colors ${
                         star <= rating ? 'text-deadlock-amber' : 'text-deadlock-border'
                       }`}
@@ -85,10 +93,11 @@ export default function FeedbackForm({ isOpen, onClose }) {
 
               {/* Category */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-[0.2em] text-deadlock-muted mb-3">
+                <label htmlFor="feedback-category" className="block text-xs font-bold uppercase tracking-[0.2em] text-deadlock-muted mb-3">
                   Category
                 </label>
                 <select
+                  id="feedback-category"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   className="input-field w-full"
@@ -104,10 +113,11 @@ export default function FeedbackForm({ isOpen, onClose }) {
 
               {/* Message */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-[0.2em] text-deadlock-muted mb-3">
+                <label htmlFor="feedback-message" className="block text-xs font-bold uppercase tracking-[0.2em] text-deadlock-muted mb-3">
                   Your Message
                 </label>
                 <textarea
+                  id="feedback-message"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Tell us what you think..."

@@ -4,6 +4,14 @@ import { Flame, Skull, Hourglass, Compass, Search, ArrowRight, Github, Shield, H
 import { resolvePlayer } from '../api/client';
 import SEOHead from '../components/seo/SEOHead';
 import { toErrorMessage } from '../utils/errorMessage';
+import {
+  absoluteUrl,
+  faqSchema,
+  howToSchema,
+  organizationSchema,
+  speakableSchema,
+  websiteSchema,
+} from '../utils/seo';
 
 const features = [
   { icon: Flame, label: 'Economy Grading', desc: 'Net worth efficiency & farm scores' },
@@ -89,81 +97,47 @@ export default function LandingPage() {
     }
   }
 
+  const homeFaqs = [
+    {
+      question: 'What is Deadlock AfterMatch?',
+      answer:
+        'Deadlock AfterMatch is a free, open-source post-match analytics engine for the game Deadlock. It analyzes match data to grade economy, combat, itemization, and objective control so players can improve macro decision-making.',
+    },
+    {
+      question: 'How does Deadlock AfterMatch grade my performance?',
+      answer:
+        'AfterMatch analyzes match data from the Deadlock API and scores key dimensions such as net worth trajectory, KDA density, Souls/Min, and objective impact. It compares your results to personal baselines and community signals to assign a grade from F to A+.',
+    },
+    {
+      question: 'Is Deadlock AfterMatch free to use?',
+      answer: 'Yes. Deadlock AfterMatch is free to use and the code is open source on GitHub.',
+    },
+  ];
+
   const landingSchema = [
+    organizationSchema(),
+    websiteSchema(),
     {
-      '@context': 'https://schema.org',
-      '@type': 'Organization',
-      name: 'Deadlock AfterMatch',
-      url: 'https://www.aftermatch.xyz/',
-      sameAs: ['https://github.com/Parmasanandgarlic/deadlockmatchtutor'],
-      contactPoint: [
-        {
-          '@type': 'ContactPoint',
-          contactType: 'customer support',
-          email: 'contact@aftermatch.xyz',
-        },
-      ],
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'WebSite',
-      name: 'Deadlock AfterMatch',
-      url: 'https://www.aftermatch.xyz/',
-      description: 'Free, open-source post-match analytics for Deadlock.',
-      potentialAction: {
-        '@type': 'SearchAction',
-        target: 'https://www.aftermatch.xyz/?q={search_term_string}',
-        'query-input': 'required name=search_term_string',
-      },
-    },
-    {
-      '@context': 'https://schema.org',
       '@type': 'WebApplication',
       name: 'Deadlock AfterMatch',
-      url: 'https://www.aftermatch.xyz/',
+      url: absoluteUrl('/'),
       operatingSystem: 'Web',
       applicationCategory: 'GameApplication',
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
       description:
-        'Post-match analytics dashboard for Deadlock: economy, itemization, combat, objectives, and plain-English mistakes.',
+        'Deadlock AfterMatch is a post-match analytics dashboard for Deadlock players who want economy, itemization, combat, objective, and benchmark review.',
     },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'FAQPage',
-      mainEntity: [
-        {
-          '@type': 'Question',
-          name: 'What is Deadlock AfterMatch?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Deadlock AfterMatch is a free, open-source post-match analytics engine for the game Deadlock. It analyzes match data to grade economy, combat, itemization, and objective control so players can improve macro decision-making.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'How does Deadlock AfterMatch grade my performance?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'AfterMatch analyzes your match data from the Deadlock API and scores key dimensions such as Net Worth trajectory, KDA density, Souls/Min, and objective impact. It compares your results to your own baselines and broader community signals to assign a grade from F to A+.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'Is Deadlock AfterMatch free to use?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Yes. Deadlock AfterMatch is free to use and the code is open source on GitHub.',
-          },
-        },
-      ],
-    },
+    faqSchema(homeFaqs),
+    howToSchema(),
+    speakableSchema('/'),
   ];
 
   return (
     <div className="relative min-h-[90vh] flex flex-col items-center justify-center pt-10 pb-20 overflow-hidden">
       <SEOHead 
-        title="Deadlock match analyzer & post-match reports"
-        description="Analyze Deadlock matches in minutes: economy and Souls/Min grading, itemization timing, combat impact, objective control, and plain-English mistakes."
+        title="Deadlock Match Analyzer and Player Reports | AfterMatch"
+        description="Analyze Deadlock matches with post-match grades, player dossiers, item timing, combat impact, objective control, and clear mistakes."
+        canonical={absoluteUrl('/')}
         imageUrl="/images/bg-scene.png"
         schema={landingSchema} 
       />
@@ -192,6 +166,23 @@ export default function LandingPage() {
             The high-precision analytics engine for Deadlock. 
             Identify macro-mistakes, optimize your economy, and dominate every skirmish with data-driven insights.
           </p>
+
+          <section aria-label="Deadlock match analyzer quick answers" className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <p className="answer-block text-sm text-deadlock-text-dim leading-relaxed border border-deadlock-border bg-black/20 p-4">
+              Deadlock AfterMatch is a free match analyzer for Deadlock players. Enter a Steam profile or Steam ID to
+              review recent matches, generate performance grades, and see concise coaching notes for economy, combat,
+              itemization, objectives, and benchmarks.
+            </p>
+            <p className="answer-block text-sm text-deadlock-text-dim leading-relaxed border border-deadlock-border bg-black/20 p-4">
+              AfterMatch grades a Deadlock match by comparing core performance signals against useful baselines. The
+              report highlights farming pace, fight impact, item timing, objective pressure, and benchmark gaps so the
+              next improvement target is easy to find.
+            </p>
+            <p className="answer-block text-sm text-deadlock-text-dim leading-relaxed border border-deadlock-border bg-black/20 p-4">
+              Players use AfterMatch by searching a public Steam identifier, choosing a recent match, and opening a
+              report. The tool does not require a site login, and shared reports can be copied from the dashboard.
+            </p>
+          </section>
 
           <div className="flex flex-wrap items-center justify-center gap-6">
             <div className="flex items-center gap-3 text-sm font-bold uppercase tracking-widest text-deadlock-blue">
@@ -261,6 +252,7 @@ export default function LandingPage() {
                             e.stopPropagation();
                             removeFromHistory(id);
                           }}
+                          aria-label={`Remove ${id} from recent searches`}
                           className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-deadlock-text-dim/30 hover:text-deadlock-red hover:bg-deadlock-red/10 rounded transition-all opacity-0 group-hover:opacity-100"
                         >
                           <X className="w-3 h-3" />
@@ -283,7 +275,7 @@ export default function LandingPage() {
                   <div className="animate-spin w-4 h-4 border-2 border-black/30 border-t-black" />
                 ) : (
                   <div className="flex items-center gap-2 whitespace-nowrap">
-                    START <ArrowRight className="w-4 h-4" />
+                    Analyze <ArrowRight className="w-4 h-4" />
                   </div>
                 )}
               </button>
@@ -454,8 +446,10 @@ export default function LandingPage() {
         </section>
 
         <div className="mt-20 flex gap-6 opacity-30">
-          <a href="https://github.com/Parmasanandgarlic/deadlockmatchtutor" target="_blank" rel="noreferrer" className="hover:opacity-100 transition-opacity"><Github /></a>
-          <Link to="/about" className="text-[10px] font-bold uppercase tracking-widest hover:opacity-100 transition-opacity">Repository</Link>
+          <a href="https://github.com/Parmasanandgarlic/deadlockmatchtutor" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity" aria-label="Open Deadlock AfterMatch on GitHub"><Github /></a>
+          <Link to="/about" className="text-[10px] font-bold uppercase tracking-widest hover:opacity-100 transition-opacity">About</Link>
+          <Link to="/faq" className="text-[10px] font-bold uppercase tracking-widest hover:opacity-100 transition-opacity">FAQ</Link>
+          <Link to="/updates" className="text-[10px] font-bold uppercase tracking-widest hover:opacity-100 transition-opacity">Updates</Link>
           <Link to="/privacy" className="text-[10px] font-bold uppercase tracking-widest hover:opacity-100 transition-opacity">Privacy Policy</Link>
         </div>
       </div>

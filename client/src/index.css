@@ -17,6 +17,15 @@
     @apply font-serif tracking-widest uppercase;
   }
 
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid #ffad1c;
+    outline-offset: 3px;
+  }
+
   * {
     scrollbar-width: thin;
     scrollbar-color: #1a1d26 #050506;
@@ -38,6 +47,10 @@
 }
 
 @layer components {
+  .skip-link {
+    @apply fixed left-4 top-4 z-[100] bg-deadlock-amber text-black font-bold uppercase tracking-widest px-4 py-3 -translate-y-24 focus:translate-y-0 transition-transform;
+  }
+
   .card {
     @apply bg-deadlock-surface border border-deadlock-border rounded-none p-6 relative overflow-hidden;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);

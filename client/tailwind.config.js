@@ -19,7 +19,7 @@ export default {
           red: '#ff4d4d',
           green: '#2ecc71',
           purple: '#a855f7',
-          muted: '#666b7a',
+          muted: '#8a91a3',
           text: '#ffffff',
           'text-dim': '#a1a1aa',
           // --- Deadlock in-game item rarity palette (from item highlight screen) ---

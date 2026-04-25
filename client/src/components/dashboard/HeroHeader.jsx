@@ -57,7 +57,11 @@ export default function HeroHeader({ meta, overall }) {
             {heroAvatar ? (
               <img
                 src={heroAvatar}
-                alt={meta?.heroName}
+                alt={`${heroNameDisplay} hero icon`}
+                width="36"
+                height="36"
+                loading="eager"
+                decoding="async"
                 className="w-9 h-9 rounded-full border border-deadlock-border object-cover bg-black"
                 onError={(e) => {
                   e.currentTarget.onerror = null;
@@ -98,6 +102,7 @@ export default function HeroHeader({ meta, overall }) {
               onClick={handleCopyMatchId}
               className="inline-flex items-center gap-1 font-mono text-deadlock-accent hover:text-white transition-colors group"
               title="Copy Match ID"
+              aria-label={`Copy match ID ${meta?.matchId}`}
             >
               #{meta?.matchId}
               {copiedMatchId ? (
@@ -181,7 +186,15 @@ export default function HeroHeader({ meta, overall }) {
           {rank?.label && (
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-deadlock-accent/10 border border-deadlock-accent/30 text-deadlock-accent text-xs font-medium">
               {rank.rankImageUrl && (
-                <img src={rank.rankImageUrl} alt={rank.label} className="w-5 h-5 object-contain" />
+                <img
+                  src={rank.rankImageUrl}
+                  alt={`${rank.label} rank badge`}
+                  width="20"
+                  height="20"
+                  loading="lazy"
+                  decoding="async"
+                  className="w-5 h-5 object-contain"
+                />
               )}
               <Award className="w-3.5 h-3.5" />
               {rank.label}
