@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import InsightCard from '../ui/InsightCard';
-import { Lightbulb, AlertTriangle, Target, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { Lightbulb, AlertTriangle, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+
+import CompassMedallion from '../ui/CompassMedallion';
 
 const TIER_CONFIG = {
   'must-fix': {
@@ -15,7 +17,7 @@ const TIER_CONFIG = {
   optimize: {
     label: 'Optimization Targets',
     desc: 'Sharpen these to climb faster',
-    icon: Target,
+    icon: CompassMedallion,
     color: 'text-deadlock-amber',
     border: 'border-deadlock-amber/30',
     bg: 'bg-deadlock-amber/5',

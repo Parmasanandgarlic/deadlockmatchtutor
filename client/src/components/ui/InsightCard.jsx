@@ -1,5 +1,6 @@
-import { AlertTriangle, AlertCircle, Info, CheckCircle, Clock, MapPin, Crosshair, Brain, TrendingUp, BarChart3, Swords, Wrench, Trophy } from 'lucide-react';
+import { AlertTriangle, AlertCircle, Info, CheckCircle, Clock, MapPin, Brain, TrendingUp, BarChart3, Swords, Wrench, Trophy } from 'lucide-react';
 import { SEVERITY_CONFIG, MODULE_LABELS } from '../../utils/constants';
+import CompassMedallion from './CompassMedallion';
 
 const SEVERITY_ICONS = {
   critical: AlertTriangle,
@@ -11,9 +12,9 @@ const SEVERITY_ICONS = {
 // Category icons for Deadlock-specific gameplay dimensions
 const CATEGORY_ICONS = {
   soulTiming: Clock,
-  powerSpike: Crosshair,
-  mapMovement: MapPin,
-  fightTiming: Crosshair,
+  powerSpike: CompassMedallion,
+  positioning: MapPin,
+  fightTiming: CompassMedallion,
   decisionQuality: Brain,
   matchupAwareness: Swords,
   buildPath: Wrench,

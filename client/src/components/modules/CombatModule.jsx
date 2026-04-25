@@ -1,6 +1,7 @@
 import { formatNumber } from '../../utils/formatters';
-import { Swords, Skull, Target, Zap, Flame, Timer, Shield, Heart, Crosshair, Castle } from 'lucide-react';
+import { Swords, Skull, Zap, Flame, Timer, Shield, Heart, Castle } from 'lucide-react';
 import Tooltip from '../ui/Tooltip';
+import CompassMedallion from '../ui/CompassMedallion';
 import { getScoreColor } from '../../utils/grading';
 
 export default function CombatModule({ data }) {
@@ -50,7 +51,7 @@ export default function CombatModule({ data }) {
           }}
         >
           <StatBox
-            icon={<Target className="w-4 h-4 text-deadlock-blue" />}
+            icon={<CompassMedallion className="w-4 h-4 text-deadlock-blue" />}
             label="Assists"
             value={assists}
           />
@@ -192,7 +193,7 @@ export default function CombatModule({ data }) {
           <div className="bg-deadlock-bg rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <Crosshair className="w-4 h-4 text-deadlock-blue" />
+                <CompassMedallion className="w-4 h-4 text-deadlock-blue" />
                 <span className="text-deadlock-muted text-sm">Damage Dealt ÷ Damage Taken</span>
               </div>
               <span className={`font-mono font-semibold text-xl ${getScoreColor(positioningScore)}`}>

@@ -1,6 +1,7 @@
-import { TrendingUp, Trophy, Target, Sword, Coins, Flame, Skull } from 'lucide-react';
+import { TrendingUp, Trophy, Sword, Coins, Flame, Skull } from 'lucide-react';
 import { formatNumber } from '../../utils/formatters';
 import Tooltip from '../ui/Tooltip';
+import CompassMedallion from '../ui/CompassMedallion';
 
 export default function HeroPerformanceModule({ data }) {
   if (!data) return null;
@@ -141,7 +142,7 @@ export default function HeroPerformanceModule({ data }) {
             }}
           >
             <StatBox
-              icon={<Target className="w-4 h-4 text-deadlock-blue" />}
+              icon={<CompassMedallion className="w-4 h-4 text-deadlock-blue" />}
               label="Avg Souls"
               value={formatNumber(avgSouls)}
               highlight={avgSouls >= 12000}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Flame, Skull, Hourglass, Compass, Search, ArrowRight, Github, Shield, History, X, Target } from 'lucide-react';
+import { Flame, Skull, Hourglass, Compass, Search, ArrowRight, Github, Shield, History, X } from 'lucide-react';
+import CompassMedallion from '../components/ui/CompassMedallion';
 import { resolvePlayer } from '../api/client';
 import SEOHead from '../components/seo/SEOHead';
 import { toErrorMessage } from '../utils/errorMessage';
@@ -148,7 +149,7 @@ export default function LandingPage() {
         {/* Themed Hero */}
         <div className="text-center mb-16 relative">
           <div className="inline-flex items-center gap-3 px-4 py-1.5 border border-deadlock-blue/30 bg-deadlock-blue/5 mb-8">
-            <Target className="w-4 h-4 text-deadlock-blue" />
+            <CompassMedallion className="w-4 h-4 text-deadlock-blue" />
             <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-deadlock-blue">
               Post-Match Combat Intelligence
             </span>
