@@ -1,6 +1,15 @@
 import { Component } from 'react';
 import { Crosshair } from 'lucide-react';
 
+// Attempt to import Sentry — gracefully degrade if not installed.
+// This avoids a hard dependency while enabling error tracking in production.
+let Sentry = null;
+try {
+  Sentry = require('@sentry/react');
+} catch {
+  // @sentry/react not installed — client-side error tracking is disabled.
+}
+
 export default class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
@@ -13,6 +22,13 @@ export default class ErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('React Error Boundary caught:', error, errorInfo);
+
+    // Report to Sentry if available
+    if (Sentry?.captureException) {
+      Sentry.captureException(error, {
+        contexts: { react: { componentStack: errorInfo?.componentStack } },
+      });
+    }
   }
 
   render() {

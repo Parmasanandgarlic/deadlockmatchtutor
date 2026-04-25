@@ -39,17 +39,36 @@ function generateInsights(heroPerf, itemization, combat, benchmarks, meta = {}) 
   analyzeFightTiming(combat, meta, insights);
   analyzeDecisionQuality(heroPerf, combat, benchmarks, meta, insights);
 
-  // NEW v3: Event-grounded layers using full module data
+  // Event-grounded layers using full module data
   analyzeMatchupContext(meta, insights);
   analyzeBuildPathInsights(meta, insights);
   analyzeTemporalTrends(meta, insights);
   analyzeMetaContext(meta, insights);
 
-  // Sort by impact (highest first) to surface most critical improvements
+  // Win Condition insight — the single biggest factor that decided the game
+  synthesizeWinCondition(heroPerf, combat, itemization, benchmarks, meta, insights);
+
+  // Assign tiers for frontend grouping
+  for (const insight of insights) {
+    if (insight.severity === 'critical') {
+      insight.tier = 'must-fix';
+    } else if (insight.severity === 'warning') {
+      insight.tier = 'optimize';
+    } else {
+      insight.tier = 'context';
+    }
+  }
+
+  // Smart cap: return ALL critical + warning insights, plus top 3 info/positive.
+  // This ensures no critical coaching is ever dropped.
   insights.sort((a, b) => b.impact - a.impact);
-  const top = insights.slice(0, 6);
-  logger.info(`Generated ${top.length} insight cards`);
-  return top;
+  const mustFix = insights.filter(i => i.tier === 'must-fix');
+  const optimize = insights.filter(i => i.tier === 'optimize');
+  const context = insights.filter(i => i.tier === 'context').slice(0, 3);
+  const result = [...mustFix, ...optimize, ...context];
+
+  logger.info(`Generated ${result.length} insight cards (${mustFix.length} critical, ${optimize.length} warning, ${context.length} context)`);
+  return result;
 }
 
 // ----------------------------------------------------------------
@@ -549,6 +568,87 @@ function analyzeMetaContext(meta, insights) {
       impact: 9,
       evidence: { type: 'meta', data: { heroName, winRate, tier } },
     });
+  }
+}
+
+/**
+ * Win Condition Synthesis
+ * Identifies the single most impactful factor that decided the game outcome.
+ * For wins: "What won you this game?"
+ * For losses: "What lost you this game?"
+ */
+function synthesizeWinCondition(heroPerf, combat, itemization, benchmarks, meta, insights) {
+  const won = meta?.won;
+  if (won == null) return; // Can't determine outcome
+
+  const soulsPerMin = heroPerf?.soulsPerMin || itemization?.soulsPerMin || 0;
+  const deaths = combat?.deaths || 0;
+  const kda = combat?.kda || 0;
+  const kdaDiff = benchmarks?.kdaDiff || 0;
+  const damagePerMin = combat?.damagePerMin || 0;
+  const heroName = meta?.heroName || 'your hero';
+
+  if (won) {
+    // Identify what won the game
+    if (soulsPerMin >= 600 && kda >= 3) {
+      insights.push({
+        severity: 'positive', module: 'heroPerformance', category: 'winCondition',
+        timestamp: 'all', tier: 'context',
+        title: 'Win Condition: Economy Dominance',
+        detail: `${soulsPerMin} souls/min and ${kda.toFixed(1)} KDA — you out-farmed and out-fought. ` +
+          `Your economy advantage funded earlier power spikes that snowballed team fights.`,
+        action: `Save this replay. Your farm-to-fight balance on ${heroName} was textbook.`,
+        impact: 0,
+        evidence: { type: 'win_condition', data: { factor: 'economy', soulsPerMin, kda } },
+      });
+    } else if (damagePerMin >= 1000 && deaths <= 4) {
+      insights.push({
+        severity: 'positive', module: 'combat', category: 'winCondition',
+        timestamp: 'all', tier: 'context',
+        title: 'Win Condition: Fight Mastery',
+        detail: `${damagePerMin} damage/min with only ${deaths} deaths — you were the team's damage anchor. ` +
+          `Your positioning kept you alive to deal sustained damage.`,
+        action: 'Your fight positioning was elite this game. Replicate this aggression level.',
+        impact: 0,
+        evidence: { type: 'win_condition', data: { factor: 'combat', damagePerMin, deaths } },
+      });
+    }
+  } else {
+    // Identify what lost the game
+    if (deaths >= 8 && soulsPerMin < 400) {
+      insights.push({
+        severity: 'critical', module: 'heroPerformance', category: 'winCondition',
+        timestamp: 'all', tier: 'must-fix',
+        title: 'Loss Condition: Death Spiral',
+        detail: `${deaths} deaths while farming only ${soulsPerMin} souls/min created an unrecoverable deficit. ` +
+          `Each death cost farm time, and each farm gap made fights harder — a compounding spiral.`,
+        action: 'Next game: if you die twice in 3 minutes, switch to safe farming for 5 minutes. Break the spiral.',
+        impact: 32,
+        evidence: { type: 'loss_condition', data: { factor: 'death_spiral', deaths, soulsPerMin } },
+      });
+    } else if (soulsPerMin < 350 && deaths < 6) {
+      insights.push({
+        severity: 'critical', module: 'economy', category: 'winCondition',
+        timestamp: 'all', tier: 'must-fix',
+        title: 'Loss Condition: Economy Starvation',
+        detail: `Only ${soulsPerMin} souls/min despite just ${deaths} deaths. You weren't dying — you weren't farming. ` +
+          `Your team needed an item advantage that never came.`,
+        action: 'Next game: set a 5-minute timer. If you have less than 3k souls at min 5, prioritize jungle camps immediately.',
+        impact: 28,
+        evidence: { type: 'loss_condition', data: { factor: 'economy', soulsPerMin, deaths } },
+      });
+    } else if (kdaDiff < -2 && benchmarks?.benchmarkKda > 0) {
+      insights.push({
+        severity: 'warning', module: 'heroPerformance', category: 'winCondition',
+        timestamp: 'all', tier: 'optimize',
+        title: `Loss Condition: Off-Day on ${heroName}`,
+        detail: `KDA ${kda.toFixed(1)} vs your career ${benchmarks.benchmarkKda.toFixed(1)} — ` +
+          `${Math.abs(kdaDiff).toFixed(1)} below your standard. This wasn't a hero or meta problem, it was execution.`,
+        action: `Watch the replay at 2x speed focusing on each death. Were you fighting without vision? Without team?`,
+        impact: 22,
+        evidence: { type: 'loss_condition', data: { factor: 'execution', kda, careerKda: benchmarks.benchmarkKda } },
+      });
+    }
   }
 }
 

@@ -193,7 +193,7 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
     combat: combat.score,
     benchmarks: benchmarks.score,
     decisionQuality: decisionQuality.score,
-  });
+  }, analysisContext.heroRole?.role);
 
   const elapsed = Date.now() - startTime;
   logger.info(`Pipeline complete in ${elapsed}ms`);

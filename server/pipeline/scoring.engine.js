@@ -5,17 +5,56 @@ const logger = require('../utils/logger');
 /**
  * Scoring Engine (API-based)
  *
- * Combines the four module scores into a single weighted Impact Score (0–100)
+ * Combines the module scores into a single weighted Impact Score (0–100)
  * and maps it to a letter grade (A+ through F).
+ *
+ * Weights are now ROLE-AWARE: a support gets graded on participation and
+ * utility; a carry gets graded on economy and fight output.
  */
+
+/**
+ * Role-specific weight distributions.
+ *
+ * Design rationale:
+ *   - Carry: economy + itemization matter most (you ARE the net worth)
+ *   - Support: combat participation + benchmarks matter (assists, healing, obj)
+ *   - Tank: combat scoring leans on damage taken ratio (positioning)
+ *   - Brawler: balanced, slight combat bias
+ *
+ * Each set must sum to 1.0 (with and without decisionQuality).
+ */
+const ROLE_WEIGHTS = {
+  carry: {
+    withDQ:    { heroPerformance: 0.20, itemization: 0.25, combat: 0.18, benchmarks: 0.17, decisionQuality: 0.20 },
+    withoutDQ: { heroPerformance: 0.28, itemization: 0.30, combat: 0.22, benchmarks: 0.20 },
+  },
+  support: {
+    withDQ:    { heroPerformance: 0.24, itemization: 0.15, combat: 0.24, benchmarks: 0.17, decisionQuality: 0.20 },
+    withoutDQ: { heroPerformance: 0.30, itemization: 0.18, combat: 0.30, benchmarks: 0.22 },
+  },
+  tank: {
+    withDQ:    { heroPerformance: 0.22, itemization: 0.18, combat: 0.25, benchmarks: 0.15, decisionQuality: 0.20 },
+    withoutDQ: { heroPerformance: 0.28, itemization: 0.22, combat: 0.28, benchmarks: 0.22 },
+  },
+  brawler: {
+    withDQ:    { heroPerformance: 0.22, itemization: 0.20, combat: 0.22, benchmarks: 0.16, decisionQuality: 0.20 },
+    withoutDQ: { heroPerformance: 0.30, itemization: 0.25, combat: 0.25, benchmarks: 0.20 },
+  },
+};
+
+function getWeightsForRole(role, hasDecisionQuality) {
+  const roleConfig = ROLE_WEIGHTS[role] || ROLE_WEIGHTS.brawler;
+  return hasDecisionQuality ? roleConfig.withDQ : roleConfig.withoutDQ;
+}
 
 /**
  * Compute the overall impact score from module scores.
  *
- * @param {Object} moduleScores  { heroPerformance, itemization, combat, benchmarks } — each 0–100
+ * @param {Object} moduleScores  { heroPerformance, itemization, combat, benchmarks, decisionQuality } — each 0–100
+ * @param {string} [role]        Hero role for weight calibration (carry/support/tank/brawler)
  * @returns {Object} { impactScore, letterGrade, breakdown }
  */
-function computeOverallScore(moduleScores) {
+function computeOverallScore(moduleScores, role) {
   const heroPerformance = clamp(moduleScores.heroPerformance ?? 0, 0, 100);
   const itemization = clamp(moduleScores.itemization ?? 0, 0, 100);
   const combat = clamp(moduleScores.combat ?? 0, 0, 100);
@@ -23,11 +62,7 @@ function computeOverallScore(moduleScores) {
   const hasDecisionQuality = typeof moduleScores.decisionQuality === 'number';
   const decisionQuality = clamp(moduleScores.decisionQuality ?? 0, 0, 100);
 
-  // Updated weights — when decision quality is present, it is the single
-  // strongest signal because it synthesizes the others.
-  const weights = hasDecisionQuality
-    ? { heroPerformance: 0.22, itemization: 0.20, combat: 0.22, benchmarks: 0.16, decisionQuality: 0.20 }
-    : { heroPerformance: 0.30, itemization: 0.25, combat: 0.25, benchmarks: 0.20 };
+  const weights = getWeightsForRole(role || 'brawler', hasDecisionQuality);
 
   let impactScore = Math.round(
     heroPerformance * weights.heroPerformance +
@@ -53,7 +88,7 @@ function computeOverallScore(moduleScores) {
     };
   }
 
-  logger.info(`Impact Score: ${impactScore} (${letterGrade})`);
+  logger.info(`Impact Score: ${impactScore} (${letterGrade}) [role: ${role || 'brawler'}]`);
 
   return {
     impactScore,
@@ -72,4 +107,5 @@ function scoreToGrade(score) {
   return 'F';
 }
 
-module.exports = { computeOverallScore, scoreToGrade };
+module.exports = { computeOverallScore, scoreToGrade, getWeightsForRole };
+

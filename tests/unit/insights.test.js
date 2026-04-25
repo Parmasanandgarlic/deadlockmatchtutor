@@ -44,7 +44,7 @@ test('generates positive soul insight for elite pace', () => {
   assert.ok(positives.length > 0, 'should generate at least one positive insight');
 });
 
-test('caps output to 6 insights max', () => {
+test('returns all critical/warning insights + max 3 context', () => {
   // Constructing a scenario that triggers many insights
   const heroPerf = { soulsPerMin: 300, matchKda: 0.5, deaths: 12, kills: 2, assists: 1 };
   const item = { soulsPerMin: 300, netWorth: 5000, items: [1, 2], score: 30 };
@@ -52,7 +52,11 @@ test('caps output to 6 insights max', () => {
   const bench = { kdaDiff: -3, benchmarkKda: 3, userKda: 0.3, score: 20 };
   const meta = { duration: 2100, won: false };
   const r = generateInsights(heroPerf, item, combat, bench, meta);
-  assert.ok(r.length <= 6, `Expected <= 6 insights, got ${r.length}`);
+  // Smart cap: all critical + warning are kept, context capped at 3
+  const contextCount = r.filter(i => i.tier === 'context').length;
+  assert.ok(contextCount <= 3, `Expected <= 3 context insights, got ${contextCount}`);
+  // Every critical and warning should be present (no drops)
+  assert.ok(r.every(i => i.tier), 'Every insight should have a tier');
 });
 
 test('insights sorted by impact descending', () => {

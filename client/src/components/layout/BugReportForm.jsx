@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { X, Send, Bug } from 'lucide-react';
+import { X, Send, Bug, AlertCircle } from 'lucide-react';
+import { submitFeedback } from '../../api/client';
 
 export default function BugReportForm({ isOpen, onClose }) {
   const [severity, setSeverity] = useState('low');
@@ -8,17 +9,28 @@ export default function BugReportForm({ isOpen, onClose }) {
   const [description, setDescription] = useState('');
   const [steps, setSteps] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
   if (!isOpen) return null;
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    // User will handle email integration
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      onClose();
-    }, 2000);
+    setSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      await submitFeedback({ severity, area, title, description, steps });
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        onClose();
+      }, 2000);
+    } catch (err) {
+      setSubmitError(err?.message || 'Failed to submit. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   function handleReset() {

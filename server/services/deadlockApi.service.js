@@ -5,6 +5,9 @@ const logger = require('../utils/logger');
 const redisClient = require('./redis.service');
 const { warnOnContractMismatch, MATCH_HISTORY_SCHEMA } = require('../utils/responseContracts');
 const { ApiUnavailableError } = require('../utils/apiAdapter');
+const { CircuitBreaker } = require('../utils/circuitBreaker');
+
+const apiBreaker = new CircuitBreaker('DeadlockAPI', { failureThreshold: 3, resetTimeoutMs: 30000 });
 
 const configuration = new Configuration({
   basePath: config.deadlockApi.baseUrl,
@@ -39,7 +42,7 @@ async function fetchAssetList(label, path, redisKey) {
     return cached;
   }
 
-  const { data } = await axios.get(`${ASSETS_API_BASE_URL}/${path}`, { timeout: 10000 });
+  const { data } = await apiBreaker.call(() => axios.get(`${ASSETS_API_BASE_URL}/${path}`, { timeout: 10000 }));
   const list = Array.isArray(data) ? data : [];
   if (list.length > 0) {
     assetMemoryCache.set(label, { data: list, fetchedAt: now });
@@ -52,9 +55,9 @@ async function fetchAssetList(label, path, redisKey) {
 
 async function fetchMatchHistoryFromApi(accountId) {
   const url = `${config.deadlockApi.baseUrl}/v1/players/${Number(accountId)}/match-history`;
-  const { data } = await axios.get(url, {
+  const { data } = await apiBreaker.call(() => axios.get(url, {
     timeout: 15000,
-  });
+  }));
   return data;
 }
 
@@ -125,7 +128,7 @@ async function getMatchHistory(accountId, { bypassCache = false } = {}) {
  */
 async function getMatchMetadata(matchId) {
   try {
-    const { data } = await matchesApi.salts({ matchId: Number(matchId) });
+    const { data } = await apiBreaker.call(() => matchesApi.salts({ matchId: Number(matchId) }));
     logger.debug(`Fetched metadata salts for match ${matchId}`);
     return data;
   } catch (err) {
@@ -174,7 +177,7 @@ async function getMatchInfo(matchId) {
   //    item data, which breaks build-path grading.
   let lastErr = null;
   try {
-    const { data } = await matchesApi.bulkMetadata({
+    const { data } = await apiBreaker.call(() => matchesApi.bulkMetadata({
       includeInfo: true,
       includeMoreInfo: true,
       includePlayerInfo: true,
@@ -183,7 +186,7 @@ async function getMatchInfo(matchId) {
       includePlayerDeathDetails: true,
       matchIds: [Number(matchId)],
       limit: 1,
-    });
+    }));
 
     const match = Array.isArray(data) ? data[0] : data;
     if (match && typeof match === 'object' && Object.keys(match).length > 0) {
@@ -202,7 +205,7 @@ async function getMatchInfo(matchId) {
 
   // 3. Fall back to the generated client's basic metadata call (no item guarantees).
   try {
-    const { data } = await matchesApi.metadata({ matchId: Number(matchId) });
+    const { data } = await apiBreaker.call(() => matchesApi.metadata({ matchId: Number(matchId) }));
     if (data && Object.keys(data).length > 0) {
       logger.debug(`Fetched fallback match info for ${matchId}`);
       if (cacheKey) {
@@ -235,10 +238,10 @@ async function getMatchInfo(matchId) {
  */
 async function getPlayerHeroStats(accountId, heroId) {
   try {
-    const { data } = await playersApi.playerHeroStats({
+    const { data } = await apiBreaker.call(() => playersApi.playerHeroStats({
       accountIds: [Number(accountId)],
       heroIds: [Number(heroId)],
-    });
+    }));
     logger.debug(`Fetched hero stats for account ${accountId}, hero ${heroId}`);
 
     // The API returns an array, so we find the matching hero stats
@@ -262,9 +265,9 @@ async function getPlayerHeroStats(accountId, heroId) {
  */
 async function getPlayerHeroStatsAll(accountId) {
   try {
-    const { data } = await playersApi.playerHeroStats({
+    const { data } = await apiBreaker.call(() => playersApi.playerHeroStats({
       accountIds: [Number(accountId)],
-    });
+    }));
     const arr = Array.isArray(data) ? data : [];
     logger.debug(`Fetched all hero stats for account ${accountId}: ${arr.length} heroes`);
     return arr;
@@ -285,7 +288,7 @@ async function getPlayerHeroStatsAll(accountId) {
  */
 async function getPlayerRankPredict(accountId) {
   try {
-    const { data } = await playersApi.rankPredict({ accountId: Number(accountId) });
+    const { data } = await apiBreaker.call(() => playersApi.rankPredict({ accountId: Number(accountId) }));
     logger.debug(`Fetched rank predict for account ${accountId}`);
     return data;
   } catch (err) {
@@ -305,7 +308,7 @@ async function getPlayerRankPredict(accountId) {
  */
 async function getPlayerAccountStats(accountId) {
   try {
-    const { data } = await playersApi.accountStats({ accountId: Number(accountId) });
+    const { data } = await apiBreaker.call(() => playersApi.accountStats({ accountId: Number(accountId) }));
     logger.debug(`Fetched account stats for account ${accountId}`);
     return data;
   } catch (err) {
@@ -334,7 +337,7 @@ async function getPlayerCard(accountId) {
       return cached;
     }
 
-    const { data } = await playersApi.card({ accountId: Number(accountId) });
+    const { data } = await apiBreaker.call(() => playersApi.card({ accountId: Number(accountId) }));
     logger.debug(`Fetched player card for account ${accountId}`);
 
     // 3. Save to Redis (1 hour TTL)

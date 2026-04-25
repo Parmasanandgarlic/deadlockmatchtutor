@@ -190,6 +190,23 @@ api.interceptors.response.use(
   }
 );
 
+// Request Deduplicator
+// Prevents duplicate identical GET requests from being fired simultaneously
+// (e.g., when multiple React components mount and fetch the same metadata)
+const pendingRequests = new Map();
+
+async function fetchWithDedup(url, config = {}) {
+  const key = url + JSON.stringify(config.params || {});
+  if (pendingRequests.has(key)) {
+    return pendingRequests.get(key);
+  }
+  const promise = api.get(url, config).finally(() => {
+    pendingRequests.delete(key);
+  });
+  pendingRequests.set(key, promise);
+  return promise;
+}
+
 // ---- Player ----
 
 export async function resolvePlayer(steamInput) {
@@ -198,7 +215,7 @@ export async function resolvePlayer(steamInput) {
 }
 
 export async function getPlayerMatches(accountId) {
-  const { data } = await api.get(`/players/${accountId}/matches`);
+  const { data } = await fetchWithDedup(`/players/${accountId}/matches`);
   warnOnContractMismatch('matchHistory', data, responseContracts.matchHistory);
   return data;
 }
@@ -209,24 +226,24 @@ export async function syncPlayerMatches(accountId) {
 }
 
 export async function getPlayerMmrHistory(accountId) {
-  const { data } = await api.get(`/players/${accountId}/mmr-history`);
+  const { data } = await fetchWithDedup(`/players/${accountId}/mmr-history`);
   return data;
 }
 
 export async function getPlayerProfile(accountId) {
-  const { data } = await api.get(`/players/${accountId}/profile`);
+  const { data } = await fetchWithDedup(`/players/${accountId}/profile`);
   return data;
 }
 
 // ---- Match ----
 
 export async function getMatchInfo(matchId) {
-  const { data } = await api.get(`/matches/${matchId}`);
+  const { data } = await fetchWithDedup(`/matches/${matchId}`);
   return data;
 }
 
 export async function getMatchMetadata(matchId) {
-  const { data } = await api.get(`/matches/${matchId}/metadata`);
+  const { data } = await fetchWithDedup(`/matches/${matchId}/metadata`);
   return data;
 }
 
@@ -239,31 +256,31 @@ export async function runAnalysis(matchId, accountId) {
 }
 
 export async function getCachedAnalysis(matchId, accountId) {
-  const { data } = await api.get(`/analysis/${matchId}/${accountId}`);
+  const { data } = await fetchWithDedup(`/analysis/${matchId}/${accountId}`);
   return data;
 }
 
 // ---- Trends ----
 
 export async function getPlayerTrends(accountId, limit = 10) {
-  const { data } = await api.get(`/trends/${accountId}?limit=${limit}`);
+  const { data } = await fetchWithDedup(`/trends/${accountId}?limit=${limit}`);
   return data;
 }
 
 // ---- Metadata ----
 
 export async function getHeroes() {
-  const { data } = await api.get('/meta/heroes');
+  const { data } = await fetchWithDedup('/meta/heroes');
   return data;
 }
 
 export async function getItems() {
-  const { data } = await api.get('/meta/items');
+  const { data } = await fetchWithDedup('/meta/items');
   return data;
 }
 
 export async function getRanks() {
-  const { data } = await api.get('/meta/ranks');
+  const { data } = await fetchWithDedup('/meta/ranks');
   return data;
 }
 
@@ -275,6 +292,21 @@ export async function getDeadlockHeroes() {
 
 export async function getDeadlockItems() {
   return getItems();
+}
+
+// ---- Feedback ----
+
+export async function submitFeedback({ severity, area, title, description, steps }) {
+  const { data } = await api.post('/feedback', {
+    severity,
+    area,
+    title,
+    description,
+    steps,
+    contextUrl: window.location.href,
+    userAgent: navigator.userAgent,
+  });
+  return data;
 }
 
 export default api;

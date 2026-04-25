@@ -1,4 +1,4 @@
-import { AlertTriangle, AlertCircle, Info, CheckCircle, Clock, MapPin, Crosshair, Brain, TrendingUp, BarChart3, Swords, Wrench } from 'lucide-react';
+import { AlertTriangle, AlertCircle, Info, CheckCircle, Clock, MapPin, Crosshair, Brain, TrendingUp, BarChart3, Swords, Wrench, Trophy } from 'lucide-react';
 import { SEVERITY_CONFIG, MODULE_LABELS } from '../../utils/constants';
 
 const SEVERITY_ICONS = {
@@ -19,6 +19,7 @@ const CATEGORY_ICONS = {
   buildPath: Wrench,
   trend: TrendingUp,
   metaContext: BarChart3,
+  winCondition: Trophy,
 };
 
 const CATEGORY_LABELS = {
@@ -31,6 +32,7 @@ const CATEGORY_LABELS = {
   buildPath: 'Build Path',
   trend: 'Performance Trend',
   metaContext: 'Meta Context',
+  winCondition: 'Win Condition',
 };
 
 export default function InsightCard({ insight }) {
@@ -183,6 +185,40 @@ function EvidenceBadge({ evidence }) {
             <Stat label="Deaths" value={evidence.data.deaths} negative />
             <Stat label="SPM" value={evidence.data.soulsPerMin} />
             <Stat label="Est. Deficit" value={`-${evidence.data.estimatedDeficit}`} negative />
+          </div>
+        );
+      case 'win_condition':
+        return (
+          <div className="flex items-center gap-3 flex-wrap">
+            {evidence.data.soulsPerMin != null && (
+              <Stat label="Souls/min" value={evidence.data.soulsPerMin} />
+            )}
+            {evidence.data.kda != null && (
+              <Stat label="KDA" value={evidence.data.kda?.toFixed?.(1) || evidence.data.kda} />
+            )}
+            {evidence.data.damagePerMin != null && (
+              <Stat label="DPM" value={evidence.data.damagePerMin} />
+            )}
+            <span className="text-[10px] bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded">
+              🏆 {evidence.data.factor}
+            </span>
+          </div>
+        );
+      case 'loss_condition':
+        return (
+          <div className="flex items-center gap-3 flex-wrap">
+            {evidence.data.deaths != null && (
+              <Stat label="Deaths" value={evidence.data.deaths} negative />
+            )}
+            {evidence.data.soulsPerMin != null && (
+              <Stat label="Souls/min" value={evidence.data.soulsPerMin} negative={evidence.data.soulsPerMin < 400} />
+            )}
+            {evidence.data.kda != null && (
+              <Stat label="KDA" value={evidence.data.kda?.toFixed?.(1) || evidence.data.kda} negative />
+            )}
+            <span className="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded">
+              💀 {evidence.data.factor?.replace(/_/g, ' ')}
+            </span>
           </div>
         );
       default:
