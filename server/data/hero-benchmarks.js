@@ -6,6 +6,7 @@
  *   - Tier list generation when API data is unavailable
  *   - Benchmark comparisons in the insights engine
  *   - Role-aware scoring calibration
+ *   - Dynamic percentile benchmarks (KDA, NW/min)
  *
  * Fields:
  *   winRate  — community win rate (%)
@@ -78,4 +79,80 @@ function getCommunityAvgNwm(heroId) {
   return bm ? bm.avgNwm : 1120;
 }
 
-module.exports = { HERO_BENCHMARKS, getHeroBenchmark, getCommunityAvgKda, getCommunityAvgNwm };
+/**
+ * Dynamic Percentile Benchmarks
+ *
+ * Instead of using static global thresholds (e.g. "700 SPM = good for everyone"),
+ * this derives hero-specific percentile tiers from the community data.
+ *
+ * Percentile model: The community average is the p50 (median). We model a
+ * normal distribution around it with a coefficient of variation (CV) to
+ * derive p25, p75, and p90 tiers.
+ *
+ *   p25 = avg * (1 - CV)        — bottom quartile
+ *   p50 = avg                   — median
+ *   p75 = avg * (1 + CV)        — top quartile
+ *   p90 = avg * (1 + CV * 1.6)  — elite
+ *
+ * CV values calibrated from leaderboard data (Dec 2025):
+ *   - KDA has higher variance (CV = 0.35): a 3.0 avg hero spans 1.95–4.68
+ *   - NW/min has lower variance (CV = 0.20): a 1100 avg hero spans 880–1452
+ */
+const KDA_CV = 0.35;
+const NWM_CV = 0.20;
+
+/**
+ * Get hero-specific percentile tiers for KDA and NW/min.
+ * @param {number} heroId
+ * @returns {Object} { kda: { p25, p50, p75, p90 }, nwm: { p25, p50, p75, p90 } }
+ */
+function getHeroPercentiles(heroId) {
+  const bm = getHeroBenchmark(heroId);
+  const avgKda = bm ? bm.avgKda : 2.8;
+  const avgNwm = bm ? bm.avgNwm : 1120;
+
+  return {
+    kda: {
+      p25: Math.round(avgKda * (1 - KDA_CV) * 100) / 100,
+      p50: avgKda,
+      p75: Math.round(avgKda * (1 + KDA_CV) * 100) / 100,
+      p90: Math.round(avgKda * (1 + KDA_CV * 1.6) * 100) / 100,
+    },
+    nwm: {
+      p25: Math.round(avgNwm * (1 - NWM_CV)),
+      p50: Math.round(avgNwm),
+      p75: Math.round(avgNwm * (1 + NWM_CV)),
+      p90: Math.round(avgNwm * (1 + NWM_CV * 1.6)),
+    },
+  };
+}
+
+/**
+ * Compute what percentile a player's value falls into for a given hero.
+ * Returns a score 0–100 representing the estimated percentile.
+ *
+ * @param {number} heroId    - The hero being played
+ * @param {'kda'|'nwm'} stat - Which stat to compare
+ * @param {number} value     - The player's actual value
+ * @returns {number}         - Estimated percentile (0–100)
+ */
+function getPlayerPercentile(heroId, stat, value) {
+  const percentiles = getHeroPercentiles(heroId);
+  const tiers = percentiles[stat];
+  if (!tiers) return 50;
+
+  if (value <= tiers.p25) return Math.round(25 * (value / tiers.p25));
+  if (value <= tiers.p50) return Math.round(25 + 25 * ((value - tiers.p25) / (tiers.p50 - tiers.p25)));
+  if (value <= tiers.p75) return Math.round(50 + 25 * ((value - tiers.p50) / (tiers.p75 - tiers.p50)));
+  if (value <= tiers.p90) return Math.round(75 + 15 * ((value - tiers.p75) / (tiers.p90 - tiers.p75)));
+  return Math.min(100, Math.round(90 + 10 * ((value - tiers.p90) / (tiers.p90 * 0.2))));
+}
+
+module.exports = {
+  HERO_BENCHMARKS,
+  getHeroBenchmark,
+  getCommunityAvgKda,
+  getCommunityAvgNwm,
+  getHeroPercentiles,
+  getPlayerPercentile,
+};

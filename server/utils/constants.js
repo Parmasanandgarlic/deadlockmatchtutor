@@ -169,6 +169,30 @@ const SCORING_CALIBRATION = {
   POSITIONING_RATIO_MIN: 0.25,
   /** Maximum clamped ratio for log calculation */
   POSITIONING_RATIO_MAX: 4,
+
+  // ---- Death Severity (Phase-Weighted) ----
+
+  /** Multiplier for deaths during laning phase (0–10 min). Early deaths
+   *  cascade into lane advantage loss, so they cost 1.5× the base penalty. */
+  DEATH_SEVERITY_LANING: 1.5,
+  /** Multiplier for mid-game deaths (10–25 min). Standard weight. */
+  DEATH_SEVERITY_MID: 1.0,
+  /** Multiplier for late-game deaths (25+ min). Deaths here are often
+   *  unavoidable teamfight casualties, so they cost 0.5× the base penalty. */
+  DEATH_SEVERITY_LATE: 0.5,
+
+  // ---- Game Length Normalization ----
+
+  /** Games shorter than this (minutes) compress scoring range upward
+   *  (stomp games shouldn't auto-generate A+ grades). */
+  SHORT_GAME_THRESHOLD: 15,
+  /** Games longer than this (minutes) relax death penalties since more
+   *  deaths are expected in extended matches. */
+  LONG_GAME_THRESHOLD: 40,
+  /** Short-game compression factor (0.85 = 15% penalty) */
+  SHORT_GAME_FACTOR: 0.85,
+  /** Long-game death penalty relaxation factor */
+  LONG_GAME_DEATH_FACTOR: 0.75,
 };
 
 module.exports = {

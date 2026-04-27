@@ -7,7 +7,8 @@ const { itemAssetFields } = require('../utils/itemAssets');
 const { clamp } = require('../utils/helpers');
 const logger = require('../utils/logger');
 const { HERO_ROLES, ROLE_BENCHMARKS } = require('../data/hero-roles');
-const { SCORING_CALIBRATION } = require('../utils/constants');
+const { SCORING_CALIBRATION, PHASES } = require('../utils/constants');
+const { getHeroBenchmark, getPlayerPercentile, getCommunityAvgKda, getCommunityAvgNwm } = require('../data/hero-benchmarks');
 const { normalizePlayer, normalizeMatchInfo, normalizeMatchHistoryEntry, normalizeHeroStats: normalizeHeroStatsAdapter } = require('../utils/apiAdapter');
 const { analyzeMatchPerformance } = require('./analyzers/match-performance.analyzer');
 const { analyzeRankBenchmarks } = require('./analyzers/rankBenchmarks.analyzer');
@@ -94,14 +95,14 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
     normalizedHeroStats,
   }, analysisContext);
 
-  // ---- Module 2: Itemization Analysis ----
-  const itemization = analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durationMinutes, playerStats);
+  // ---- Module 2: Itemization Analysis (hero-aware SPM benchmarks) ----
+  const itemization = analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durationMinutes, playerStats, heroId);
 
-  // ---- Module 3: Combat & KDA Analysis (enriched with granular playerStats) ----
-  const combat = analyzeCombatFromStats(matchInHistory, durationMinutes, playerStats);
+  // ---- Module 3: Combat & KDA Analysis (game-length normalized, death severity) ----
+  const combat = analyzeCombatFromStats(matchInHistory, durationMinutes, playerStats, heroId, durationSeconds);
 
-  // ---- Module 4: Benchmark Comparison (match vs career) ----
-  const benchmarks = compareAgainstBenchmarks(matchInHistory, normalizedHeroStats, durationMinutes, playerStats);
+  // ---- Module 4: Benchmark Comparison (hero-specific percentile benchmarks) ----
+  const benchmarks = compareAgainstBenchmarks(matchInHistory, normalizedHeroStats, durationMinutes, playerStats, heroId);
 
   // ---- Advanced Modules ----
   const rankPredictSummary = summarizeRankPrediction(rankPredict);
@@ -407,7 +408,7 @@ function roundTo(value, decimals = 1) {
  * Module 2 – Itemization.
  * Grades final build value against an expected souls/minute benchmark.
  */
-function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durationMinutes, playerStats = {}) {
+function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durationMinutes, playerStats = {}, heroId = null) {
   const normalizeItems = (raw) => {
     if (!raw) return [];
     if (Array.isArray(raw)) return raw;
@@ -492,13 +493,17 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
   );
   const soulsPerMin = perMinute(netWorth, durationMinutes);
 
-  // Documented thresholds — see SCORING_CALIBRATION in constants.js
+  // --- Dynamic hero-specific percentile scoring (replaces static thresholds) ---
   const SC = SCORING_CALIBRATION;
   let score = SC.ITEM_SCORE_BASELINE;
-  if (soulsPerMin > 0) {
+  if (soulsPerMin > 0 && heroId) {
+    // Use hero-specific percentile: p50 = 50pts, p75 = 75pts, p90 = 90pts
+    const nwmPercentile = getPlayerPercentile(heroId, 'nwm', soulsPerMin);
+    score = clamp(nwmPercentile, 10, 100);
+  } else if (soulsPerMin > 0) {
+    // Fallback to static thresholds when hero is unknown
     score += Math.min(((soulsPerMin - SC.SOULS_PER_MIN_WEAK) / SC.SOULS_PER_MIN_RANGE) * SC.SOULS_PER_MIN_MAX_BONUS, SC.SOULS_PER_MIN_MAX_BONUS);
   } else if (netWorth > 0) {
-    // Fallback when duration unknown
     score += Math.min((netWorth / SC.NETWORTH_FALLBACK_CEILING) * SC.NETWORTH_FALLBACK_MAX_BONUS, SC.NETWORTH_FALLBACK_MAX_BONUS);
   }
   score = Math.max(0, Math.min(100, score));
@@ -566,7 +571,7 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
  * Module 3 – Combat.
  * Grades fight output in THIS match (damage/min, KDA, death rate).
  */
-function analyzeCombatFromStats(matchInHistory, durationMinutes, playerStats = {}) {
+function analyzeCombatFromStats(matchInHistory, durationMinutes, playerStats = {}, heroId = null, durationSeconds = 0) {
   const kills = pickNumber(playerStats.kills, matchInHistory?.player_kills, matchInHistory?.kills);
   const deaths = pickNumber(playerStats.deaths, matchInHistory?.player_deaths, matchInHistory?.deaths);
   const assists = pickNumber(playerStats.assists, matchInHistory?.player_assists, matchInHistory?.assists);
@@ -601,13 +606,37 @@ function analyzeCombatFromStats(matchInHistory, durationMinutes, playerStats = {
   const objectiveScore = clamp((objectiveDamage / 8000) * 100, 0, 100);
 
   const SC = SCORING_CALIBRATION;
+
+  // --- Hero-specific KDA percentile scoring ---
+  let kdaScore;
+  if (heroId) {
+    const kdaPercentile = getPlayerPercentile(heroId, 'kda', kda);
+    // Map percentile to a 0–25 bonus (p50 → 12.5, p90 → 22.5)
+    kdaScore = Math.min((kdaPercentile / 100) * SC.KDA_WEIGHT, SC.KDA_WEIGHT);
+  } else {
+    kdaScore = Math.min(kda / SC.KDA_DIVISOR * SC.KDA_WEIGHT, SC.KDA_WEIGHT);
+  }
+
   let score = SC.ITEM_SCORE_BASELINE;
-  score += Math.min(kda / SC.KDA_DIVISOR * SC.KDA_WEIGHT, SC.KDA_WEIGHT);
+  score += kdaScore;
   score += Math.min(damagePerMin / SC.DPM_DIVISOR * SC.DPM_WEIGHT, SC.DPM_WEIGHT);
-  score -= Math.min(deathsPerMin * SC.DEATH_PENALTY_MULTIPLIER, SC.DEATH_PENALTY_CAP);
+
+  // --- Game-length normalized death penalty ---
+  let deathPenalty = Math.min(deathsPerMin * SC.DEATH_PENALTY_MULTIPLIER, SC.DEATH_PENALTY_CAP);
+  if (durationMinutes > SC.LONG_GAME_THRESHOLD) {
+    // Long games: relax death penalty since more deaths are expected
+    deathPenalty *= SC.LONG_GAME_DEATH_FACTOR;
+  }
+  score -= deathPenalty;
+
   // Bonus for strong positioning (damage dealt >> damage taken)
   if (playerStats?.positioningScore != null) {
     score += (playerStats.positioningScore - SC.POSITIONING_MIDPOINT) * SC.POSITIONING_SENSITIVITY;
+  }
+
+  // --- Short game compression (prevent inflated grades in stomps) ---
+  if (durationMinutes > 0 && durationMinutes < SC.SHORT_GAME_THRESHOLD) {
+    score *= SC.SHORT_GAME_FACTOR;
   }
   score = Math.max(0, Math.min(100, score));
 
@@ -636,7 +665,7 @@ function analyzeCombatFromStats(matchInHistory, durationMinutes, playerStats = {
  * Compares THIS match's KDA and souls-per-min to the player's career averages
  * on this hero. If career data is missing, falls back to community benchmarks.
  */
-function compareAgainstBenchmarks(matchInHistory, normalizedHeroStats, durationMinutes, playerStats = {}) {
+function compareAgainstBenchmarks(matchInHistory, normalizedHeroStats, durationMinutes, playerStats = {}, heroId = null) {
   const kills = pickNumber(playerStats.kills, matchInHistory?.player_kills, matchInHistory?.kills);
   const deaths = pickNumber(playerStats.deaths, matchInHistory?.player_deaths, matchInHistory?.deaths);
   const assists = pickNumber(playerStats.assists, matchInHistory?.player_assists, matchInHistory?.assists);
@@ -644,21 +673,43 @@ function compareAgainstBenchmarks(matchInHistory, normalizedHeroStats, durationM
   const matchKda = deaths > 0 ? (kills + assists) / deaths : kills + assists;
   const matchSoulsPerMin = perMinute(netWorth, durationMinutes);
 
-  const careerKda = normalizedHeroStats.avgKda || 0;
-  // Derive career souls-per-min only if we have an avg duration, otherwise fall back to 550.
+  // --- Hero-specific benchmark fallback (replaces static global median) ---
+  const careerKda = normalizedHeroStats.avgKda || getCommunityAvgKda(heroId);
   const avgSouls = normalizedHeroStats.avgSouls || 0;
-  const careerSoulsPerMin = avgSouls > 0 ? avgSouls / SCORING_CALIBRATION.ASSUMED_AVG_GAME_MINUTES : 0;
+  const careerSoulsPerMin = avgSouls > 0
+    ? avgSouls / SCORING_CALIBRATION.ASSUMED_AVG_GAME_MINUTES
+    : getCommunityAvgNwm(heroId) / SCORING_CALIBRATION.ASSUMED_AVG_GAME_MINUTES;
   const careerWinrate = normalizedHeroStats.winrate || 0;
 
   const kdaDiff = matchKda - careerKda;
   const soulsDiff = matchSoulsPerMin - careerSoulsPerMin;
 
-  // Personalised percentile: how THIS match compares to your own average.
+  // --- Hero-specific percentile scoring ---
   const SC = SCORING_CALIBRATION;
-  let score = SC.ITEM_SCORE_BASELINE;
-  if (careerKda > 0) score += Math.min((kdaDiff / careerKda) * SC.BENCHMARK_KDA_CEILING, SC.BENCHMARK_KDA_CEILING);
-  if (careerSoulsPerMin > 0) score += Math.min((soulsDiff / careerSoulsPerMin) * SC.BENCHMARK_SOULS_CEILING, SC.BENCHMARK_SOULS_CEILING);
-  score = Math.max(0, Math.min(100, score));
+  let score;
+  if (heroId) {
+    const kdaPercentile = getPlayerPercentile(heroId, 'kda', matchKda);
+    const nwmPercentile = getPlayerPercentile(heroId, 'nwm', matchSoulsPerMin);
+    // Blend: 50% KDA percentile + 50% NWM percentile
+    score = Math.round((kdaPercentile + nwmPercentile) / 2);
+    // If we have career data, bias toward personal comparison (+/- 10)
+    if (normalizedHeroStats.avgKda > 0) {
+      const personalBonus = Math.min((kdaDiff / careerKda) * 10, 10);
+      score = clamp(score + personalBonus, 0, 100);
+    }
+  } else {
+    // Legacy fallback
+    score = SC.ITEM_SCORE_BASELINE;
+    if (careerKda > 0) score += Math.min((kdaDiff / careerKda) * SC.BENCHMARK_KDA_CEILING, SC.BENCHMARK_KDA_CEILING);
+    if (careerSoulsPerMin > 0) score += Math.min((soulsDiff / careerSoulsPerMin) * SC.BENCHMARK_SOULS_CEILING, SC.BENCHMARK_SOULS_CEILING);
+    score = Math.max(0, Math.min(100, score));
+  }
+
+  // Compute hero-specific percentile tiers for display
+  const heroPercentiles = heroId ? {
+    kda: getPlayerPercentile(heroId, 'kda', matchKda),
+    nwm: getPlayerPercentile(heroId, 'nwm', matchSoulsPerMin),
+  } : null;
 
   return {
     score: Math.round(score),
@@ -672,9 +723,10 @@ function compareAgainstBenchmarks(matchInHistory, normalizedHeroStats, durationM
     userSoulsPerMin: Math.round(matchSoulsPerMin),
     benchmarkSoulsPerMin: Math.round(careerSoulsPerMin),
     percentile: Math.round(score),
-    note: careerKda > 0
+    heroPercentiles,
+    note: normalizedHeroStats.avgKda > 0
       ? 'Comparison is against your own career average on this hero.'
-      : 'Career data unavailable — using community benchmarks.',
+      : `Using community benchmarks for this hero (avg KDA: ${careerKda}, avg NW/min: ${Math.round(careerSoulsPerMin * SCORING_CALIBRATION.ASSUMED_AVG_GAME_MINUTES)}).`,
   };
 }
 
