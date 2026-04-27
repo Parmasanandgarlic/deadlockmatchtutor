@@ -155,17 +155,23 @@ const HERO_SLUGS = {
 
 /**
  * Get official Deadlock API hero image URL.
+ * Prefers API-provided images, falls back to slug-based CDN paths.
  */
 export function getHeroImage(hero, type = 'small') {
   // If 'hero' is an object with heroData, use that
   const data = hero?.heroData || (typeof hero === 'object' ? hero : null);
   
   if (data?.images) {
+    // API field names from https://assets.deadlock-api.com/v2/heroes
     const imgType = {
       small: data.images.icon_image_small_webp || data.images.icon_image_small,
       card: data.images.icon_hero_card_webp || data.images.icon_hero_card,
-      minimap: data.images.icon_minimap_webp || data.images.icon_minimap,
-      icon: data.images.top_bar_icon_webp || data.images.top_bar_icon
+      minimap: data.images.minimap_image_webp || data.images.minimap_image,
+      icon: data.images.name_image, // SVG name icon
+      vertical: data.images.top_bar_vertical_image_webp || data.images.top_bar_vertical_image,
+      gloat: data.images.hero_card_gloat_webp || data.images.hero_card_gloat,
+      critical: data.images.hero_card_critical_webp || data.images.hero_card_critical,
+      background: data.images.background_image_webp || data.images.background_image,
     };
     if (imgType[type]) return imgType[type];
   }
@@ -180,10 +186,27 @@ export function getHeroImage(hero, type = 'small') {
     small: `images/heroes/${slug}_sm.png`,
     card: `images/heroes/${slug}_card.png`,
     minimap: `images/heroes/${slug}_mm.png`,
-    icon: `icons/${slug}.svg`
+    icon: `icons/${slug}.svg`,
+    vertical: `images/heroes/${slug}_vertical.png`,
+    gloat: `images/heroes/${slug}_card_gloat.png`,
+    critical: `images/heroes/${slug}_card_critical.png`,
+    background: `images/heroes/backgrounds/${heroName.toLowerCase().replace(/[^a-z]/g, '_')}_bg.png`,
   };
   
   return `https://assets-bucket.deadlock-api.com/assets-api-res/${types[type] || types.small}`;
+}
+
+/**
+ * Get hero UI accent color from API data.
+ * Returns CSS color string or null.
+ */
+export function getHeroColor(hero) {
+  const data = hero?.heroData || (typeof hero === 'object' ? hero : null);
+  if (data?.colors?.ui && Array.isArray(data.colors.ui) && data.colors.ui.length >= 3) {
+    const [r, g, b] = data.colors.ui;
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+  return null;
 }
 
 const ASSET_API_RES_BASE = 'https://assets-bucket.deadlock-api.com/assets-api-res/';

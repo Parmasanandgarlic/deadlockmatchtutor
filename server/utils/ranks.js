@@ -41,11 +41,12 @@ function getRankInfo(badge) {
     return { tier, subtier, name: `Tier ${tier}`, imageUrl: null };
   }
 
+  const images = rankData.images || {};
   return {
     tier,
     subtier,
     name: rankData.name || `Tier ${tier}`,
-    imageUrl: rankData.images?.small_webp || null,
+    imageUrl: images.small_webp || images.small || images.large_webp || images.large || null,
   };
 }
 

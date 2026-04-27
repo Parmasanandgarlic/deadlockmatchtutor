@@ -227,10 +227,12 @@ async function getPlayerProfile(req, res) {
             ? Math.round(((kills + assists) / deaths) * 100) / 100
             : kills + assists;
         const heroData = getHeroData(heroId) || {};
+        const heroImages = heroData.images || {};
         return {
           heroId,
           heroName: heroData.name || getHeroName(heroId) || 'Unknown',
-          heroImage: heroData.image || heroData.image_webp || null,
+          heroImage: heroImages.icon_image_small_webp || heroImages.icon_image_small || heroImages.icon_hero_card_webp || heroImages.icon_hero_card || null,
+          heroColor: heroData.colors?.ui || null,
           matchesPlayed: played,
           wins,
           winrate: hwr,
