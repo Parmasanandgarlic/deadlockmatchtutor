@@ -137,9 +137,9 @@ export default function LandingPage() {
     <div className="relative min-h-[90vh] flex flex-col items-center justify-center pt-10 pb-20 overflow-hidden">
       <SEOHead 
         title="Deadlock Match Analyzer and Player Reports | AfterMatch"
-        description="Analyze Deadlock matches with post-match grades, player dossiers, item timing, combat impact, objective control, and clear mistakes."
+        description="Free Deadlock match analyzer. Get instant post-match grades, hero performance reports, economy breakdowns, item timing analysis, and personalized coaching — no login required."
         canonical={absoluteUrl('/')}
-        imageUrl="/images/bg-scene.png"
+        imageUrl="/images/og-share.png"
         schema={landingSchema} 
       />
       {/* Background context (Minimal) */}

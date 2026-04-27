@@ -3,7 +3,7 @@ import { DEFAULT_IMAGE_PATH, SITE_NAME, SITE_URL } from '../../utils/seo';
 
 const DEFAULT_TITLE = 'Deadlock AfterMatch Match Analyzer';
 const DEFAULT_DESC =
-  'Analyze Deadlock matches with free post-match grades, player dossiers, itemization notes, combat insights, and objective review.';
+  'Free Deadlock match analyzer. Get instant post-match grades, hero performance reports, economy breakdowns, item timing analysis, and personalized coaching \u2014 no login required.';
 const DEFAULT_KEYWORDS =
   'Deadlock, Deadlock analytics, Deadlock tracker, post-match report, player dossier, ranked profile, KDA, item build, hero stats, benchmark comparison, Valve';
 
@@ -100,6 +100,8 @@ export default function SEOHead({
     setMetaTag('property', 'og:type', type);
     setMetaTag('property', 'og:url', resolvedCanonical);
     setMetaTag('property', 'og:image', resolvedImageUrl);
+    setMetaTag('property', 'og:image:width', '1024');
+    setMetaTag('property', 'og:image:height', '1024');
     setMetaTag('property', 'og:site_name', SITE_NAME);
     setMetaTag('property', 'og:locale', 'en_US');
 

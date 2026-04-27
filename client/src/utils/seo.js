@@ -1,6 +1,6 @@
 export const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://www.aftermatch.xyz';
 export const SITE_NAME = 'Deadlock AfterMatch';
-export const DEFAULT_IMAGE_PATH = '/images/bg-scene.png';
+export const DEFAULT_IMAGE_PATH = '/images/og-share.png';
 export const PUBLISHER_NAME = 'Deadlock AfterMatch contributors';
 export const CONTACT_EMAIL = 'contact@aftermatch.xyz';
 

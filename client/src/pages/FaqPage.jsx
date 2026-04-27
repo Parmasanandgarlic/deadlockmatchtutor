@@ -98,7 +98,7 @@ export default function FaqPage() {
         title="Deadlock AfterMatch FAQ and Match Analysis Help Center"
         description="Answers about Deadlock AfterMatch match analysis, Steam ID lookup, data privacy, report sharing, grading, and open-source access."
         canonical={absoluteUrl('/faq')}
-        imageUrl="/images/bg-scene.png"
+        imageUrl="/images/og-share.png"
         schema={schema}
       />
 

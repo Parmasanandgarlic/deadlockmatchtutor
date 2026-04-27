@@ -84,7 +84,7 @@ export default function AboutPage() {
         title="About Deadlock AfterMatch Open Source Analytics Tool"
         description="Learn what Deadlock AfterMatch is, who it serves, when it started, what problem it solves, how data works, and how to contribute."
         canonical={absoluteUrl('/about')}
-        imageUrl="/images/bg-scene.png"
+        imageUrl="/images/og-share.png"
         schema={aboutSchema}
       />
 

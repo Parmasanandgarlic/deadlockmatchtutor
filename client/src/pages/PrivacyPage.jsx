@@ -98,7 +98,7 @@ export default function PrivacyPage() {
         title="Deadlock AfterMatch Privacy Policy and Data Use Guide"
         description="Privacy policy for Deadlock AfterMatch: Steam ID lookup, match analysis caching, third-party services, deletion requests, and data use."
         canonical={absoluteUrl('/privacy')}
-        imageUrl="/images/bg-scene.png"
+        imageUrl="/images/og-share.png"
         schema={privacySchema}
       />
 

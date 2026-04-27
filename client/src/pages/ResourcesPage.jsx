@@ -124,7 +124,7 @@ export default function ResourcesPage() {
         title="Deadlock Hero Tier List and Meta Rankings | AfterMatch"
         description="Live Deadlock hero tier list ranked by win rate, pick rate, and global meta data. Find the best Deadlock heroes for ranked play with S through D tier rankings."
         canonical={absoluteUrl('/resources')}
-        imageUrl="/images/bg-scene.png"
+        imageUrl="/images/og-share.png"
         schema={resourcesSchema}
       />
 
