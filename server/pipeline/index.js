@@ -9,6 +9,7 @@ const logger = require('../utils/logger');
 const { HERO_ROLES, ROLE_BENCHMARKS } = require('../data/hero-roles');
 const { SCORING_CALIBRATION, PHASES } = require('../utils/constants');
 const { getHeroBenchmark, getPlayerPercentile, getCommunityAvgKda, getCommunityAvgNwm } = require('../data/hero-benchmarks');
+const { compareBuild } = require('../data/hero-builds');
 const { normalizePlayer, normalizeMatchInfo, normalizeMatchHistoryEntry, normalizeHeroStats: normalizeHeroStatsAdapter } = require('../utils/apiAdapter');
 const { analyzeMatchPerformance } = require('./analyzers/match-performance.analyzer');
 const { analyzeRankBenchmarks } = require('./analyzers/rankBenchmarks.analyzer');
@@ -563,6 +564,11 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
     netWorth: Math.round(netWorth),
     souls: Math.round(souls),
     soulsPerMin: Math.round(soulsPerMin),
+    buildRecommendation: heroId ? compareBuild(heroId, items.map((item) => {
+      if (typeof item === 'number') return { id: item, name: getItemName(item) };
+      if (typeof item === 'object') return { id: item.id ?? item.item_id, name: item.name ?? item.item_name };
+      return { id: null, name: String(item) };
+    })) : null,
     note: (!matchInHistory && !matchInfo) ? 'Match data not available.' : undefined
   };
 }

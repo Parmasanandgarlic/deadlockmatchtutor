@@ -173,6 +173,79 @@ export default function ItemizationModule({ data, meta }) {
         )}
       </div>
 
+      {/* Build Recommendations */}
+      {data.buildRecommendation && (
+        <div>
+          <h3 className="text-sm font-semibold text-deadlock-text-dim uppercase tracking-[0.24em] mb-3 flex items-center gap-2">
+            <Tooltip
+              content={{
+                term: 'Recommended Build',
+                definition: 'Items that winning players on this hero typically build. Coverage shows how many you matched.',
+                category: 'Build'
+              }}
+            >
+              <span>Recommended Build</span>
+            </Tooltip>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-deadlock-muted ml-auto">
+              {data.buildRecommendation.coverage}% coverage
+            </span>
+          </h3>
+
+          {/* Coverage bar */}
+          <div className="w-full h-1.5 bg-deadlock-border rounded-full mb-4 overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${data.buildRecommendation.coverage}%`,
+                background: data.buildRecommendation.coverage >= 75
+                  ? 'var(--color-deadlock-green, #22c55e)'
+                  : data.buildRecommendation.coverage >= 50
+                  ? 'var(--color-deadlock-amber, #d4a853)'
+                  : 'var(--color-deadlock-red, #ef4444)',
+              }}
+            />
+          </div>
+
+          {/* Matched items */}
+          {data.buildRecommendation.matched.length > 0 && (
+            <div className="mb-3">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-deadlock-green mb-2">✓ Items you built</p>
+              <div className="flex flex-wrap gap-2">
+                {data.buildRecommendation.matched.map((rec, i) => (
+                  <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-deadlock-green/10 border border-deadlock-green/30 text-deadlock-green text-xs font-medium rounded-sm">
+                    {rec.name}
+                    <span className="text-[10px] text-deadlock-green/60">{rec.winRate}% WR</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Missing items */}
+          {data.buildRecommendation.missing.length > 0 && (
+            <div className="mb-3">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-deadlock-amber mb-2">◇ Consider building</p>
+              <div className="flex flex-wrap gap-2">
+                {data.buildRecommendation.missing.map((rec, i) => (
+                  <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-deadlock-amber/10 border border-deadlock-amber/30 text-deadlock-amber text-xs font-medium rounded-sm">
+                    {rec.name}
+                    <span className="text-[10px] text-deadlock-amber/60">{rec.timing} · {rec.winRate}% WR</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Playstyle advice */}
+          {data.buildRecommendation.playstyle && (
+            <div className="bg-deadlock-surface/50 border border-deadlock-border rounded-sm p-3 mt-3">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-deadlock-muted mb-1">Playstyle Advice</p>
+              <p className="text-xs text-deadlock-text-dim">{data.buildRecommendation.playstyle}</p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Build Data Disclaimer */}
       <div className="bg-deadlock-amber/5 border border-deadlock-amber/20 rounded-lg p-3 flex items-start gap-2">
         <AlertCircle className="w-4 h-4 text-deadlock-amber mt-0.5 flex-shrink-0" />

@@ -11,6 +11,7 @@
     }
   },
   "rewrites": [
+    { "source": "/api/og/:matchId/:accountId", "destination": "/api/og/[matchId]/[accountId]" },
     { "source": "/api/(.*)", "destination": "/api/index" },
     { "source": "/", "destination": "/index.html" },
     { "source": "/about", "destination": "/index.html" },

@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useMemo, useState } from 'react';
-import { ArrowLeft, Loader2, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Loader2, RefreshCw, GitCompareArrows } from 'lucide-react';
 import { usePlayerMatches, useSyncPlayerMatches } from '../hooks/usePlayer';
 import { useAssets } from '../contexts/AssetContext';
 import SEOHead from '../components/seo/SEOHead';
@@ -10,6 +10,7 @@ import MatchSummaryPanel from '../components/matches/MatchSummaryPanel';
 import { resolveMatchResult } from '../utils/match';
 import { toErrorMessage } from '../utils/errorMessage';
 import { absoluteUrl, breadcrumbSchema, organizationSchema, websiteSchema } from '../utils/seo';
+import MatchCompareModal from '../components/matches/MatchCompareModal';
 
 const DEFAULT_FILTERS = {
   search: '',
@@ -25,6 +26,16 @@ export default function MatchListPage() {
   const syncMutation = useSyncPlayerMatches();
   const isSyncing = syncMutation.isPending;
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [compareIds, setCompareIds] = useState([]);
+  const [showCompare, setShowCompare] = useState(false);
+
+  function toggleCompare(matchId) {
+    setCompareIds((prev) => {
+      if (prev.includes(matchId)) return prev.filter((id) => id !== matchId);
+      if (prev.length >= 2) return [prev[1], matchId]; // Replace oldest selection
+      return [...prev, matchId];
+    });
+  }
 
   const heroOptions = useMemo(() => deriveHeroOptions(matches, heroesMap), [matches, heroesMap]);
 
@@ -176,11 +187,45 @@ export default function MatchListPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredMatches.map((match) => (
-                  <MatchCard key={match.match_id} match={match} accountId={accountId} />
+                  <div key={match.match_id} className="relative">
+                    {/* Compare checkbox */}
+                    <button
+                      onClick={() => toggleCompare(match.match_id)}
+                      className={`absolute top-2 right-2 z-10 w-6 h-6 rounded-sm border-2 flex items-center justify-center text-xs font-bold transition-all ${
+                        compareIds.includes(match.match_id)
+                          ? 'border-deadlock-accent bg-deadlock-accent text-black'
+                          : 'border-deadlock-border bg-black/50 text-deadlock-muted hover:border-deadlock-accent/50'
+                      }`}
+                      title={compareIds.includes(match.match_id) ? 'Remove from comparison' : 'Add to comparison'}
+                    >
+                      {compareIds.includes(match.match_id) ? (compareIds.indexOf(match.match_id) + 1) : ''}
+                    </button>
+                    <MatchCard match={match} accountId={accountId} />
+                  </div>
                 ))}
               </div>
             )}
           </>
+        )}
+
+        {/* Floating Compare Button */}
+        {compareIds.length === 2 && (
+          <button
+            onClick={() => setShowCompare(true)}
+            className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 px-5 py-3 bg-deadlock-accent text-black font-bold uppercase tracking-[0.15em] text-sm rounded-lg shadow-lg shadow-deadlock-accent/30 hover:bg-deadlock-amber transition-colors animate-bounce-once"
+          >
+            <GitCompareArrows className="w-5 h-5" />
+            Compare Matches
+          </button>
+        )}
+
+        {/* Compare Modal */}
+        {showCompare && compareIds.length === 2 && (
+          <MatchCompareModal
+            matchA={matches.find((m) => m.match_id === compareIds[0])}
+            matchB={matches.find((m) => m.match_id === compareIds[1])}
+            onClose={() => setShowCompare(false)}
+          />
         )}
       </div>
     </div>

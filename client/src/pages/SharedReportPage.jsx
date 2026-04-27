@@ -75,6 +75,7 @@ export default function SharedReportPage() {
         canonical={absoluteUrl(`/report/${matchId}/${accountId}`)}
         robots="noindex,nofollow"
         schema={reportSchema}
+        imageUrl={absoluteUrl(`/api/og/${matchId}/${accountId}`)}
       />
 
       <div className="mb-4 text-center">

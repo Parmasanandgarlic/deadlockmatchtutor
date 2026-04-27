@@ -98,6 +98,7 @@ export default function DashboardPage() {
         canonical={absoluteUrl(`/dashboard/${matchId}/${accountId}`)}
         robots="noindex,nofollow"
         schema={dashboardSchema}
+        imageUrl={absoluteUrl(`/api/og/${matchId}/${accountId}`)}
       />
 
       <div className="osic-dossier-bg p-6 lg:p-10 rounded-lg">
@@ -121,7 +122,7 @@ export default function DashboardPage() {
 
         <HeroHeader meta={analysis.meta} overall={analysis.overall} />
 
-        <DashboardActions matchId={matchId} />
+        <DashboardActions matchId={matchId} heroName={analysis?.meta?.heroName} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-1 h-full">
