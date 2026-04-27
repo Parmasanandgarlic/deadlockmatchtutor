@@ -24,11 +24,6 @@ export function websiteSchema() {
     name: SITE_NAME,
     url: absoluteUrl('/'),
     description: 'Deadlock AfterMatch is a free post-match analytics dashboard for Deadlock players.',
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: `${absoluteUrl('/')}?q={search_term_string}`,
-      'query-input': 'required name=search_term_string',
-    },
   };
 }
 

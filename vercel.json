@@ -15,7 +15,7 @@
     { "source": "/", "destination": "/index.html" },
     { "source": "/about", "destination": "/index.html" },
     { "source": "/faq", "destination": "/index.html" },
-    { "source": "/updates", "destination": "/index.html" },
+    { "source": "/resources", "destination": "/index.html" },
     { "source": "/privacy", "destination": "/index.html" },
     { "source": "/matches/(.*)", "destination": "/index.html" },
     { "source": "/player/(.*)", "destination": "/index.html" },

@@ -12,7 +12,7 @@ Disallow: /internal/
 
 Allow: /about
 Allow: /faq
-Allow: /updates
+Allow: /resources
 Allow: /privacy
 
 Sitemap: https://www.aftermatch.xyz/sitemap.xml

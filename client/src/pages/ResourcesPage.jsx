@@ -3,6 +3,14 @@ import { getTierList } from '../api/client';
 import StateHandler from '../components/ui/StateHandler';
 import { useAssets } from '../contexts/AssetContext';
 import { getHeroImage } from '../utils/formatters';
+import SEOHead from '../components/seo/SEOHead';
+import {
+  absoluteUrl,
+  breadcrumbSchema,
+  organizationSchema,
+  speakableSchema,
+  websiteSchema,
+} from '../utils/seo';
 
 function TierRow({ tier, heroes, label, description, heroesMap }) {
   if (!heroes || heroes.length === 0) return null;
@@ -81,8 +89,45 @@ export default function ResourcesPage() {
     staleTime: 60 * 60 * 1000, // 1 hour
   });
 
+  // Build dynamic ItemList schema from live tier data
+  const tierListSchema = tierListData?.tiers
+    ? {
+        '@type': 'ItemList',
+        name: 'Deadlock Hero Meta Tier List',
+        description: 'Global hero tier rankings for Deadlock based on win rate and pick rate data.',
+        numberOfItems: Object.values(tierListData.tiers).reduce((sum, arr) => sum + (arr?.length || 0), 0),
+        itemListElement: Object.entries(tierListData.tiers).flatMap(([tier, heroes], tierIdx) =>
+          (heroes || []).map((hero, heroIdx) => ({
+            '@type': 'ListItem',
+            position: tierIdx * 20 + heroIdx + 1,
+            name: `${hero.heroName} (${tier}-Tier)`,
+            description: `${hero.heroName}: ${hero.winRate?.toFixed(1)}% win rate, ${hero.pickRate?.toFixed(1)}% pick rate`,
+          }))
+        ),
+      }
+    : null;
+
+  const resourcesSchema = [
+    organizationSchema(),
+    websiteSchema(),
+    breadcrumbSchema([
+      { name: 'Home', path: '/' },
+      { name: 'Meta Tier List', path: '/resources' },
+    ]),
+    speakableSchema('/resources'),
+    ...(tierListSchema ? [tierListSchema] : []),
+  ];
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <SEOHead
+        title="Deadlock Hero Tier List and Meta Rankings | AfterMatch"
+        description="Live Deadlock hero tier list ranked by win rate, pick rate, and global meta data. Find the best Deadlock heroes for ranked play with S through D tier rankings."
+        canonical={absoluteUrl('/resources')}
+        imageUrl="/images/bg-scene.png"
+        schema={resourcesSchema}
+      />
+
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-100 font-display uppercase tracking-wider mb-2">
           Global Meta Intelligence
@@ -92,6 +137,16 @@ export default function ResourcesPage() {
           {tierListData?.updatedAt && ` Last updated: ${new Date(tierListData.updatedAt).toLocaleString()}`}
         </p>
       </div>
+
+      {/* AEO answer block — provides entity-rich context for AI crawlers and voice assistants */}
+      <section aria-label="Deadlock tier list explanation" className="mb-10">
+        <p className="answer-block text-sm text-deadlock-text-dim leading-relaxed max-w-3xl">
+          The Deadlock AfterMatch meta tier list ranks every Deadlock hero from S-tier to D-tier using global win rate
+          and pick rate data. S-tier heroes are dominant picks with the highest win rates, while D-tier heroes are
+          currently struggling and may need specific team compositions to succeed. Tier rankings update automatically
+          as new match data becomes available.
+        </p>
+      </section>
 
       <StateHandler
         loading={isLoading}
