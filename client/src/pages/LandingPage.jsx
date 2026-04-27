@@ -463,7 +463,7 @@ export default function LandingPage() {
           <a href="https://github.com/Parmasanandgarlic/deadlockmatchtutor" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity" aria-label="Open Deadlock AfterMatch on GitHub"><Github /></a>
           <Link to="/about" className="text-[10px] font-bold uppercase tracking-widest hover:opacity-100 transition-opacity">About</Link>
           <Link to="/faq" className="text-[10px] font-bold uppercase tracking-widest hover:opacity-100 transition-opacity">FAQ</Link>
-
+          <Link to="/resources" className="text-[10px] font-bold uppercase tracking-widest hover:opacity-100 transition-opacity">Tier List</Link>
           <Link to="/privacy" className="text-[10px] font-bold uppercase tracking-widest hover:opacity-100 transition-opacity">Privacy Policy</Link>
         </div>
       </div>
