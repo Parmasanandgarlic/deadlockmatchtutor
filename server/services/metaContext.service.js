@@ -3,6 +3,7 @@ const redisClient = require('./redis.service');
 const { getHeroName } = require('../utils/heroes');
 const { getItemName } = require('../utils/items');
 const { HERO_ROLES } = require('../data/hero-roles');
+const { getHeroBenchmark, HERO_BENCHMARKS } = require('../data/hero-benchmarks');
 const { getGlobalHeroStats } = require('./deadlockApi.service');
 
 /**
@@ -205,11 +206,18 @@ async function getMetaContext({ heroId, heroStats, matchHistory, rankPredict }) 
   // Build item intelligence from player's own match history
   const itemBuilds = deriveItemBuildStats(matchHistory, heroId);
 
-  // Hero win rate from the player's own stats
+  // Hero win rate from the player's own stats, falling back to community benchmarks
   const heroWinRate = heroStats?.win_rate ?? heroStats?.winrate ?? null;
-  const normalizedWinRate = heroWinRate != null
+  const communityBenchmark = getHeroBenchmark(heroId);
+  let normalizedWinRate = heroWinRate != null
     ? (heroWinRate > 0 && heroWinRate <= 1 ? heroWinRate * 100 : heroWinRate)
     : null;
+
+  // Fallback to community benchmark win rate if API didn't provide one
+  if (normalizedWinRate == null && communityBenchmark) {
+    normalizedWinRate = communityBenchmark.winRate;
+    logger.debug(`Using community benchmark win rate for hero ${heroId}: ${normalizedWinRate}%`);
+  }
 
   // Determine tier from win rate
   let tier = 'B';
@@ -231,6 +239,9 @@ async function getMetaContext({ heroId, heroStats, matchHistory, rankPredict }) 
     tierLabel: TIER_THRESHOLDS[tier]?.label || 'Unknown',
     tierDescription: TIER_THRESHOLDS[tier]?.description || '',
     winRate: normalizedWinRate,
+    communityAvgKda: communityBenchmark?.avgKda || null,
+    communityAvgNwm: communityBenchmark?.avgNwm || null,
+    communityPickRate: communityBenchmark?.pickRate || null,
     rankBracket: rankBadge,
     itemBuilds,
     tierList, // null if not cached — populated by background refresh

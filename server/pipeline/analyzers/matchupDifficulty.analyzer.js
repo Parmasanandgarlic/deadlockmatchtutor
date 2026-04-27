@@ -22,17 +22,68 @@ const { getRankInfo } = require('../../utils/ranks');
  *   }
  */
 
-// Hero archetypes (role keys from server/data/hero-roles.js, but we also
-// include a fallback set here to avoid ESM/CJS interop headaches at runtime).
+// Hero archetypes (verified against assets.deadlock-api.com/v2/heroes, Apr 2026)
+// Maps hero_type from API to archetype roles used in counter analysis.
 const HERO_ARCHETYPE = {
-  1: 'brawler', 2: 'carry', 3: 'carry', 4: 'brawler', 5: 'support',
-  6: 'tank', 7: 'carry', 8: 'support', 9: 'support', 10: 'support',
-  11: 'carry', 12: 'carry', 13: 'support', 14: 'brawler', 15: 'carry',
-  16: 'tank', 17: 'brawler', 18: 'support', 19: 'brawler', 20: 'support',
-  21: 'carry', 22: 'brawler', 23: 'brawler', 24: 'brawler', 25: 'carry',
-  26: 'carry', 27: 'support', 28: 'brawler', 29: 'carry', 30: 'carry',
-  31: 'brawler', 32: 'carry', 33: 'brawler', 34: 'brawler', 35: 'support',
-  36: 'support', 37: 'support', 38: 'carry',
+  1: 'brawler',   // Infernus
+  2: 'carry',     // Seven
+  3: 'carry',     // Vindicta
+  4: 'brawler',   // Lady Geist
+  6: 'tank',      // Abrams
+  7: 'carry',     // Wraith
+  8: 'support',   // McGinnis
+  10: 'brawler',  // Paradox
+  11: 'support',  // Dynamo
+  12: 'support',  // Kelvin
+  13: 'carry',    // Haze
+  14: 'carry',    // Holliday
+  15: 'support',  // Bebop
+  16: 'support',  // Calico
+  17: 'carry',    // Grey Talon
+  18: 'tank',     // Mo & Krill
+  19: 'brawler',  // Shiv
+  20: 'support',  // Ivy
+  21: 'carry',    // Kali
+  25: 'brawler',  // Warden
+  27: 'brawler',  // Yamato
+  31: 'brawler',  // Lash
+  35: 'support',  // Viscous
+  38: 'carry',    // Gunslinger
+  39: 'brawler',  // The Boss
+  47: 'brawler',  // Tokamak
+  48: 'tank',     // Wrecker
+  49: 'tank',     // Rutger
+  50: 'brawler',  // Pocket
+  51: 'brawler',  // Thumper
+  52: 'carry',    // Mirage
+  53: 'brawler',  // Fathom
+  54: 'support',  // Cadence
+  56: 'brawler',  // Bomber
+  58: 'carry',    // Vyper
+  59: 'brawler',  // Vandal
+  60: 'carry',    // Sinclair
+  61: 'support',  // Trapper
+  62: 'carry',    // Raven
+  63: 'support',  // Mina
+  64: 'brawler',  // Drifter
+  65: 'brawler',  // Venator
+  66: 'brawler',  // Victor
+  67: 'support',  // Paige
+  68: 'support',  // Boho
+  69: 'support',  // The Doorman
+  70: 'brawler',  // Skyrunner
+  71: 'support',  // Swan
+  72: 'brawler',  // Billy
+  73: 'support',  // Druid
+  74: 'brawler',  // Graf
+  75: 'support',  // Fortuna
+  76: 'carry',    // Graves
+  77: 'brawler',  // Apollo
+  78: 'carry',    // Airheart
+  79: 'support',  // Rem
+  80: 'brawler',  // Silver
+  81: 'support',  // Celeste
+  82: 'support',  // Opera
 };
 
 // Counter matrix: which archetype is strong against which.
@@ -45,12 +96,13 @@ const COUNTER_MATRIX = {
 };
 
 // Known specific hero counters (heroId → heroIds that counter them hard)
+// IDs verified against live API (Apr 2026)
 const SPECIFIC_COUNTERS = {
-  3:  [6, 16, 21],   // Vindicta countered by tanks that can dive
-  11: [6, 21],       // Haze countered by tanks with silence / burst
-  15: [6, 16],       // Grey Talon countered by tanks that close gap
-  7:  [13, 8],       // Wraith countered by CC supports
-  2:  [13, 6],       // Seven countered by silence / tank
+  3:  [6, 18],    // Vindicta countered by dive tanks (Abrams, Mo & Krill)
+  13: [6, 18],    // Haze countered by tanks with silence / burst
+  17: [6, 18],    // Grey Talon countered by tanks that close gap
+  7:  [15, 11],   // Wraith countered by CC supports (Bebop, Dynamo)
+  2:  [15, 6],    // Seven countered by silence / tank (Bebop, Abrams)
 };
 
 function getArchetype(heroId) {
