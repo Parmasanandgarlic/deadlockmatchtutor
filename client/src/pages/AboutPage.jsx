@@ -195,9 +195,7 @@ export default function AboutPage() {
           <Link to="/faq" className="btn-secondary text-xs">
             Read FAQ
           </Link>
-          <Link to="/updates" className="btn-secondary text-xs">
-            View Updates
-          </Link>
+
         </div>
       </section>
     </div>

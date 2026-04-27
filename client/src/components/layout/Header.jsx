@@ -30,10 +30,7 @@ export default function Header() {
             FAQ
             <span className="absolute -bottom-1 left-0 w-0 h-px bg-deadlock-amber group-hover/nav:w-full transition-all duration-300" />
           </Link>
-          <Link to="/updates" className="hidden md:inline-flex items-center gap-1.5 hover:text-deadlock-accent transition-colors duration-300 relative group/nav">
-            Updates
-            <span className="absolute -bottom-1 left-0 w-0 h-px bg-deadlock-amber group-hover/nav:w-full transition-all duration-300" />
-          </Link>
+
           <Link to="/privacy" className="hidden sm:inline-flex items-center gap-1.5 hover:text-deadlock-accent transition-colors duration-300 relative group/nav">
             <Shield className="w-4 h-4" /> Privacy
             <span className="absolute -bottom-1 left-0 w-0 h-px bg-deadlock-amber group-hover/nav:w-full transition-all duration-300" />

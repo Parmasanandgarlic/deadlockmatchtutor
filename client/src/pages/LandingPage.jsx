@@ -241,13 +241,14 @@ export default function LandingPage() {
               <button
                 type="submit"
                 disabled={loading || !input.trim()}
-                className="bg-deadlock-amber hover:bg-deadlock-amber/90 text-black font-bold uppercase tracking-widest px-8 h-14 flex items-center justify-center disabled:opacity-50 transition-colors border border-deadlock-amber"
+                className="relative bg-deadlock-bg border border-deadlock-amber/40 text-deadlock-amber font-bold uppercase tracking-widest px-10 h-14 flex items-center justify-center disabled:opacity-30 transition-all duration-300 hover:bg-deadlock-amber/10 hover:border-deadlock-amber hover:shadow-[0_0_20px_rgba(255,173,28,0.15)] group/btn"
               >
                 {loading ? (
-                  <div className="animate-spin w-4 h-4 border-2 border-black/30 border-t-black" />
+                  <div className="animate-spin w-4 h-4 border-2 border-deadlock-amber/30 border-t-deadlock-amber rounded-full" />
                 ) : (
-                  <div className="flex items-center gap-2 whitespace-nowrap">
-                    Analyze <ArrowRight className="w-4 h-4" />
+                  <div className="flex items-center gap-2.5 whitespace-nowrap">
+                    <span className="text-[11px]">Analyze</span>
+                    <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" />
                   </div>
                 )}
               </button>
@@ -462,7 +463,7 @@ export default function LandingPage() {
           <a href="https://github.com/Parmasanandgarlic/deadlockmatchtutor" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity" aria-label="Open Deadlock AfterMatch on GitHub"><Github /></a>
           <Link to="/about" className="text-[10px] font-bold uppercase tracking-widest hover:opacity-100 transition-opacity">About</Link>
           <Link to="/faq" className="text-[10px] font-bold uppercase tracking-widest hover:opacity-100 transition-opacity">FAQ</Link>
-          <Link to="/updates" className="text-[10px] font-bold uppercase tracking-widest hover:opacity-100 transition-opacity">Updates</Link>
+
           <Link to="/privacy" className="text-[10px] font-bold uppercase tracking-widest hover:opacity-100 transition-opacity">Privacy Policy</Link>
         </div>
       </div>

@@ -88,7 +88,7 @@ export default function Footer() {
               </span>
               <Link to="/about" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors">About</Link>
               <Link to="/faq" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors">FAQ</Link>
-              <Link to="/updates" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors">Updates</Link>
+
               <Link to="/privacy" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors">Privacy</Link>
               <a href="https://github.com/Parmasanandgarlic/deadlockmatchtutor" target="_blank" rel="noopener noreferrer" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors flex items-center gap-2">
                 <Github className="w-4 h-4" /> GitHub

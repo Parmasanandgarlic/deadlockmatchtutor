@@ -267,9 +267,27 @@ async function fetchGlobalTierList() {
   const cached = await redisClient.get(CACHE_KEYS.heroTierList());
   if (cached) return cached;
 
-  const allHeroStats = await getGlobalHeroStats();
-  const tierList = await cacheTierList(allHeroStats);
-  return tierList;
+  try {
+    const allHeroStats = await getGlobalHeroStats();
+    if (allHeroStats && allHeroStats.length > 0) {
+      const tierList = await cacheTierList(allHeroStats);
+      return tierList;
+    }
+  } catch (err) {
+    logger.warn(`Global hero stats API failed, falling back to community benchmarks: ${err.message}`);
+  }
+
+  // Fallback: build tier list from the manually-verified HERO_BENCHMARKS data
+  logger.info('Building tier list from static HERO_BENCHMARKS fallback');
+  const benchmarkStats = Object.entries(HERO_BENCHMARKS).map(([heroId, bm]) => ({
+    hero_id: Number(heroId),
+    wins: Math.round(bm.winRate * 10),
+    matches: 1000,
+    avg_kda: bm.avgKda,
+    avg_net_worth: bm.avgNwm,
+    pick_rate: bm.pickRate,
+  }));
+  return buildHeroTierList(benchmarkStats);
 }
 
 module.exports = {
