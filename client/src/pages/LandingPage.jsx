@@ -163,42 +163,13 @@ export default function LandingPage() {
             </span>
           </h1>
 
-          <p className="max-w-xl mx-auto text-deadlock-text-dim text-lg leading-relaxed mb-8">
+          <p className="max-w-xl mx-auto text-deadlock-text-dim text-lg leading-relaxed mb-10">
             The high-precision analytics engine for Deadlock. 
             Identify macro-mistakes, optimize your economy, and dominate every skirmish with data-driven insights.
           </p>
 
-          <section aria-label="Deadlock match analyzer quick answers" className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <p className="answer-block text-sm text-deadlock-text-dim leading-relaxed border border-deadlock-border bg-black/20 p-4">
-              Deadlock AfterMatch is a free match analyzer for Deadlock players. Enter a Steam profile or Steam ID to
-              review recent matches, generate performance grades, and see concise coaching notes for economy, combat,
-              itemization, objectives, and benchmarks.
-            </p>
-            <p className="answer-block text-sm text-deadlock-text-dim leading-relaxed border border-deadlock-border bg-black/20 p-4">
-              AfterMatch grades a Deadlock match by comparing core performance signals against useful baselines. The
-              report highlights farming pace, fight impact, item timing, objective pressure, and benchmark gaps so the
-              next improvement target is easy to find.
-            </p>
-            <p className="answer-block text-sm text-deadlock-text-dim leading-relaxed border border-deadlock-border bg-black/20 p-4">
-              Players use AfterMatch by searching a public Steam identifier, choosing a recent match, and opening a
-              report. The tool does not require a site login, and shared reports can be copied from the dashboard.
-            </p>
-          </section>
-
-          <div className="flex flex-wrap items-center justify-center gap-6">
-            <div className="flex items-center gap-3 text-sm font-bold uppercase tracking-widest text-deadlock-blue">
-              <span className="w-8 h-px bg-deadlock-blue" />
-              Analyze
-            </div>
-            <div className="flex items-center gap-3 text-sm font-bold uppercase tracking-widest text-deadlock-amber">
-              Improve
-              <span className="w-8 h-px bg-deadlock-amber" />
-            </div>
-          </div>
-        </div>
-
-        {/* Search Engine */}
-        <div className="w-full max-w-xl mb-24">
+        {/* Search Engine — Primary CTA */}
+        <div className="w-full max-w-2xl mb-12">
           <form onSubmit={handleSubmit} className="relative group">
             <div className="flex shadow-2xl">
               <div className="relative flex-1">
@@ -333,6 +304,35 @@ export default function LandingPage() {
               </div>
             </div>
           )}
+        </div>
+
+          <section aria-label="Deadlock match analyzer quick answers" className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <p className="answer-block text-sm text-deadlock-text-dim leading-relaxed border border-deadlock-border bg-black/20 p-4">
+              Deadlock AfterMatch is a free match analyzer for Deadlock players. Enter a Steam profile or Steam ID to
+              review recent matches, generate performance grades, and see concise coaching notes for economy, combat,
+              itemization, objectives, and benchmarks.
+            </p>
+            <p className="answer-block text-sm text-deadlock-text-dim leading-relaxed border border-deadlock-border bg-black/20 p-4">
+              AfterMatch grades a Deadlock match by comparing core performance signals against useful baselines. The
+              report highlights farming pace, fight impact, item timing, objective pressure, and benchmark gaps so the
+              next improvement target is easy to find.
+            </p>
+            <p className="answer-block text-sm text-deadlock-text-dim leading-relaxed border border-deadlock-border bg-black/20 p-4">
+              Players use AfterMatch by searching a public Steam identifier, choosing a recent match, and opening a
+              report. The tool does not require a site login, and shared reports can be copied from the dashboard.
+            </p>
+          </section>
+
+          <div className="flex flex-wrap items-center justify-center gap-6">
+            <div className="flex items-center gap-3 text-sm font-bold uppercase tracking-widest text-deadlock-blue">
+              <span className="w-8 h-px bg-deadlock-blue" />
+              Analyze
+            </div>
+            <div className="flex items-center gap-3 text-sm font-bold uppercase tracking-widest text-deadlock-amber">
+              Improve
+              <span className="w-8 h-px bg-deadlock-amber" />
+            </div>
+          </div>
         </div>
 
         {/* AEO Quick Answer */}
