@@ -259,16 +259,44 @@ function normalizeHeroStats(raw) {
     return { winrate: 0, matchesPlayed: 0, avgKda: 0, avgSouls: 0, avgDamage: 0 };
   }
 
+  let matchesPlayed = Number(raw.matches_played ?? raw.matches ?? 0);
   let winrate = raw.win_rate ?? raw.winrate ?? 0;
-  // Normalize: anything ≤ 1 is a fraction → convert to percentage
+
+  // Fallback: If win_rate isn't explicitly provided, compute it from wins and matches
+  if (winrate === 0 && matchesPlayed > 0 && (raw.wins || raw.matches_won)) {
+    const wins = Number(raw.wins ?? raw.matches_won ?? 0);
+    winrate = (wins / matchesPlayed);
+  }
+
+  // Normalize: anything <= 1 is a fraction -> convert to percentage
   if (winrate > 0 && winrate <= 1) winrate = winrate * 100;
+
+  // KDA fallback using totals
+  let avgKda = Number(raw.avg_kda ?? raw.kda ?? 0);
+  if (avgKda === 0 && raw.total_kills != null && raw.total_deaths != null && raw.total_assists != null) {
+      const deaths = Number(raw.total_deaths);
+      avgKda = deaths > 0 ? (Number(raw.total_kills) + Number(raw.total_assists)) / deaths : (Number(raw.total_kills) + Number(raw.total_assists));
+  }
+
+  // Souls fallback using totals
+  let avgSouls = Number(raw.avg_souls ?? raw.avg_net_worth ?? 0);
+  if (avgSouls === 0 && raw.total_net_worth != null && matchesPlayed > 0) {
+      avgSouls = Number(raw.total_net_worth) / matchesPlayed;
+  }
+
+  // Damage fallback using totals
+  let avgDamage = Number(raw.avg_damage ?? raw.avg_hero_damage ?? 0);
+  if (avgDamage === 0 && (raw.total_player_damage != null || raw.total_damage != null) && matchesPlayed > 0) {
+      const totalDamage = Number(raw.total_player_damage ?? raw.total_damage);
+      avgDamage = totalDamage / matchesPlayed;
+  }
 
   return {
     winrate,
-    matchesPlayed: Number(raw.matches_played ?? raw.matches ?? 0),
-    avgKda: Number(raw.avg_kda ?? raw.kda ?? 0),
-    avgSouls: Number(raw.avg_souls ?? raw.avg_net_worth ?? 0),
-    avgDamage: Number(raw.avg_damage ?? raw.avg_hero_damage ?? 0),
+    matchesPlayed,
+    avgKda,
+    avgSouls,
+    avgDamage,
   };
 }
 

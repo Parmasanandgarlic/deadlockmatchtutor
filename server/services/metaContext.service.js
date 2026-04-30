@@ -51,6 +51,13 @@ function buildHeroTierList(allHeroStats) {
 
   const heroMap = {};
 
+  // Calculate total matches across all heroes to compute pick rate
+  let totalHeroPicks = 0;
+  for (const stat of allHeroStats) {
+    totalHeroPicks += Number(stat.matches ?? stat.matches_played ?? 0);
+  }
+  const totalMatches = totalHeroPicks > 0 ? totalHeroPicks / 12 : 0;
+
   for (const stat of allHeroStats) {
     const heroId = stat.hero_id ?? stat.heroId;
     if (heroId == null) continue;
@@ -58,9 +65,23 @@ function buildHeroTierList(allHeroStats) {
     const wins = Number(stat.wins ?? stat.matches_won ?? 0);
     const matches = Number(stat.matches ?? stat.matches_played ?? 0);
     const winRate = matches > 0 ? (wins / matches) * 100 : 50;
-    const avgKda = Number(stat.avg_kda ?? stat.kda ?? 0);
-    const avgSouls = Number(stat.avg_souls ?? stat.avg_net_worth ?? 0);
-    const pickRate = Number(stat.pick_rate ?? 0);
+
+    // Handle both the raw analytics format (total_*) and the pre-computed benchmark format (avg_*)
+    let avgKda = Number(stat.avg_kda ?? stat.kda ?? 0);
+    if (avgKda === 0 && stat.total_kills != null && stat.total_deaths != null && stat.total_assists != null) {
+      const deaths = Number(stat.total_deaths);
+      avgKda = deaths > 0 ? (Number(stat.total_kills) + Number(stat.total_assists)) / deaths : (Number(stat.total_kills) + Number(stat.total_assists));
+    }
+
+    let avgSouls = Number(stat.avg_souls ?? stat.avg_net_worth ?? 0);
+    if (avgSouls === 0 && stat.total_net_worth != null && matches > 0) {
+      avgSouls = Number(stat.total_net_worth) / matches;
+    }
+
+    let pickRate = Number(stat.pick_rate ?? 0);
+    if (pickRate === 0 && totalMatches > 0 && matches > 0) {
+      pickRate = (matches / totalMatches) * 100;
+    }
 
     heroMap[heroId] = {
       heroId,
