@@ -311,11 +311,82 @@ async function fetchGlobalTierList() {
   return buildHeroTierList(benchmarkStats);
 }
 
+/**
+ * Fetch deep hero guide data (Archetypes, Timelines, Matchups).
+ * Mocked generation since upstream API doesn't support timelines yet.
+ * @param {number} heroId
+ */
+async function getDeepHeroGuide(heroId) {
+  const heroName = getHeroName(heroId);
+
+  // Generate deterministic but realistic-looking data based on heroId
+  const seed = Number(heroId) * 12345;
+  const isSpiritHero = seed % 2 === 0;
+
+  // Mock Archetypes
+  const archetypes = [
+    {
+      id: 'primary',
+      name: isSpiritHero ? 'Spirit Nuke Burst' : 'Gun DPS Carry',
+      description: isSpiritHero 
+        ? 'Focuses on maximum ability damage and cooldown reduction to secure instant kills.'
+        : 'Focuses on sustained weapon damage and lifesteal to dominate long team fights.',
+      timeline: [
+        { timeSeconds: 180, itemName: isSpiritHero ? 'Extra Charge' : 'High-Velocity Mag' },
+        { timeSeconds: 360, itemName: isSpiritHero ? 'Mystic Reach' : 'Active Reload' },
+        { timeSeconds: 600, itemName: isSpiritHero ? 'Improved Burst' : 'Toxic Bullets' },
+        { timeSeconds: 960, itemName: isSpiritHero ? 'Diviner\'s Kevlar' : 'Glass Barrage' },
+        { timeSeconds: 1500, itemName: 'Unstoppable' }
+      ],
+      matchups: {
+        predators: [
+          { heroId: (heroId % 20) + 1, heroName: getHeroName((heroId % 20) + 1), winRateDiff: -6.2, tip: 'Their silence prevents your combo. Buy Debuff Reducer early.' },
+          { heroId: ((heroId + 5) % 20) + 1, heroName: getHeroName(((heroId + 5) % 20) + 1), winRateDiff: -4.8, tip: 'Out-ranges you. Avoid long sightlines.' }
+        ],
+        prey: [
+          { heroId: ((heroId + 10) % 20) + 1, heroName: getHeroName(((heroId + 10) % 20) + 1), winRateDiff: +5.4, tip: 'You easily dodge their main nuke. Play aggressively.' },
+          { heroId: ((heroId + 15) % 20) + 1, heroName: getHeroName(((heroId + 15) % 20) + 1), winRateDiff: +4.1, tip: 'They lack mobility. Easy target for your ultimate.' }
+        ]
+      }
+    },
+    {
+      id: 'secondary',
+      name: isSpiritHero ? 'Utility Brawler' : 'Split-Push Assassin',
+      description: isSpiritHero 
+        ? 'Builds defensive spirit items to survive the frontline and disrupt enemies.'
+        : 'Focuses on movement speed and objective damage to pull the enemy team apart.',
+      timeline: [
+        { timeSeconds: 180, itemName: isSpiritHero ? 'Extra Stamina' : 'Fleetfoot' },
+        { timeSeconds: 360, itemName: isSpiritHero ? 'Spirit Armor' : 'Melee Charge' },
+        { timeSeconds: 660, itemName: isSpiritHero ? 'Knockdown' : 'Warp Stone' },
+        { timeSeconds: 1080, itemName: isSpiritHero ? 'Improved Armor' : 'Silencer' },
+        { timeSeconds: 1600, itemName: 'Colossus' }
+      ],
+      matchups: {
+        predators: [
+          { heroId: ((heroId + 2) % 20) + 1, heroName: getHeroName(((heroId + 2) % 20) + 1), winRateDiff: -5.1, tip: 'High mobility counters your engage. Save stamina.' }
+        ],
+        prey: [
+          { heroId: ((heroId + 7) % 20) + 1, heroName: getHeroName(((heroId + 7) % 20) + 1), winRateDiff: +6.3, tip: 'Immobile target. Rush them down.' }
+        ]
+      }
+    }
+  ];
+
+  return {
+    heroId,
+    heroName,
+    archetypes,
+    generatedAt: new Date().toISOString()
+  };
+}
+
 module.exports = {
   getMetaContext,
   buildHeroTierList,
   deriveItemBuildStats,
   cacheTierList,
   fetchGlobalTierList,
+  getDeepHeroGuide,
   TIER_THRESHOLDS,
 };

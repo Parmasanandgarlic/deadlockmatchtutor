@@ -1,5 +1,5 @@
 const { getHeroes, getItems, getRanks } = require('../services/deadlockApi.service');
-const { fetchGlobalTierList } = require('../services/metaContext.service');
+const { fetchGlobalTierList, getDeepHeroGuide } = require('../services/metaContext.service');
 const logger = require('../utils/logger');
 
 /**
@@ -71,4 +71,23 @@ async function getTierListHandler(req, res, next) {
   }
 }
 
-module.exports = { getHeroesHandler, getItemsHandler, getRanksHandler, getTierListHandler };
+/**
+ * GET /api/meta/heroes/:id/guide
+ * Fetch deep hero guide (archetypes, timelines, radars)
+ */
+async function getHeroGuideHandler(req, res, next) {
+  try {
+    const heroId = Number(req.params.id);
+    if (!heroId || isNaN(heroId)) {
+      return res.status(400).json({ error: 'Invalid hero ID' });
+    }
+    const guide = await getDeepHeroGuide(heroId);
+    res.setHeader('Cache-Control', META_CACHE_HEADER);
+    res.json(guide);
+  } catch (err) {
+    logger.error(`Failed to serve hero guide for ${req.params.id}: ${err.message}`);
+    res.status(500).json({ error: 'Failed to fetch hero guide' });
+  }
+}
+
+module.exports = { getHeroesHandler, getItemsHandler, getRanksHandler, getTierListHandler, getHeroGuideHandler };
