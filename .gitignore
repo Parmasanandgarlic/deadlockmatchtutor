@@ -60,3 +60,4 @@ htmlcov/
 .coverage.*
 .nyc_output
 ```
+.vercel
