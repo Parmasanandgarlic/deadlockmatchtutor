@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Loader2, AlertCircle, Target, TrendingUp, TrendingDown, Clock } from 'lucide-react';
-import { getAssetUrl } from '../utils/formatters';
+import { getHeroImage } from '../utils/formatters';
 
 export default function HeroGuidePage() {
   const { heroId } = useParams();
@@ -62,7 +62,7 @@ export default function HeroGuidePage() {
           </Link>
           <div className="flex items-center gap-6">
             <img 
-              src={getAssetUrl('heroes', heroId, 'large_webp')} 
+              src={getHeroImage(guideData.heroName, 'card')} 
               alt={guideData.heroName}
               className="w-24 h-24 object-cover border-2 border-deadlock-amber/50 bg-deadlock-surface shadow-[0_0_20px_rgba(212,175,55,0.2)]"
               onError={(e) => { e.target.src = '/hero-fallback.webp'; }}
@@ -161,7 +161,7 @@ export default function HeroGuidePage() {
                 {activeArchetype.matchups?.predators.map((pred, i) => (
                   <div key={i} className="flex gap-4 p-4 bg-deadlock-red/5 border border-deadlock-red/10">
                     <img 
-                      src={getAssetUrl('heroes', pred.heroId, 'small_webp')} 
+                      src={getHeroImage(pred.heroName, 'small')} 
                       alt={pred.heroName}
                       className="w-16 h-16 object-cover border border-deadlock-red/30"
                       onError={(e) => { e.target.src = '/hero-fallback.webp'; }}
@@ -188,7 +188,7 @@ export default function HeroGuidePage() {
                 {activeArchetype.matchups?.prey.map((prey, i) => (
                   <div key={i} className="flex gap-4 p-4 bg-deadlock-green/5 border border-deadlock-green/10">
                     <img 
-                      src={getAssetUrl('heroes', prey.heroId, 'small_webp')} 
+                      src={getHeroImage(prey.heroName, 'small')} 
                       alt={prey.heroName}
                       className="w-16 h-16 object-cover border border-deadlock-green/30"
                       onError={(e) => { e.target.src = '/hero-fallback.webp'; }}
