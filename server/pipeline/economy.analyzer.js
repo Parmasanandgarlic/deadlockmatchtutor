@@ -112,6 +112,12 @@ function buildSpmTimeline(playerTicks, steamId, duration) {
     });
   }
 
+  // If the last bucket represents less than 30 seconds of gameplay, its SPM calculation
+  // will be artificially skewed. Drop it to keep the timeline clean.
+  if (duration % bucketSizeSeconds > 0 && duration % bucketSizeSeconds < 30) {
+    timeline.pop();
+  }
+
   return timeline;
 }
 

@@ -192,6 +192,9 @@ async function getMatchInfo(matchId) {
     const match = Array.isArray(data) ? data[0] : data;
     if (match && typeof match === 'object' && Object.keys(match).length > 0) {
       logger.debug(`Fetched bulk match info for ${matchId}`);
+      if (!match.players || !Array.isArray(match.players)) {
+        throw new Error('Malformed bulk metadata payload: missing players array');
+      }
       if (cacheKey) {
         await redisClient.set(cacheKey, match, 2592000).catch(() => {});
       }
@@ -209,6 +212,9 @@ async function getMatchInfo(matchId) {
     const { data } = await apiBreaker.call(() => matchesApi.metadata({ matchId: Number(matchId) }));
     if (data && Object.keys(data).length > 0) {
       logger.debug(`Fetched fallback match info for ${matchId}`);
+      if (!data.players || !Array.isArray(data.players)) {
+        throw new Error('Malformed metadata payload: missing players array');
+      }
       if (cacheKey) {
         await redisClient.set(cacheKey, data, 2592000).catch(() => {});
       }

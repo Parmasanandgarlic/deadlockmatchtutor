@@ -13,7 +13,7 @@ const logger = require('../utils/logger');
  *   - spellRotationEfficiency: Ability sequencing score (placeholder)
  *   - score                  : 0–100 module score
  */
-function analyzeCombat(parsedData, playerSteamId) {
+function analyzeCombat(parsedData, playerSteamId, actualSpm = 80) {
   logger.debug(`Running combat analysis for ${playerSteamId}`);
 
   const { combatLog, playerTicks, matchMeta } = parsedData;
@@ -33,7 +33,7 @@ function analyzeCombat(parsedData, playerSteamId) {
   const damageTakenBreakdown = analyzeDamageTaken(combatLog, teamfights, playerSteamId);
 
   // ---- Dead-Time Penalty ----
-  const deadTimePenalty = computeDeadTimePenalty(playerTicks, playerSteamId, duration);
+  const deadTimePenalty = computeDeadTimePenalty(playerTicks, playerSteamId, duration, actualSpm);
 
   // ---- Spell Rotation Efficiency (placeholder) ----
   const spellRotationEfficiency = {
@@ -166,7 +166,7 @@ function analyzeDamageTaken(combatLog, teamfights, steamId) {
 /**
  * Calculate total death time and estimated lost farm.
  */
-function computeDeadTimePenalty(playerTicks, steamId, duration) {
+function computeDeadTimePenalty(playerTicks, steamId, duration, actualSpm) {
   if (!playerTicks || playerTicks.length === 0) {
     return {
       totalDeadSeconds: 0,
@@ -193,9 +193,8 @@ function computeDeadTimePenalty(playerTicks, steamId, duration) {
     }
   }
 
-  // Rough SPM estimate for lost-farm calculation
-  const averageSpm = 80; // placeholder — should come from economy module
-  const lostFarmEstimate = Math.round((totalDeadSeconds / 60) * averageSpm);
+  // Use actual SPM for lost-farm calculation
+  const lostFarmEstimate = Math.round((totalDeadSeconds / 60) * actualSpm);
 
   return {
     totalDeadSeconds: Math.round(totalDeadSeconds),

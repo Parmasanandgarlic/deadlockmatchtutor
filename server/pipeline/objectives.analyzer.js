@@ -62,12 +62,13 @@ function computeObjectiveDamageShare(objectiveLog, steamId) {
       byObjective[objType] = { player: 0, team: 0 };
     }
 
-    teamDamage += event.damage || 0;
-    byObjective[objType].team += event.damage || 0;
+    const dmg = Math.max(0, event.damage || 0);
+    teamDamage += dmg;
+    byObjective[objType].team += dmg;
 
     if (idsMatch(event.steamId, steamId) || idsMatch(event.attacker, steamId)) {
-      playerDamage += event.damage || 0;
-      byObjective[objType].player += event.damage || 0;
+      playerDamage += dmg;
+      byObjective[objType].player += dmg;
     }
   }
 
