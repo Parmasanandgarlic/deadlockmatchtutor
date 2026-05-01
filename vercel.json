@@ -21,7 +21,8 @@
     { "source": "/matches/(.*)", "destination": "/index.html" },
     { "source": "/player/(.*)", "destination": "/index.html" },
     { "source": "/dashboard/(.*)", "destination": "/index.html" },
-    { "source": "/report/(.*)", "destination": "/index.html" }
+    { "source": "/report/(.*)", "destination": "/index.html" },
+    { "source": "/guide/(.*)", "destination": "/index.html" }
   ],
   "headers": [
     {
