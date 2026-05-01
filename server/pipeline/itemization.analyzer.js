@@ -159,13 +159,17 @@ function computeItemizationScore({ floatingSoulsEvents, coreItemTimings, activeI
   score -= floatRatio * 25;
 
   // Core item timing bonus (up to +20)
-  // Faster is better: if first 3k item is before 8 min, full bonus
+  // 3k Item: Elite <= 8 min (480s), Baseline = 12 min (720s)
   if (coreItemTimings.first3k) {
-    const timingRatio = Math.max(0, 1 - coreItemTimings.first3k.timeSeconds / 480);
+    const time = coreItemTimings.first3k.timeSeconds;
+    const timingRatio = Math.max(0, Math.min(1, (720 - time) / (720 - 480)));
     score += timingRatio * 10;
   }
+  
+  // 6k Item: Elite <= 16 min (960s), Baseline = 22 min (1320s)
   if (coreItemTimings.first6k) {
-    const timingRatio = Math.max(0, 1 - coreItemTimings.first6k.timeSeconds / 960);
+    const time = coreItemTimings.first6k.timeSeconds;
+    const timingRatio = Math.max(0, Math.min(1, (1320 - time) / (1320 - 960)));
     score += timingRatio * 10;
   }
 

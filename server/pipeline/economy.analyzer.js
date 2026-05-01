@@ -74,6 +74,7 @@ function buildSpmTimeline(playerTicks, steamId, duration) {
         minute: i,
         spm: 0,
         cumulativeSouls: 0,
+        deadSeconds: 0,
       });
     }
     return timeline;
@@ -95,11 +96,19 @@ function buildSpmTimeline(playerTicks, steamId, duration) {
     const earned = currentSouls - lastSouls;
     lastSouls = currentSouls;
 
+    // Calculate how many ticks the player was dead in this bucket.
+    const deadTicks = ticksInBucket.filter(t => t.isAlive === false).length;
+    let deadSeconds = 0;
+    if (ticksInBucket.length > 0) {
+      deadSeconds = (deadTicks / ticksInBucket.length) * bucketSizeSeconds;
+    }
+
     timeline.push({
       timeSeconds: i * bucketSizeSeconds,
       minute: i,
       spm: earned,
       cumulativeSouls: currentSouls,
+      deadSeconds,
     });
   }
 
@@ -114,7 +123,11 @@ function detectStagnation(timeline, threshold) {
   let windowStart = null;
 
   for (const point of timeline) {
-    if (point.spm < threshold) {
+    // If the player was dead for a significant portion of this minute (>20s),
+    // it's a death penalty, not a farming stagnation.
+    const isEffectivelyDead = point.deadSeconds > 20;
+
+    if (point.spm < threshold && !isEffectivelyDead) {
       if (windowStart === null) windowStart = point.timeSeconds;
     } else {
       if (windowStart !== null) {

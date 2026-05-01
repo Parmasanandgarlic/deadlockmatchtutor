@@ -48,6 +48,7 @@ function analyzeCombat(parsedData, playerSteamId) {
     damageTakenBreakdown,
     deadTimePenalty,
     spellRotationEfficiency,
+    duration,
   });
 
   return {
@@ -206,7 +207,7 @@ function computeDeadTimePenalty(playerTicks, steamId, duration) {
 /**
  * Compute 0–100 combat score.
  */
-function computeCombatScore({ teamfightParticipation, damageTakenBreakdown, deadTimePenalty, spellRotationEfficiency }) {
+function computeCombatScore({ teamfightParticipation, damageTakenBreakdown, deadTimePenalty, spellRotationEfficiency, duration }) {
   let score = 50;
 
   // Participation bonus (up to +25)
@@ -217,7 +218,9 @@ function computeCombatScore({ teamfightParticipation, damageTakenBreakdown, dead
   score += (1 - pokeRatio) * 10;
 
   // Dead-time penalty (up to -20)
-  const deadRatio = Math.min(deadTimePenalty.totalDeadSeconds / 300, 1);
+  // Dynamic threshold: Being dead for 12% of the match is the max penalty threshold.
+  const expectedMaxDeadSeconds = Math.max(duration * 0.12, 1);
+  const deadRatio = Math.min(deadTimePenalty.totalDeadSeconds / expectedMaxDeadSeconds, 1);
   score -= deadRatio * 20;
 
   // Spell rotation (up to +10, placeholder)
