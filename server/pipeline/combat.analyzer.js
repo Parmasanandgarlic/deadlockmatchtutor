@@ -112,8 +112,9 @@ function computeTeamfightParticipation(combatLog, teamfights, steamId) {
   const kills = combatLog?.kills || [];
 
   // Total team kills (kills by anyone on the player's team)
-  // Without team data, approximate by counting all kills
-  const totalTeamKills = kills.length;
+  // Without team data, approximate by dividing total match kills by 2
+  // Avoids artificially halving the player's true participation score
+  const totalTeamKills = Math.max(1, Math.round(kills.length / 2));
 
   // Player's involvement: kills + assists
   const playerKills = kills.filter((k) => idsMatch(k.attacker, steamId)).length;

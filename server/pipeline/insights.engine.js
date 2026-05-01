@@ -200,7 +200,8 @@ function analyzeMapMovement(heroPerf, meta, insights) {
   const durationMin = duration > 0 ? duration / 60 : 0;
 
   if (deaths > 8 && soulsPerMin > 0 && soulsPerMin < 450) {
-    const deathCost = deaths * 18; // ~18 seconds respawn avg
+    const avgRespawnSeconds = 10 + (durationMin * 1.5);
+    const deathCost = Math.round(deaths * avgRespawnSeconds);
     insights.push({
       severity: 'critical',
       module: 'combat',
@@ -312,6 +313,11 @@ function analyzeDecisionQuality(heroPerf, combat, benchmarks, meta, insights) {
 
   if (won === false) {
     if (soulsPerMin < 400 && combat.deaths > 8) {
+      const durationMin = (meta?.duration || 0) > 0 ? meta.duration / 60 : 20;
+      const avgRespawnSeconds = 10 + (durationMin * 1.5);
+      const lostSoulsPerDeath = Math.round((soulsPerMin / 60) * avgRespawnSeconds);
+      const totalLostSouls = lostSoulsPerDeath * combat.deaths;
+
       insights.push({
         severity: 'critical',
         module: 'heroPerformance',
@@ -319,10 +325,10 @@ function analyzeDecisionQuality(heroPerf, combat, benchmarks, meta, insights) {
         timestamp: 'all',
         title: 'Compound Errors: Farm + Deaths',
         detail: `This loss came from two compounding issues: low farm (${soulsPerMin} souls/min) and ${combat.deaths} deaths. ` +
-          `Each death cost ~${Math.round(soulsPerMin * 0.3)} souls in lost farm time, creating an insurmountable ${Math.round(combat.deaths * soulsPerMin * 0.3)} soul deficit.`,
+          `Each death cost ~${lostSoulsPerDeath} souls in lost farm time, creating an insurmountable ${totalLostSouls} soul deficit.`,
         action: `Next game: Pick ONE focus. Either commit to safe farming (accept fewer fights) OR aggressive play (accept some deaths). Half-measures cause losses like this.`,
         impact: 30,
-        evidence: { type: 'compound', data: { soulsPerMin, deaths: combat.deaths, estimatedDeficit: Math.round(combat.deaths * soulsPerMin * 0.3) } },
+        evidence: { type: 'compound', data: { soulsPerMin, deaths: combat.deaths, estimatedDeficit: totalLostSouls } },
       });
     } else if (soulsPerMin >= 500 && combat.deaths <= 6) {
       insights.push({
@@ -647,6 +653,16 @@ function synthesizeWinCondition(heroPerf, combat, itemization, benchmarks, meta,
         action: `Watch the replay at 2x speed focusing on each death. Were you fighting without vision? Without team?`,
         impact: 22,
         evidence: { type: 'loss_condition', data: { factor: 'execution', kda, careerKda: benchmarks.benchmarkKda } },
+      });
+    } else {
+      insights.push({
+        severity: 'info', module: 'heroPerformance', category: 'winCondition',
+        timestamp: 'all', tier: 'context',
+        title: 'Loss Condition: Strategic Outplay',
+        detail: `Your individual metrics were relatively stable. This game was likely decided by macro-strategy, a team composition mismatch, or a single late-game fight.`,
+        action: `In close games with stable stats, execution in the final 5 minutes dictates the winner. Review the last teamfight.`,
+        impact: 10,
+        evidence: { type: 'loss_condition', data: { factor: 'strategic_outplay' } },
       });
     }
   }

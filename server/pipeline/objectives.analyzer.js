@@ -100,6 +100,12 @@ function checkMidBossPresence(objectiveLog, playerTicks, steamId) {
 
   const playerData = (playerTicks || []).filter((t) => idsMatch(t.steamId, steamId));
 
+  if (playerData.length === 0) {
+    // Tick data missing or parser failed, skip presence check entirely
+    // so we don't penalize the player for a missing coordinate array.
+    return { events: [], wasPresent: null, presenceRate: null };
+  }
+
   const events = midBossEvents.map((mb) => {
     // Find the player's position at the time of the mid boss event
     const closestTick = playerData.reduce((best, tick) => {
