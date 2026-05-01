@@ -18,7 +18,7 @@ const { getGlobalHeroStats } = require('./deadlockApi.service');
  *   2. Item build intelligence ("Top-performing players build X before Y")
  */
 
-const CACHE_TTL = 6 * 60 * 60; // 6 hours in seconds
+const CACHE_TTL = 15 * 60; // 15 minutes in seconds
 const CACHE_KEYS = {
   heroWinRates: () => 'meta:hero_win_rates',
   heroTierList: () => 'meta:hero_tier_list',

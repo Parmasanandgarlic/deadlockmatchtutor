@@ -63,7 +63,7 @@
   "crons": [
     {
       "path": "/api/cron/sync",
-      "schedule": "0 0 * * *"
+      "schedule": "*/15 * * * *"
     }
   ],
   "env": {

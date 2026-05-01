@@ -4,12 +4,11 @@ const logger = require('../utils/logger');
 
 /**
  * Cache-Control header for metadata endpoints.
- * These change at most once per day — aggressive caching is safe.
- *   - Browser: cache for 1 hour (max-age)
- *   - CDN/Edge: cache for 24 hours (s-maxage)
- *   - Serve stale for 1 hour while revalidating in background
+ *   - Browser: cache for 5 minutes (max-age)
+ *   - CDN/Edge: cache for 15 minutes (s-maxage)
+ *   - Serve stale for 5 minutes while revalidating in background
  */
-const META_CACHE_HEADER = 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=3600';
+const META_CACHE_HEADER = 'public, max-age=300, s-maxage=900, stale-while-revalidate=300';
 
 /**
  * GET /api/meta/heroes
