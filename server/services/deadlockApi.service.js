@@ -193,7 +193,7 @@ async function getMatchInfo(matchId) {
     if (match && typeof match === 'object' && Object.keys(match).length > 0) {
       logger.debug(`Fetched bulk match info for ${matchId}`);
       if (cacheKey) {
-        await redisClient.set(cacheKey, match, 3600).catch(() => {});
+        await redisClient.set(cacheKey, match, 2592000).catch(() => {});
       }
       return match;
     }
@@ -210,7 +210,7 @@ async function getMatchInfo(matchId) {
     if (data && Object.keys(data).length > 0) {
       logger.debug(`Fetched fallback match info for ${matchId}`);
       if (cacheKey) {
-        await redisClient.set(cacheKey, data, 3600).catch(() => {});
+        await redisClient.set(cacheKey, data, 2592000).catch(() => {});
       }
       return data;
     }

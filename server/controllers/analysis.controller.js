@@ -176,6 +176,7 @@ async function runAnalysis(req, res, next) {
       logger.info(`[Supabase] Cache hit for ${cacheKey}`);
       warnOnContractMismatch('analysis.cached', existingRecord.data, ANALYSIS_RESPONSE_SCHEMA);
       safeSetHeader(res, 'X-Cache', 'HIT (Supabase)');
+      safeSetHeader(res, 'Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
       return res.json({ cached: true, ...existingRecord.data });
     }
   } catch (err) {
@@ -190,6 +191,7 @@ async function runAnalysis(req, res, next) {
     if (fallbackCache.has(cacheKey)) {
       logger.info(`[FallbackCache] Cache hit for ${cacheKey}`);
       safeSetHeader(res, 'X-Cache', 'HIT (Fallback)');
+      safeSetHeader(res, 'Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
       await redisClient.del(lockKey);
       return res.json({ cached: true, ...fallbackCache.get(cacheKey) });
     }
@@ -288,6 +290,7 @@ async function runAnalysis(req, res, next) {
     }
 
     safeSetHeader(res, 'X-Cache', 'MISS');
+    safeSetHeader(res, 'Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
     await redisClient.del(lockKey);
     res.json({ cached: false, ...result });
   } catch (err) {
@@ -328,6 +331,7 @@ async function getCachedAnalysis(req, res, next) {
         .maybeSingle();
 
       if (existingRecord?.data) {
+        safeSetHeader(res, 'Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
         return res.json(existingRecord.data);
       }
     } catch (err) {
@@ -337,6 +341,7 @@ async function getCachedAnalysis(req, res, next) {
     // 2. Check local fallback cache
     const cacheKey = `${matchId}_${accountId}`;
     if (fallbackCache.has(cacheKey)) {
+      safeSetHeader(res, 'Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
       return res.json(fallbackCache.get(cacheKey));
     }
 

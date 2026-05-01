@@ -1,71 +1,74 @@
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
+import { memo, useMemo } from 'react';
 
-export default function PerformanceRadar({ modules }) {
+const PerformanceRadar = memo(function PerformanceRadar({ modules }) {
   if (!modules) return null;
 
-  // Derive 0-100 scores for current match
-  const matchFarming = modules.itemization?.score || 0;
-  const matchFighting = modules.combat?.score || 0;
-  const matchConsistency = modules.benchmarks?.score || 0;
-  const rankObjective = modules.rankBenchmarks?.comparisons?.find((c) => c.metric === 'Objective Damage')?.score;
-  const matchObjectives =
-    modules.combat?.objectiveScore ??
-    rankObjective ??
-    modules.heroPerformance?.metrics?.objectiveScore ??
-    0;
-  const matchPositioning = modules.combat?.positioningScore || 50;
-  const matchSurvival = Math.max(0, 100 - ((modules.combat?.deaths || 0) * 8));
+  const data = useMemo(() => {
+    // Derive 0-100 scores for current match
+    const matchFarming = modules.itemization?.score || 0;
+    const matchFighting = modules.combat?.score || 0;
+    const matchConsistency = modules.benchmarks?.score || 0;
+    const rankObjective = modules.rankBenchmarks?.comparisons?.find((c) => c.metric === 'Objective Damage')?.score;
+    const matchObjectives =
+      modules.combat?.objectiveScore ??
+      rankObjective ??
+      modules.heroPerformance?.metrics?.objectiveScore ??
+      0;
+    const matchPositioning = modules.combat?.positioningScore || 50;
+    const matchSurvival = Math.max(0, 100 - ((modules.combat?.deaths || 0) * 8));
 
-  // Determine benchmark/average expectations
-  // If we don't have enough data to calculate an exact benchmark, we default to 50
-  const getBench = (matchScore, userStat, benchStat) => {
-    if (!userStat || !benchStat || userStat === 0) return 50;
-    const ratio = benchStat / userStat;
-    // Scale match score by benchmark ratio, keep between 10-100
-    return Math.min(100, Math.max(10, matchScore * ratio));
-  };
+    // Determine benchmark/average expectations
+    // If we don't have enough data to calculate an exact benchmark, we default to 50
+    const getBench = (matchScore, userStat, benchStat) => {
+      if (!userStat || !benchStat || userStat === 0) return 50;
+      const ratio = benchStat / userStat;
+      // Scale match score by benchmark ratio, keep between 10-100
+      return Math.min(100, Math.max(10, matchScore * ratio));
+    };
 
-  const benchFarming = getBench(matchFarming, modules.benchmarks?.userSoulsPerMin, modules.benchmarks?.benchmarkSoulsPerMin);
-  const benchFighting = getBench(matchFighting, modules.benchmarks?.userKda, modules.benchmarks?.benchmarkKda);
+    const benchFarming = getBench(matchFarming, modules.benchmarks?.userSoulsPerMin, modules.benchmarks?.benchmarkSoulsPerMin);
+    const benchFighting = getBench(matchFighting, modules.benchmarks?.userKda, modules.benchmarks?.benchmarkKda);
 
-  const data = [
-    {
-      subject: 'Farming',
-      Match: matchFarming,
-      Average: Math.round(benchFarming),
-      fullMark: 100,
-    },
-    {
-      subject: 'Fighting',
-      Match: matchFighting,
-      Average: Math.round(benchFighting),
-      fullMark: 100,
-    },
-    {
-      subject: 'Objectives',
-      Match: matchObjectives,
-      Average: 50,
-      fullMark: 100,
-    },
-    {
-      subject: 'Survival',
-      Match: Math.round(matchSurvival),
-      Average: 60,
-      fullMark: 100,
-    },
-    {
-      subject: 'Positioning',
-      Match: Math.round(matchPositioning),
-      Average: 50,
-      fullMark: 100,
-    },
-    {
-      subject: 'Consistency',
-      Match: matchConsistency,
-      Average: 50,
-      fullMark: 100,
-    },
-  ];
+    return [
+      {
+        subject: 'Farming',
+        Match: matchFarming,
+        Average: Math.round(benchFarming),
+        fullMark: 100,
+      },
+      {
+        subject: 'Fighting',
+        Match: matchFighting,
+        Average: Math.round(benchFighting),
+        fullMark: 100,
+      },
+      {
+        subject: 'Objectives',
+        Match: matchObjectives,
+        Average: 50,
+        fullMark: 100,
+      },
+      {
+        subject: 'Survival',
+        Match: Math.round(matchSurvival),
+        Average: 60,
+        fullMark: 100,
+      },
+      {
+        subject: 'Positioning',
+        Match: Math.round(matchPositioning),
+        Average: 50,
+        fullMark: 100,
+      },
+      {
+        subject: 'Consistency',
+        Match: matchConsistency,
+        Average: 50,
+        fullMark: 100,
+      },
+    ];
+  }, [modules]);
 
   return (
     <div className="card h-full flex flex-col justify-start animate-reveal border-l-4 border-l-deadlock-blue">
@@ -113,4 +116,6 @@ export default function PerformanceRadar({ modules }) {
       </div>
     </div>
   );
-}
+});
+
+export default PerformanceRadar;
