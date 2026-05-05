@@ -265,7 +265,7 @@ export default function PlayerProfilePage() {
           <div className="mt-4 flex justify-between items-center text-xs font-sans text-gray-500">
             <span>&larr; Older Matches</span>
             <div className="flex items-center">
-              <div className="w-4 h-0 border-t-2 border-dashed border-[#3b7db2] mr-2"></div>
+              <div className="w-4 h-0 border-t-2 border-[#3b7db2] mr-2"></div>
               <span>Trend Average</span>
             </div>
             <span>Newer Matches &rarr;</span>

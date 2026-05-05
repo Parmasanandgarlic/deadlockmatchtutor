@@ -54,7 +54,7 @@ const Tooltip = ({ metric, content, children }) => {
   return (
     <div className="group relative inline-flex items-center">
       {children ? (
-        <span className="cursor-help border-b border-dotted border-deadlock-muted hover:border-deadlock-accent transition-colors">
+        <span className="cursor-help hover:text-deadlock-accent transition-colors">
           {children}
         </span>
       ) : (

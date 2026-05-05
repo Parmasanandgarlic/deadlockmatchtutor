@@ -100,7 +100,7 @@ export default function BuildPathModule({ data }) {
                 <span className={`w-20 text-xs px-2 py-0.5 rounded uppercase text-center ${SLOT_COLORS[slot]}`}>{slot}</span>
                 <div className="flex-1 h-3 bg-deadlock-border rounded-full overflow-hidden relative">
                   <div className="h-full bg-deadlock-accent" style={{ width: `${actual}%` }} />
-                  <div className="absolute top-0 h-full border-l border-dashed border-deadlock-muted" style={{ left: `${expected}%` }} />
+                  <div className="absolute top-0 h-full border-l border-deadlock-muted/50" style={{ left: `${expected}%` }} />
                 </div>
                 <span className="font-mono text-xs w-16 text-right">
                   {actual}% <span className="text-deadlock-muted">/{expected}%</span>
