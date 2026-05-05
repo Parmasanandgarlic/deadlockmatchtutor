@@ -13,6 +13,25 @@ export default class ErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('React Error Boundary caught:', error, errorInfo);
+
+    // Handle Vite dynamic import failures (usually due to a new deployment)
+    if (
+      error &&
+      error.message &&
+      (error.message.includes('Failed to fetch dynamically imported module') ||
+       error.message.includes('Importing a module script failed'))
+    ) {
+      // Prevent infinite reload loops
+      if (!sessionStorage.getItem('chunk_failed_reload')) {
+        sessionStorage.setItem('chunk_failed_reload', 'true');
+        window.location.reload();
+      }
+    }
+  }
+
+  componentDidMount() {
+    // Clear the flag on successful mount so it can trigger again for future deployments
+    sessionStorage.removeItem('chunk_failed_reload');
   }
 
   render() {
