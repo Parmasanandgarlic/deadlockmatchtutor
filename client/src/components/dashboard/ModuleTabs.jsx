@@ -58,6 +58,7 @@ export default function ModuleTabs({ modules, meta }) {
           return (
             <Tooltip
               key={key}
+              className="group relative w-full"
               content={{
                 term: label,
                 definition: MODULE_DESCRIPTIONS[key] || 'Detailed performance analysis for this category.',

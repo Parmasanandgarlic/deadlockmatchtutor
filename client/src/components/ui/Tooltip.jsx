@@ -1,7 +1,7 @@
 import React from 'react';
 import { Info } from 'lucide-react';
 
-const Tooltip = ({ metric, content, children }) => {
+const Tooltip = ({ metric, content, children, className }) => {
   const definitions = {
     // --- CORE ECONOMY & SOULS ---
     soulPerMin: "Souls collected per minute. Primary currency for items/levels. \n\nBenchmark: \n• Laning (0-10m): 400-600 spm\n• Mid Game (10-20m): 600-900 spm\n• Late Game: 900+ spm",
@@ -52,11 +52,11 @@ const Tooltip = ({ metric, content, children }) => {
   if (!tooltipDef) return children || null;
 
   return (
-    <div className="group relative inline-flex items-center">
+    <div className={className || 'group relative inline-flex items-center'}>
       {children ? (
-        <span className="cursor-help hover:text-deadlock-accent transition-colors">
+        <div className="cursor-help hover:text-deadlock-accent transition-colors w-full">
           {children}
-        </span>
+        </div>
       ) : (
         <Info className="w-4 h-4 text-deadlock-muted cursor-help hover:text-deadlock-accent transition-colors" />
       )}
