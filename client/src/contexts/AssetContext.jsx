@@ -64,6 +64,10 @@ export function AssetProvider({ children }) {
         map[id] = item;
         map[String(id)] = item;
       }
+      // Secondary index by class_name for fallback lookups
+      if (item.class_name) {
+        map[item.class_name] = item;
+      }
     });
     return map;
   }, [resolvedItemsData]);

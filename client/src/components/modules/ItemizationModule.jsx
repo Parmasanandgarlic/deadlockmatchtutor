@@ -3,7 +3,7 @@ import { ShoppingBag, Coins, TrendingUp, AlertCircle, ArrowUpRight } from 'lucid
 import Tooltip from '../ui/Tooltip';
 import TimelineGraph from '../dashboard/TimelineGraph';
 import { useAssets } from '../../contexts/AssetContext';
-import ItemIcon from '../ui/ItemIcon';
+import ItemIcon, { TIER_COLORS, getSlotKey } from '../ui/ItemIcon';
 
 function normalizeItem(item) {
   if (item == null) return {};
@@ -25,19 +25,44 @@ function mergeDefined(base, next) {
   return merged;
 }
 
+/**
+ * Slot type label mapping — converts API enum values to human-readable labels.
+ */
+const SLOT_LABELS = {
+  'EItemSlotType_Weapon': 'Weapon',
+  'EItemSlotType_Armor': 'Vitality',
+  'EItemSlotType_Tech': 'Spirit',
+  'weapon': 'Weapon',
+  'armor': 'Vitality',
+  'vitality': 'Vitality',
+  'tech': 'Spirit',
+  'spirit': 'Spirit',
+};
+
+function formatSlotLabel(slot) {
+  if (!slot) return null;
+  return SLOT_LABELS[slot] || SLOT_LABELS[String(slot).toLowerCase()] || String(slot).replace(/^EItemSlotType_/i, '');
+}
+
 function resolveItem(item, itemsMap) {
   const normalized = normalizeItem(item);
   const itemId = normalized.id ?? normalized.item_id ?? normalized.itemId ?? normalized.item ?? null;
-  const itemAsset = itemId != null ? itemsMap?.[itemId] || itemsMap?.[String(itemId)] : null;
+  // Try direct ID lookup, then class_name lookup in assets map
+  let itemAsset = itemId != null ? itemsMap?.[itemId] || itemsMap?.[String(itemId)] : null;
+  if (!itemAsset && normalized.class_name) {
+    itemAsset = itemsMap?.[normalized.class_name] || null;
+  }
   const hydrated = mergeDefined(itemAsset, normalized);
   const rawName = normalized.name || normalized.item_name || normalized.display_name;
   const assetName = itemAsset?.name || itemAsset?.item_name || itemAsset?.display_name;
   const generatedName = itemId != null ? `Item #${itemId}` : null;
   const itemName = assetName || (rawName && rawName !== generatedName ? rawName : null) || rawName || generatedName || 'Unknown Item';
   const itemCost = normalized.cost ?? normalized.item_cost ?? normalized.price ?? itemAsset?.cost ?? itemAsset?.item_cost ?? 0;
-  const tier = normalized.tier ?? normalized.item_tier ?? itemAsset?.item_tier ?? itemAsset?.tier ?? null;
-  const slot = normalized.slot ?? normalized.item_slot_type ?? itemAsset?.item_slot_type ?? itemAsset?.slot ?? null;
-  const itemImg = getItemImage(hydrated) || getItemImage(itemAsset) || getItemImage(normalized);
+  // Prefer pipeline-provided item_tier/item_slot_type over generic tier/slot
+  const tier = normalized.item_tier ?? normalized.tier ?? itemAsset?.item_tier ?? itemAsset?.tier ?? null;
+  const slot = normalized.item_slot_type ?? normalized.slot ?? itemAsset?.item_slot_type ?? itemAsset?.slot ?? null;
+  // Use pipeline-provided image_webp/image first, then fall back to asset resolution
+  const itemImg = normalized.image_webp || normalized.image || getItemImage(hydrated) || getItemImage(itemAsset) || getItemImage(normalized);
 
   return { hydrated, itemName, itemCost, tier, slot, itemImg };
 }
@@ -132,32 +157,44 @@ export default function ItemizationModule({ data, meta }) {
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
             {items.map((item, i) => {
               const { itemName, itemImg, itemCost, tier, slot } = resolveItem(item, itemsMap);
-              const itemMeta = [tier ? `Tier ${tier}` : null, slot ? String(slot) : null].filter(Boolean).join(' / ');
+              const slotLabel = formatSlotLabel(slot);
+              const tierNum = tier != null ? Number(tier) : null;
+              const tierColor = tierNum ? TIER_COLORS[tierNum] : null;
+              const itemMeta = [tierNum ? `T${tierNum}` : null, slotLabel].filter(Boolean).join(' · ');
               
               return (
                 <Tooltip
                   key={i}
                   content={{
                     term: itemName,
-                    definition: `Item cost: ${formatNumber(itemCost)} gold. Item effectiveness depends on timing and enemy composition.`,
+                    definition: `Item cost: ${formatNumber(itemCost)} souls. ${slotLabel ? `Category: ${slotLabel}.` : ''} ${tierNum ? `Tier ${tierNum} item.` : ''} Item effectiveness depends on timing and enemy composition.`,
                     category: 'Build'
                   }}
                 >
-                  <div className="relative bg-deadlock-bg rounded-none border border-deadlock-border p-3 cursor-help hover:border-deadlock-amber/40 hover:bg-deadlock-bg/80 transition-all duration-200 overflow-hidden group">
-                    <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-deadlock-amber/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className={`relative bg-deadlock-bg rounded-none border p-3 cursor-help hover:bg-deadlock-bg/80 transition-all duration-200 overflow-hidden group ${
+                    tierColor ? `${tierColor.border} hover:${tierColor.border}` : 'border-deadlock-border hover:border-deadlock-amber/40'
+                  }`}>
+                    {/* Tier-colored top accent bar */}
+                    <div className={`absolute inset-x-0 top-0 h-[2px] transition-opacity ${
+                      tierColor
+                        ? `${tierColor.bg.replace('/10', '/60')} opacity-80`
+                        : 'bg-gradient-to-r from-transparent via-deadlock-amber/40 to-transparent opacity-0 group-hover:opacity-100'
+                    }`} />
                     <div className="flex items-start gap-3">
-                      <ItemIcon src={itemImg} alt={itemName} className="w-14 h-14" imageClassName="p-1" />
+                      <ItemIcon src={itemImg} alt={itemName} className="w-14 h-14" imageClassName="p-1" tier={tierNum} slot={slot} />
                       <div className="min-w-0 flex-1 text-left">
                         <div className="flex items-start justify-between gap-2">
                           <p className="text-xs font-bold uppercase tracking-[0.18em] text-deadlock-text truncate">{itemName}</p>
                           <ArrowUpRight className="w-3.5 h-3.5 text-deadlock-muted shrink-0" />
                         </div>
-                        <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-deadlock-muted">
-                          {itemMeta || 'Item artifact'}
+                        <p className={`mt-1 text-[10px] uppercase tracking-[0.22em] ${
+                          tierColor ? tierColor.text : 'text-deadlock-muted'
+                        }`}>
+                          {itemMeta || 'Item'}
                         </p>
                         <div className="mt-2 flex items-center justify-between gap-2">
                           <span className="font-mono text-sm text-deadlock-amber">{formatNumber(itemCost)}</span>
-                          <span className="text-[10px] uppercase tracking-[0.2em] text-deadlock-text-dim">gold</span>
+                          <span className="text-[10px] uppercase tracking-[0.2em] text-deadlock-text-dim">souls</span>
                         </div>
                       </div>
                     </div>

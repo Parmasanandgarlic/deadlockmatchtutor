@@ -2,7 +2,7 @@ const { generateInsights } = require('./insights.engine');
 const { computeOverallScore } = require('./scoring.engine');
 const { getHeroName, getHeroData } = require('../utils/heroes');
 const { getRankInfo } = require('../utils/ranks');
-const { getItemName, getItemData } = require('../utils/items');
+const { getItemName, getItemData, getItemByClassName } = require('../utils/items');
 const { itemAssetFields } = require('../utils/itemAssets');
 const { clamp } = require('../utils/helpers');
 const logger = require('../utils/logger');
@@ -514,40 +514,55 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
     items: items.map((item) => {
       // Handle different item formats from API
       if (typeof item === 'number') {
-        const apiItem = getItemData(item);
+        // Cascading lookup: ID → class_name fallback
+        let apiItem = getItemData(item);
+        if (!apiItem) apiItem = getItemByClassName(getItemName(item));
         const assetFields = itemAssetFields(apiItem);
         return {
           id: item,
           name: apiItem?.name ?? getItemName(item),
           cost: apiItem?.cost ?? apiItem?.item_cost ?? 0,
           ...assetFields,
+          item_tier: apiItem?.item_tier ?? assetFields.tier ?? null,
+          item_slot_type: apiItem?.item_slot_type ?? assetFields.slot ?? null,
           time_s: null,
         };
       }
       if (typeof item === 'string' && /^\d+$/.test(item.trim())) {
         const id = Number(item);
-        const apiItem = getItemData(id);
+        let apiItem = getItemData(id);
+        if (!apiItem) apiItem = getItemByClassName(getItemName(id));
         const assetFields = itemAssetFields(apiItem);
         return {
           id,
           name: apiItem?.name ?? getItemName(id),
           cost: apiItem?.cost ?? apiItem?.item_cost ?? 0,
           ...assetFields,
+          item_tier: apiItem?.item_tier ?? assetFields.tier ?? null,
+          item_slot_type: apiItem?.item_slot_type ?? assetFields.slot ?? null,
           time_s: null,
         };
       }
       if (typeof item === 'string') {
+        // Try class_name/name lookup for string items
+        const apiItem = getItemByClassName(item);
+        const assetFields = apiItem ? itemAssetFields(apiItem) : {};
         return {
-          id: null,
-          name: item,
-          cost: 0,
-          image: null,
-          image_webp: null,
+          id: apiItem?.id ?? null,
+          name: apiItem?.name ?? item,
+          cost: apiItem?.cost ?? apiItem?.item_cost ?? 0,
+          image: assetFields.image ?? null,
+          image_webp: assetFields.image_webp ?? null,
+          item_tier: apiItem?.item_tier ?? assetFields.tier ?? null,
+          item_slot_type: apiItem?.item_slot_type ?? assetFields.slot ?? null,
           time_s: null,
         };
       }
       const id = item.id ?? item.item_id ?? item.item ?? null;
-      const apiItem = getItemData(id);
+      // Cascading: ID lookup → class_name lookup → name lookup
+      let apiItem = getItemData(id);
+      if (!apiItem && item.class_name) apiItem = getItemByClassName(item.class_name);
+      if (!apiItem && (item.name || item.item_name)) apiItem = getItemByClassName(item.name || item.item_name);
       const name = item.name ?? item.item_name ?? item.display_name ?? apiItem?.name ?? getItemName(id) ?? 'Unknown Item';
       const cost = item.cost ?? item.item_cost ?? item.price ?? apiItem?.cost ?? apiItem?.item_cost ?? 0;
       const time_s = item.time_s ?? item.buy_time_s ?? item.purchase_time_s ?? item.game_time_s ?? item.timeSeconds ?? item.time ?? null;
@@ -558,6 +573,8 @@ function analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durat
         name,
         cost,
         ...assetFields,
+        item_tier: item.item_tier ?? apiItem?.item_tier ?? assetFields.tier ?? null,
+        item_slot_type: item.item_slot_type ?? apiItem?.item_slot_type ?? assetFields.slot ?? null,
         time_s: time_s != null ? Number(time_s) : null,
       };
     }),

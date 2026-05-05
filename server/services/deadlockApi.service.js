@@ -389,18 +389,35 @@ async function getHeroes() {
 }
 
 /**
- * Fetch item names from Deadlock Assets API.
- * @returns {Promise<Object>} Map of item_id to item_name
+ * Fetch item metadata from Deadlock Assets API.
+ * Returns the full unfiltered list (shop items + abilities + weapons)
+ * so that both ID-based and class_name-based lookups can succeed.
+ * The pipeline enrichment uses this for cross-referencing item IDs.
+ * @returns {Promise<Array>} Array of item objects from API
  */
 async function getItems() {
   try {
     const data = await fetchAssetList('items', 'items', redisClient.cacheKeys?.itemData?.());
-    logger.debug('Fetched items from Deadlock Assets API');
+    logger.debug(`Fetched ${data.length} total items from Deadlock Assets API`);
     return data;
   } catch (err) {
     logger.warn(`Failed to fetch items from API: ${err.message}. Using static mapping.`);
     return [];
   }
+}
+
+/**
+ * Return only purchasable shop items (those with item_slot_type defined).
+ * Filters out abilities, weapons, and hero kits.
+ * @returns {Promise<Array>} Array of shop item objects
+ */
+async function getShopItems() {
+  const all = await getItems();
+  const shop = all.filter(item =>
+    item && (item.item_slot_type || item.shopable === true) && item.type !== 'weapon' && item.type !== 'ability'
+  );
+  logger.debug(`Filtered to ${shop.length} shop items from ${all.length} total`);
+  return shop;
 }
 
 /**
@@ -448,5 +465,6 @@ module.exports = {
   getGlobalHeroStats,
   getHeroes,
   getItems,
+  getShopItems,
   getRanks,
 };
