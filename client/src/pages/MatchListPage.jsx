@@ -142,16 +142,17 @@ export default function MatchListPage() {
           <div>
             <h3 className="font-bold text-white mb-1">Missing Recent Matches?</h3>
             <p className="text-sm text-gray-300">
-              Valve recently locked public match history. To sync live, up-to-date matches, you must add the Deadlock API tracking bot as a friend on Steam.
+              Valve recently locked public match history. To sync live, up-to-date matches, you must run the community Deadlock API Ingest client while playing.
             </p>
           </div>
-          <button
-            onClick={(e) => e.preventDefault()}
-            className="btn-primary text-xs whitespace-nowrap shrink-0 border border-[#ffad1c] opacity-50 cursor-not-allowed"
-            title="Bot link coming soon"
+          <a
+            href="https://github.com/deadlock-api/deadlock-api-ingest"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary text-xs whitespace-nowrap shrink-0 border border-[#ffad1c]"
           >
-            Add Steam Tracking Bot
-          </button>
+            Get Auto-Sync Client
+          </a>
         </div>
 
         {loading && (

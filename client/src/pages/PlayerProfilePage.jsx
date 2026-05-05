@@ -135,16 +135,17 @@ export default function PlayerProfilePage() {
               <Link to={`/matches/${accountId}`} className="inline-block bg-[#1a2130] hover:bg-[#20293b] text-[#ffad1c] px-6 py-2 border border-[#3b7db2]/50 font-serif transition-colors">
                 Analyze Recent Matches
               </Link>
-              <button
-                onClick={(e) => e.preventDefault()}
-                className="inline-block bg-[#ffad1c] text-black font-bold px-6 py-2 border border-[#ffad1c] font-serif opacity-50 cursor-not-allowed"
-                title="Bot link coming soon"
+              <a
+                href="https://github.com/deadlock-api/deadlock-api-ingest"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block bg-[#ffad1c] text-black hover:bg-amber-500 font-bold px-6 py-2 border border-[#ffad1c] font-serif transition-colors"
               >
-                Add Steam Tracking Bot
-              </button>
+                Get Auto-Sync Client
+              </a>
             </div>
             <p className="mt-4 text-xs text-gray-500 max-w-lg mx-auto">
-              Missing recent matches? Valve locked public match history. You must add the Deadlock API tracking bot as a friend on Steam to sync live data.
+              Missing recent matches? Valve locked public match history. You must run the community Deadlock API Ingest client while playing to sync live data.
             </p>
           </div>
         </div>
