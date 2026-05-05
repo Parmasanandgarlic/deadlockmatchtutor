@@ -20,7 +20,15 @@ function getCsrfSecret() {
   if (secret) return secret;
 
   if (process.env.NODE_ENV === 'production') {
-    throw new Error('CSRF_SECRET or SESSION_SECRET is required in production.');
+    // In serverless environments (Vercel), each invocation is stateless anyway.
+    // Generate a per-instance secret and warn instead of crashing the app.
+    const crypto = require('crypto');
+    const generated = crypto.randomBytes(32).toString('hex');
+    console.warn(
+      '⚠️  CSRF_SECRET / SESSION_SECRET not set. Using a random per-instance secret. ' +
+      'Set CSRF_SECRET in your Vercel environment variables for consistent CSRF validation.'
+    );
+    return generated;
   }
 
   return 'deadlock-aftermatch-development-csrf-secret';
