@@ -40,7 +40,7 @@ class RedisClient {
 
   /** @private */
   async _doConnect() {
-    const enforceRedis = config.nodeEnv === 'production';
+    const enforceRedis = process.env.REDIS_REQUIRED === '1' || process.env.REDIS_REQUIRED === 'true';
 
     if (!config.redis.url) {
       if (enforceRedis) {
