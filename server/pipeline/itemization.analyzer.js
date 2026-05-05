@@ -1,6 +1,7 @@
 const { FLOATING_SOULS_THRESHOLD, ITEM_COST_TIERS, PHASES } = require('../utils/constants');
 const { safeDivide, formatTime } = require('../utils/helpers');
 const logger = require('../utils/logger');
+const { ITEMIZATION_REPLAY } = require('./scoringCalibration');
 
 /**
  * Itemization & Power Spikes Analyzer (Module 2.2)
@@ -148,7 +149,7 @@ function getItemTimeSeconds(entry) {
  * Compute 0–100 itemization score.
  */
 function computeItemizationScore({ floatingSoulsEvents, coreItemTimings, activeItemUsage, duration }) {
-  let score = 60; // baseline
+  let score = ITEMIZATION_REPLAY.baselineScore;
 
   // Floating souls penalty (up to -25)
   const totalFloatSeconds = floatingSoulsEvents.reduce(
@@ -156,25 +157,33 @@ function computeItemizationScore({ floatingSoulsEvents, coreItemTimings, activeI
     0
   );
   const floatRatio = Math.min(totalFloatSeconds / duration, 1);
-  score -= floatRatio * 25;
+  score -= floatRatio * ITEMIZATION_REPLAY.floatingSoulsPenaltyMax;
 
   // Core item timing bonus (up to +20)
   // 3k Item: Elite <= 8 min (480s), Baseline = 12 min (720s)
   if (coreItemTimings.first3k) {
     const time = coreItemTimings.first3k.timeSeconds;
-    const timingRatio = Math.max(0, Math.min(1, (720 - time) / (720 - 480)));
-    score += timingRatio * 10;
+    const timingRatio = Math.max(0, Math.min(1, (
+      ITEMIZATION_REPLAY.firstHighTierBaselineSeconds - time
+    ) / (
+      ITEMIZATION_REPLAY.firstHighTierBaselineSeconds - ITEMIZATION_REPLAY.firstHighTierItemSeconds
+    )));
+    score += timingRatio * ITEMIZATION_REPLAY.firstHighTierBonus;
   }
   
   // 6k Item: Elite <= 16 min (960s), Baseline = 22 min (1320s)
   if (coreItemTimings.first6k) {
     const time = coreItemTimings.first6k.timeSeconds;
-    const timingRatio = Math.max(0, Math.min(1, (1320 - time) / (1320 - 960)));
-    score += timingRatio * 10;
+    const timingRatio = Math.max(0, Math.min(1, (
+      ITEMIZATION_REPLAY.firstUltraTierBaselineSeconds - time
+    ) / (
+      ITEMIZATION_REPLAY.firstUltraTierBaselineSeconds - ITEMIZATION_REPLAY.firstUltraTierItemSeconds
+    )));
+    score += timingRatio * ITEMIZATION_REPLAY.firstUltraTierBonus;
   }
 
   // Active item usage bonus (up to +15)
-  score += Math.min(activeItemUsage.overallEfficiency, 1) * 15;
+  score += Math.min(activeItemUsage.overallEfficiency, 1) * ITEMIZATION_REPLAY.activeUsageBonusMax;
 
   return Math.round(Math.max(0, Math.min(100, score)));
 }

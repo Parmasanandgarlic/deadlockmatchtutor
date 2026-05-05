@@ -11,7 +11,40 @@ const { getCsrfToken } = require('../middleware/csrf.middleware');
 
 const router = Router();
 
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: Lightweight API health check
+ *     tags: [Utility]
+ *     responses:
+ *       200:
+ *         description: API router is reachable
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: ok
+ */
 router.get('/health', (_req, res) => res.json({ status: 'ok' }));
+
+/**
+ * @swagger
+ * /api/csrf:
+ *   get:
+ *     summary: Issue a CSRF token for state-changing requests
+ *     tags: [Utility]
+ *     responses:
+ *       200:
+ *         description: CSRF token response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CsrfResponse'
+ */
 router.get('/csrf', getCsrfToken);
 router.use('/auth', authRoutes);
 router.use('/players', playerRoutes);

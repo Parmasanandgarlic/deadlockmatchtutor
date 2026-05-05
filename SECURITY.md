@@ -31,6 +31,13 @@ This project is open source. To protect your credentials, please follow these st
 3.  **Rotate Keys**: If you suspect a key has been exposed, rotate it immediately in your external providers (Steam, Supabase, etc.).
 4.  **SAST Scanning**: We use a built-in security scanner (`npm run test:sast`). Please run this before submitting any Pull Requests.
 
+## Application Controls
+
+- Content Security Policy blocks inline scripts and inline event handlers.
+- CSRF protection uses signed double-submit tokens on all non-safe methods.
+- Auth endpoints use stricter per-IP throttles. In production, those counters must be Redis-backed.
+- Redis is required when `NODE_ENV=production`; the app should not run in a Redis-less degraded mode.
+
 ## Disclosure Policy
 
 Once a fix is implemented, we will issue a security advisory and notify users. We ask that you do not disclose the vulnerability publicly until a fix is available and has been deployed to the live site.

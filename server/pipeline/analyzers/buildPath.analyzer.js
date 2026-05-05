@@ -1,6 +1,7 @@
 const { clamp } = require('../../utils/helpers');
 const { getItemName, getItemData } = require('../../utils/items');
 const { itemAssetFields } = require('../../utils/itemAssets');
+const { BUILD_PATH } = require('../scoringCalibration');
 
 /**
  * Build Path Optimization Analyzer.
@@ -90,20 +91,14 @@ function extractItemMeta(item) {
 }
 
 function costFromTier(tier) {
-  switch (Number(tier)) {
-    case 1: return 500;
-    case 2: return 1250;
-    case 3: return 3000;
-    case 4: return 6200;
-    default: return 0;
-  }
+  return BUILD_PATH.tierCosts[Number(tier)] || 0;
 }
 
 function analyzeBuildPath({ items = [], role = 'brawler', durationSeconds = 0 } = {}) {
   const metas = (items || []).map(extractItemMeta).filter(Boolean);
   if (metas.length === 0) {
     return {
-      score: 50,
+      score: BUILD_PATH.emptyBuildScore,
       slotBalance: { weapon: 0, vitality: 0, spirit: 0, utility: 0, flex: 0 },
       expectedSlotBalance: ROLE_IDEAL_DISTRIBUTION[role] || ROLE_IDEAL_DISTRIBUTION.brawler,
       tierProgression: [],
@@ -139,8 +134,8 @@ function analyzeBuildPath({ items = [], role = 'brawler', durationSeconds = 0 } 
   const overusedSlots = [];
   for (const [slot, expected] of Object.entries(expectedDist)) {
     const actual = slotShares[slot] || 0;
-    if (actual < expected - 0.12) underutilizedSlots.push(slot);
-    if (actual > expected + 0.15) overusedSlots.push(slot);
+    if (actual < expected - BUILD_PATH.underutilizedSlotDelta) underutilizedSlots.push(slot);
+    if (actual > expected + BUILD_PATH.overusedSlotDelta) overusedSlots.push(slot);
   }
 
   // Tier progression
@@ -181,20 +176,20 @@ function analyzeBuildPath({ items = [], role = 'brawler', durationSeconds = 0 } 
     missingKeyItems.push({ slot: 'vitality', reason: 'Tanks without vitality items cannot reliably frontline.' });
   }
   // All roles: at least one high-tier spike
-  if (!firstT3Item && !firstT4Item && metas.length >= 6) {
+  if (!firstT3Item && !firstT4Item && metas.length >= BUILD_PATH.minimumItemsForSpikeCheck) {
     missingKeyItems.push({ slot: 'spike', reason: 'You did not reach a Tier 3/4 power-spike item — focus farm earlier.' });
   }
 
   // Timing grade: Tier 3 by ~20 min is strong, ~28 min is weak
-  let timingScore = 50;
+  let timingScore = BUILD_PATH.neutralScore;
   if (firstT3Item?.time) {
     const minutes = firstT3Item.time / 60;
-    if (minutes <= 18) timingScore = 90;
-    else if (minutes <= 22) timingScore = 75;
-    else if (minutes <= 28) timingScore = 60;
-    else timingScore = 40;
-  } else if (durationSeconds > 18 * 60) {
-    timingScore = 35;
+    if (minutes <= BUILD_PATH.tierThreeTimingMinutes.strong) timingScore = BUILD_PATH.timingScores.strong;
+    else if (minutes <= BUILD_PATH.tierThreeTimingMinutes.good) timingScore = BUILD_PATH.timingScores.good;
+    else if (minutes <= BUILD_PATH.tierThreeTimingMinutes.late) timingScore = BUILD_PATH.timingScores.late;
+    else timingScore = BUILD_PATH.timingScores.poor;
+  } else if (durationSeconds > BUILD_PATH.missingSpikeWindowSeconds) {
+    timingScore = BUILD_PATH.timingScores.missingAfterWindow;
   }
 
   // Balance grade: mean squared deviation from ideal distribution
@@ -202,13 +197,17 @@ function analyzeBuildPath({ items = [], role = 'brawler', durationSeconds = 0 } 
   for (const [slot, expected] of Object.entries(expectedDist)) {
     balanceDeviation += ((slotShares[slot] || 0) - expected) ** 2;
   }
-  const balanceScore = Math.round(clamp(100 - balanceDeviation * 250, 0, 100));
+  const balanceScore = Math.round(clamp(BUILD_PATH.balancePerfectScore - balanceDeviation * BUILD_PATH.balanceDeviationScale, 0, 100));
 
   // Completeness grade: ratio of slots filled with meaningful cost
   const filledSlots = Object.entries(slotBalance).filter(([k, v]) => k !== 'flex' && v > 0).length;
-  const completenessScore = Math.round(clamp((filledSlots / 4) * 100, 0, 100));
+  const completenessScore = Math.round(clamp((filledSlots / BUILD_PATH.meaningfulSlotCount) * 100, 0, 100));
 
-  const score = Math.round(timingScore * 0.4 + balanceScore * 0.4 + completenessScore * 0.2);
+  const score = Math.round(
+    timingScore * BUILD_PATH.scoreWeights.timing +
+    balanceScore * BUILD_PATH.scoreWeights.balance +
+    completenessScore * BUILD_PATH.scoreWeights.completeness
+  );
 
   // Next-purchase suggestions: prioritize underutilized slots
   const nextPurchases = underutilizedSlots.slice(0, 2).map((slot) => ({
@@ -264,9 +263,9 @@ function analyzeBuildPath({ items = [], role = 'brawler', durationSeconds = 0 } 
     balanceScore,
     completenessScore,
     summary:
-      score >= 80
+      score >= BUILD_PATH.summaryBands.efficient
         ? 'Your build path was efficient, well-timed, and balanced across slots.'
-        : score >= 60
+        : score >= BUILD_PATH.summaryBands.workable
         ? 'Your build was workable but has clear optimization opportunities.'
         : 'Your build had pacing or balance issues that likely cost you fight potential.',
   };

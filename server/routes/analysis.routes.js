@@ -14,22 +14,20 @@ const router = Router();
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - matchId
- *               - accountId
- *             properties:
- *               matchId:
- *                 type: integer
- *                 description: The unique ID of the match to analyze
- *               accountId:
- *                 type: integer
- *                 description: The account ID of the player being analyzed
+ *             $ref: '#/components/schemas/AnalysisRequest'
  *     responses:
  *       200:
  *         description: Analysis complete or retrieved from cache
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AnalysisResponse'
  *       400:
- *         description: Missing or invalid parameters
+ *         $ref: '#/components/responses/BadRequest'
+ *       429:
+ *         $ref: '#/components/responses/TooManyRequests'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
  */
 router.post('/run', runAnalysis);
 
@@ -53,8 +51,12 @@ router.post('/run', runAnalysis);
  *     responses:
  *       200:
  *         description: Cached analysis payload
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AnalysisResponse'
  *       404:
- *         description: Analysis not found
+ *         $ref: '#/components/responses/NotFound'
  */
 router.get('/:matchId/:accountId', getCachedAnalysis);
 

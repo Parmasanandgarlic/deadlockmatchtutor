@@ -65,7 +65,7 @@ PUT  /api/auth/settings           - Update user settings
 ### 4. Session Management ✓
 **Features:**
 - Cookie-based sessions with secure flags
-- Redis-backed session store (optional)
+- Redis-backed session store required in production
 - 7-day session duration
 - CSRF protection via httpOnly cookies
 - Cross-subdomain support for production
@@ -237,4 +237,4 @@ For questions or issues:
 
 **Status**: ✅ **READY FOR PRODUCTION**
 
-All requested features have been implemented and tested. The system gracefully degrades when optional services (Redis, Supabase) are not configured, making it flexible for different deployment scenarios.
+All requested features have been implemented and tested. Local development can run with in-memory fallbacks, while production requires Redis for shared cache, sessions, and auth throttling.

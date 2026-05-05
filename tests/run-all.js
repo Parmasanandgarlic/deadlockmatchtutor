@@ -20,8 +20,10 @@ const suites = [
   { name: 'Unit: insights',       file: 'unit/insights.test.js' },
   { name: 'Unit: constants',      file: 'unit/constants.test.js' },
   { name: 'Unit: trends',         file: 'unit/trends.test.js' },
+  { name: 'Unit: Deadlock adapter', file: 'unit/deadlockAdapter.test.js' },
   { name: 'Component: validation', file: 'component/validation.test.js' },
   { name: 'Component: errorHandler', file: 'component/errorHandler.test.js' },
+  { name: 'Component: security middleware', file: 'component/securityMiddleware.test.js' },
   { name: 'SAST: static scan',    file: 'sast/sast-scan.js' },
 
   // ---- 2. Integration & API ----
@@ -59,11 +61,11 @@ console.log('║          COMPREHENSIVE TEST SUMMARY       ║');
 console.log('╠═══════════════════════════════════════════╣');
 
 const categories = [
-  { label: '1. Code-Level & Foundation', start: 0, end: 8 },
-  { label: '2. Integration & API', start: 8, end: 11 },
-  { label: '3. System & E2E', start: 11, end: 13 },
-  { label: '4. Non-Functional', start: 13, end: 17 },
-  { label: '5. Pre-Launch & Readiness', start: 17, end: 18 },
+  { label: '1. Code-Level & Foundation', start: 0, end: 10 },
+  { label: '2. Integration & API', start: 10, end: 13 },
+  { label: '3. System & E2E', start: 13, end: 15 },
+  { label: '4. Non-Functional', start: 15, end: 19 },
+  { label: '5. Pre-Launch & Readiness', start: 19, end: 20 },
 ];
 
 for (const cat of categories) {

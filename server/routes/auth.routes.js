@@ -3,6 +3,7 @@ const authService = require('../services/auth.service');
 const steamService = require('../services/steam.service');
 const config = require('../config');
 const logger = require('../utils/logger');
+const { logAndFallback } = require('../utils/logging');
 
 const router = Router();
 
@@ -29,7 +30,7 @@ router.get('/steam', (req, res, next) => {
     { ip: req.ip },
     req.ip,
     req.get('user-agent')
-  ).catch(() => {});
+  ).catch(logAndFallback('Failed to track Steam auth initiation', null));
   
   next();
 }, authService.passport.authenticate('steam'));
@@ -105,7 +106,7 @@ router.get('/me', async (req, res) => {
       { viewed_own: true },
       req.ip,
       req.get('user-agent')
-    ).catch(() => {});
+    ).catch(logAndFallback(`Failed to track profile view for user ${userProfile.id}`, null));
     
     res.json({
       authenticated: true,
@@ -139,7 +140,7 @@ router.post('/logout', (req, res) => {
       {},
       req.ip,
       req.get('user-agent')
-    ).catch(() => {});
+    ).catch(logAndFallback(`Failed to track logout for user ${req.user.id}`, null));
   }
   
   req.logout((err) => {
@@ -242,7 +243,7 @@ router.post('/favorites', authService.isAuthenticated(), async (req, res) => {
       { type, target_id: targetId },
       req.ip,
       req.get('user-agent')
-    ).catch(() => {});
+    ).catch(logAndFallback(`Failed to track favorite add for user ${req.user.id}`, null));
     
     res.json({ success: true, favorite });
   } catch (error) {
@@ -299,7 +300,7 @@ router.delete('/favorites/:type/:targetId', authService.isAuthenticated(), async
       { type, target_id: parseInt(targetId) },
       req.ip,
       req.get('user-agent')
-    ).catch(() => {});
+    ).catch(logAndFallback(`Failed to track favorite removal for user ${req.user.id}`, null));
     
     res.json({ success: true });
   } catch (error) {

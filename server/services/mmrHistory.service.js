@@ -3,6 +3,7 @@ const config = require('../config');
 const logger = require('../utils/logger');
 const redisClient = require('./redis.service');
 const { getRankInfo } = require('../utils/ranks');
+const { logAndFallback } = require('../utils/logging');
 
 /**
  * MMR History Service
@@ -137,14 +138,18 @@ function buildMmrHistory(rankPredict, matchHistory = []) {
  */
 async function fetchRankPredictRaw(accountId) {
   const cacheKey = `mmr:${accountId}`;
-  const cached = await redisClient.get(cacheKey).catch(() => null);
+  const cached = await redisClient
+    .get(cacheKey)
+    .catch(logAndFallback(`[Redis] MMR cache read failed for ${accountId}`, null));
   if (cached) return cached;
 
   try {
     const url = `${config.deadlockApi.baseUrl}/v1/players/${Number(accountId)}/mmr-history`;
     const { data } = await axios.get(url, { timeout: 15000 });
     if (data) {
-      await redisClient.set(cacheKey, data, 600).catch(() => {});
+      await redisClient
+        .set(cacheKey, data, 600)
+        .catch(logAndFallback(`[Redis] MMR cache write failed for ${accountId}`, false));
       return data;
     }
   } catch (err) {
@@ -156,7 +161,9 @@ async function fetchRankPredictRaw(accountId) {
     const url = `${config.deadlockApi.baseUrl}/v1/players/${Number(accountId)}/rank-predict`;
     const { data } = await axios.get(url, { timeout: 15000 });
     if (data) {
-      await redisClient.set(cacheKey, data, 600).catch(() => {});
+      await redisClient
+        .set(cacheKey, data, 600)
+        .catch(logAndFallback(`[Redis] rank-predict cache write failed for ${accountId}`, false));
       return data;
     }
   } catch (err) {

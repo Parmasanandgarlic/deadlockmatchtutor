@@ -14,13 +14,15 @@ const { getRankInfo, setApiRanks } = require('../utils/ranks');
 const { getHeroData, getHeroName, setApiHeroNames } = require('../utils/heroes');
 const logger = require('../utils/logger');
 const config = require('../config');
+const { logAndFallback } = require('../utils/logging');
+const { PLAYER_PROFILE } = require('../pipeline/scoringCalibration');
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Metadata warmers (hero + rank lookup tables)
 // Cached process-wide for 24h so the very first profile request doesn't
 // serve "Tier 4" / "Unknown Hero" placeholders.
 // ──────────────────────────────────────────────────────────────────────────────
-const META_TTL_MS = 24 * 60 * 60 * 1000;
+const META_TTL_MS = PLAYER_PROFILE.metadataTtlMs;
 let heroesWarmedAt = 0;
 let ranksWarmedAt = 0;
 
@@ -133,9 +135,9 @@ async function getPlayerMmrHistory(req, res, next) {
     const bypassCache = req.query?.refresh === '1' || req.query?.refresh === 'true';
 
     const [rankPredictRaw, rankPredictClient, matches] = await Promise.all([
-      fetchRankPredictRaw(accountId).catch(() => null),
-      getPlayerRankPredict(accountId).catch(() => null),
-      getMatchHistory(accountId, { bypassCache }).catch(() => []),
+      fetchRankPredictRaw(accountId).catch(logAndFallback(`MMR history raw fetch failed for ${accountId}`, null)),
+      getPlayerRankPredict(accountId).catch(logAndFallback(`Rank predict fetch failed for ${accountId}`, null)),
+      getMatchHistory(accountId, { bypassCache }).catch(logAndFallback(`Match history fetch failed for ${accountId}`, [])),
     ]);
 
     // Prefer the richer mmr-history payload if available
@@ -164,12 +166,12 @@ async function getPlayerProfile(req, res) {
     await Promise.all([ensureHeroMetadata(), ensureRankMetadata()]);
 
     const [rankPredictRaw, rankPredictClient, accountStats, card, heroStats, matches] = await Promise.all([
-      fetchRankPredictRaw(accountId).catch(() => null),
-      getPlayerRankPredict(accountId).catch(() => null),
-      getPlayerAccountStats(accountId).catch(() => ({})),
-      getPlayerCard(accountId).catch(() => ({})),
-      getPlayerHeroStatsAll(accountId).catch(() => []),
-      getMatchHistory(accountId).catch(() => []),
+      fetchRankPredictRaw(accountId).catch(logAndFallback(`Profile MMR history raw fetch failed for ${accountId}`, null)),
+      getPlayerRankPredict(accountId).catch(logAndFallback(`Profile rank predict fetch failed for ${accountId}`, null)),
+      getPlayerAccountStats(accountId).catch(logAndFallback(`Profile account stats fetch failed for ${accountId}`, {})),
+      getPlayerCard(accountId).catch(logAndFallback(`Profile card fetch failed for ${accountId}`, {})),
+      getPlayerHeroStatsAll(accountId).catch(logAndFallback(`Profile hero stats fetch failed for ${accountId}`, [])),
+      getMatchHistory(accountId).catch(logAndFallback(`Profile match history fetch failed for ${accountId}`, [])),
     ]);
 
     const rankPredict = rankPredictRaw || rankPredictClient || null;
@@ -200,7 +202,7 @@ async function getPlayerProfile(req, res) {
     const winrate = totalMatches > 0 ? Math.round((totalWins / totalMatches) * 1000) / 10 : 0;
 
     // ── Recent form: last 20 from match-history.
-    const recent = Array.isArray(matches) ? matches.slice(0, 20) : [];
+    const recent = Array.isArray(matches) ? matches.slice(0, PLAYER_PROFILE.recentMatchWindow) : [];
     const recentWins = recent.reduce((n, m) => {
       const won =
         m.player_team_won === true ||
@@ -213,7 +215,7 @@ async function getPlayerProfile(req, res) {
     // ── Top heroes (by matches played, with winrate + KDA).
     const topHeroes = [...heroStats]
       .sort((a, b) => Number(b.matches_played ?? b.matches ?? 0) - Number(a.matches_played ?? a.matches ?? 0))
-      .slice(0, 5)
+      .slice(0, PLAYER_PROFILE.topHeroCount)
       .map((h) => {
         const heroId = Number(h.hero_id ?? h.heroId ?? 0);
         const played = Number(h.matches_played ?? h.matches ?? 0);

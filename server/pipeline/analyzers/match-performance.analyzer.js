@@ -1,5 +1,6 @@
 const { ROLE_BENCHMARKS } = require('../../data/hero-roles');
 const { safeDivide, clamp } = require('../../utils/helpers');
+const { HERO_PERFORMANCE } = require('../scoringCalibration');
 
 /**
  * Perform a context-aware analysis of player performance.
@@ -51,19 +52,23 @@ function analyzeMatchPerformance(data, context) {
   else if (spm >= benchmarks.soulsPerMin.average) {
     // Linear scale between average and excellent
     const range = benchmarks.soulsPerMin.excellent - benchmarks.soulsPerMin.average;
-    spmScore = 70 + ((spm - benchmarks.soulsPerMin.average) / range) * 30;
+    spmScore = HERO_PERFORMANCE.spmBands.averageScore +
+      ((spm - benchmarks.soulsPerMin.average) / range) *
+      (HERO_PERFORMANCE.spmBands.excellentScore - HERO_PERFORMANCE.spmBands.averageScore);
   } else if (spm >= benchmarks.soulsPerMin.poor) {
     const range = benchmarks.soulsPerMin.average - benchmarks.soulsPerMin.poor;
-    spmScore = 40 + ((spm - benchmarks.soulsPerMin.poor) / range) * 30;
+    spmScore = HERO_PERFORMANCE.spmBands.poorScore +
+      ((spm - benchmarks.soulsPerMin.poor) / range) *
+      (HERO_PERFORMANCE.spmBands.averageScore - HERO_PERFORMANCE.spmBands.poorScore);
   } else {
-    spmScore = (spm / benchmarks.soulsPerMin.poor) * 40;
+    spmScore = (spm / benchmarks.soulsPerMin.poor) * HERO_PERFORMANCE.spmBands.poorScore;
   }
 
   // 2. Combat Scoring (KDA Weighting)
   // Weighted KDA components based on role
-  const killPoints = kills * benchmarks.kdaWeight.kills * 10;
-  const assistPoints = assists * benchmarks.kdaWeight.assists * 10;
-  const deathPenalty = deaths * Math.abs(benchmarks.kdaWeight.deaths) * 10;
+  const killPoints = kills * benchmarks.kdaWeight.kills * HERO_PERFORMANCE.kdaPointScale;
+  const assistPoints = assists * benchmarks.kdaWeight.assists * HERO_PERFORMANCE.kdaPointScale;
+  const deathPenalty = deaths * Math.abs(benchmarks.kdaWeight.deaths) * HERO_PERFORMANCE.kdaPointScale;
   
   // Base combat score
   let combatScore = clamp(50 + killPoints + assistPoints - deathPenalty, 0, 100);
@@ -71,13 +76,18 @@ function analyzeMatchPerformance(data, context) {
   // 3. Objective Impact
   // Scale objective damage by benchmarks.objectiveWeight
   const objDmg = stats.objectiveDamage || 0;
-  const objTarget = context.isRanked ? 5000 : 3000; // Example target
+  const objTarget = context.isRanked
+    ? HERO_PERFORMANCE.objectiveDamageTarget.ranked
+    : HERO_PERFORMANCE.objectiveDamageTarget.unranked;
   const rawObjScore = (objDmg / objTarget) * 100;
   const objectiveScore = clamp(rawObjScore * benchmarks.objectiveWeight, 0, 100);
 
   // 4. Final Aggregation
   // Weightings for final grade: Economy (40%), Combat (40%), Objectives (20%)
-  const finalScore = (spmScore * 0.4) + (combatScore * 0.4) + (objectiveScore * 0.2);
+  const finalScore =
+    (spmScore * HERO_PERFORMANCE.componentWeights.economy) +
+    (combatScore * HERO_PERFORMANCE.componentWeights.combat) +
+    (objectiveScore * HERO_PERFORMANCE.componentWeights.objectives);
   const grade = calculateGrade(finalScore);
 
   return {
@@ -115,16 +125,9 @@ function roundKda(kills, deaths, assists) {
 }
 
 function calculateGrade(score) {
-  if (score >= 97) return 'A+';
-  if (score >= 93) return 'A';
-  if (score >= 90) return 'A-';
-  if (score >= 87) return 'B+';
-  if (score >= 83) return 'B';
-  if (score >= 80) return 'B-';
-  if (score >= 77) return 'C+';
-  if (score >= 73) return 'C';
-  if (score >= 70) return 'C-';
-  if (score >= 60) return 'D';
+  for (const threshold of HERO_PERFORMANCE.gradeThresholds) {
+    if (score >= threshold.min) return threshold.grade;
+  }
   return 'F';
 }
 

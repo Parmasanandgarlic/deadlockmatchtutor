@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { getPlayerProfileTrends } = require('../services/trends.service');
 const { requireNumericParam } = require('../middleware/validation');
+const { TRENDS } = require('../pipeline/scoringCalibration');
 
 /**
  * @swagger
@@ -25,17 +26,21 @@ const { requireNumericParam } = require('../middleware/validation');
  *     responses:
  *       200:
  *         description: Successful trend aggregation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TrendResponse'
  *       400:
- *         description: Invalid account ID format
+ *         $ref: '#/components/responses/BadRequest'
  *       500:
- *         description: Internal server error
+ *         $ref: '#/components/responses/ServerError'
  */
 router.get('/:accountId', requireNumericParam('accountId'), async (req, res, next) => {
   try {
     const { accountId } = req.params;
     let limit = parseInt(req.query.limit, 10);
-    if (isNaN(limit) || limit < 1) limit = 10;
-    if (limit > 30) limit = 30; // Cap to prevent DB strain
+    if (isNaN(limit) || limit < 1) limit = TRENDS.defaultLimit;
+    if (limit > TRENDS.maxLimit) limit = TRENDS.maxLimit;
 
     const trends = await getPlayerProfileTrends(accountId, limit);
     res.json(trends);

@@ -4,7 +4,12 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const { csrfProtection, getCsrfToken } = require('../../server/middleware/csrf.middleware');
+const {
+  csrfProtection,
+  getCsrfToken,
+  generateToken,
+  isValidToken,
+} = require('../../server/middleware/csrf.middleware');
 
 function mockRes() {
   return {
@@ -53,6 +58,7 @@ test('csrfProtection: safe requests receive a token cookie', () => {
 
   assert.strictEqual(nextCalled, true);
   assert.ok(res.cookies._csrf.value);
+  assert.ok(isValidToken(res.cookies._csrf.value), 'csrf cookie should be signed');
   assert.strictEqual(res.locals.csrfToken, res.cookies._csrf.value);
 });
 
@@ -74,6 +80,28 @@ test('csrfProtection: unsafe requests require matching token', () => {
 });
 
 test('csrfProtection: unsafe requests accept matching token', () => {
+  const token = generateToken();
+  const res = mockRes();
+  let nextCalled = false;
+
+  csrfProtection(
+    {
+      method: 'POST',
+      cookies: { _csrf: token },
+      path: '/api/players/resolve',
+      headers: { 'x-csrf-token': token },
+    },
+    res,
+    () => {
+      nextCalled = true;
+    }
+  );
+
+  assert.strictEqual(nextCalled, true);
+  assert.strictEqual(res.statusCode, 200);
+});
+
+test('csrfProtection: forged matching tokens are rejected', () => {
   const res = mockRes();
   let nextCalled = false;
 
@@ -90,8 +118,8 @@ test('csrfProtection: unsafe requests accept matching token', () => {
     }
   );
 
-  assert.strictEqual(nextCalled, true);
-  assert.strictEqual(res.statusCode, 200);
+  assert.strictEqual(nextCalled, false);
+  assert.strictEqual(res.statusCode, 403);
 });
 
 test('getCsrfToken: returns middleware token', () => {
@@ -101,7 +129,7 @@ test('getCsrfToken: returns middleware token', () => {
   assert.deepStrictEqual(res.body, { csrfToken: 'token-from-cookie' });
 });
 
-test('vercel CSP header does not allow inline scripts', () => {
+test('vercel CSP header does not allow unsafe inline/eval scripts', () => {
   const vercel = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../vercel.json'), 'utf8'));
   const csp = vercel.headers
     .flatMap((entry) => entry.headers)
@@ -109,22 +137,32 @@ test('vercel CSP header does not allow inline scripts', () => {
 
   assert.ok(csp, 'Missing Content-Security-Policy header in vercel.json');
   assert.ok(/script-src/.test(csp), 'CSP should define script-src');
-  assert.ok(!/script-src[^;]*'unsafe-inline'/.test(csp), 'script-src must not allow unsafe-inline');
+  assert.ok(/script-src-attr 'none'/.test(csp), 'CSP should block inline event handlers');
+  const unsafeInline = "'unsafe-" + "inline'";
+  const unsafeEval = "'unsafe-" + "eval'";
+  assert.ok(!csp.includes(unsafeInline), 'CSP must not allow inline script execution');
+  assert.ok(!csp.includes(unsafeEval), 'CSP must not allow eval script execution');
 });
 
-test('auth rate limits cover both /api/auth and root-mounted /auth routes', () => {
+test('auth rate limits cover both mounts and use Redis-backed production store', () => {
   const index = fs.readFileSync(path.resolve(__dirname, '../../server/index.js'), 'utf8');
   assert.ok(/app\.use\('\/api\/auth', authLimiter\)/.test(index), 'missing /api/auth limiter');
   assert.ok(/app\.use\('\/auth', authLimiter\)/.test(index), 'missing root /auth limiter');
+  assert.ok(/new RedisRateLimitStore\('ratelimit:auth'\)/.test(index), 'auth limiter must use Redis-backed store');
+  assert.ok(/config\.authRateLimit\.windowMs/.test(index), 'auth limiter window must be configurable');
+  assert.ok(/config\.authRateLimit\.max/.test(index), 'auth limiter max must be configurable');
 });
 
-test('Redis degraded mode must be explicit in production deploy config', () => {
+test('Redis is mandatory in production deploy config', () => {
   const redisService = fs.readFileSync(path.resolve(__dirname, '../../server/services/redis.service.js'), 'utf8');
+  const index = fs.readFileSync(path.resolve(__dirname, '../../server/index.js'), 'utf8');
   const vercel = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../vercel.json'), 'utf8'));
+  const redislessFlag = 'ALLOW_' + 'REDISLESS';
 
-  assert.ok(/ALLOW_REDISLESS/.test(redisService), 'Redis fallback should be gated by ALLOW_REDISLESS');
+  assert.ok(!redisService.includes(redislessFlag), 'production must not expose a Redis-less mode');
   assert.ok(!/Boolean\(process\.env\.VERCEL\)/.test(redisService), 'Vercel must not implicitly disable Redis');
-  assert.strictEqual(vercel.env?.ALLOW_REDISLESS, '1', 'Vercel degraded mode should be explicit');
+  assert.ok(/REDIS_URL is required when NODE_ENV=production/.test(index), 'startup should require REDIS_URL in production');
+  assert.strictEqual(vercel.env?.[redislessFlag], undefined, 'Vercel must not enable Redis-less mode');
 });
 
 console.log(`\n  ${test.passed} passed / ${test.failed} failed`);

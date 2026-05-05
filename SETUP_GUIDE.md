@@ -6,7 +6,7 @@ This guide walks you through setting up the complete AfterMatch API with Steam a
 ## Prerequisites
 - Node.js 18+ 
 - PostgreSQL database (Supabase recommended)
-- Redis server (optional but recommended for production)
+- Redis server (required for production)
 - Steam Web API key
 
 ## Step 1: Get Steam API Key
@@ -38,7 +38,7 @@ This guide walks you through setting up the complete AfterMatch API with Steam a
    psql -d aftermatch -f server/migrations/001-extended-schema.sql
    ```
 
-## Step 3: Set Up Redis (Optional but Recommended)
+## Step 3: Set Up Redis
 
 ### Using Docker
 ```bash
@@ -72,9 +72,10 @@ sudo systemctl enable redis
    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
    STEAM_API_KEY=your-steam-api-key-from-step-1
    SESSION_SECRET=generate-a-random-secret-key
-   
-   # Optional (Recommended for Production)
    REDIS_URL=redis://localhost:6379
+
+   # Optional
+   CSRF_SECRET=generate-a-separate-random-secret-key
    SENTRY_DSN=your-sentry-dsn
    ```
 
