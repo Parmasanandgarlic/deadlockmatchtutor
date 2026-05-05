@@ -145,14 +145,13 @@ export default function MatchListPage() {
               Valve recently locked public match history. To sync live, up-to-date matches, you must add the Deadlock API tracking bot as a friend on Steam.
             </p>
           </div>
-          <a
-            href="https://discord.gg/deadlockapi" // Replace with the actual bot friend link if known
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-primary text-xs whitespace-nowrap shrink-0 border border-[#ffad1c]"
+          <button
+            onClick={(e) => e.preventDefault()}
+            className="btn-primary text-xs whitespace-nowrap shrink-0 border border-[#ffad1c] opacity-50 cursor-not-allowed"
+            title="Bot link coming soon"
           >
             Add Steam Tracking Bot
-          </a>
+          </button>
         </div>
 
         {loading && (
