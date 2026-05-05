@@ -1,6 +1,6 @@
 export const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://www.aftermatch.xyz';
 export const SITE_NAME = 'Deadlock AfterMatch';
-export const DEFAULT_IMAGE_PATH = '/images/og-share.png';
+export const DEFAULT_IMAGE_PATH = '/images/og-share.webp';
 export const PUBLISHER_NAME = 'Deadlock AfterMatch contributors';
 export const CONTACT_EMAIL = 'contact@aftermatch.xyz';
 
@@ -24,6 +24,19 @@ export function websiteSchema() {
     name: SITE_NAME,
     url: absoluteUrl('/'),
     description: 'Deadlock AfterMatch is a free post-match analytics dashboard for Deadlock players.',
+  };
+}
+
+export function videoGameSchema() {
+  return {
+    '@type': 'VideoGame',
+    name: 'Deadlock',
+    genre: ['MOBA', 'Hero Shooter'],
+    gamePlatform: ['PC', 'Windows'],
+    publisher: {
+      '@type': 'Organization',
+      name: 'Valve Corporation'
+    }
   };
 }
 

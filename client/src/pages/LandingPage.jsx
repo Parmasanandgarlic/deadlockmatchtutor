@@ -11,6 +11,7 @@ import {
   howToSchema,
   organizationSchema,
   speakableSchema,
+  videoGameSchema,
   websiteSchema,
 } from '../utils/seo';
 
@@ -118,6 +119,7 @@ export default function LandingPage() {
   const landingSchema = [
     organizationSchema(),
     websiteSchema(),
+    videoGameSchema(),
     {
       '@type': 'WebApplication',
       name: 'Deadlock AfterMatch',
@@ -139,7 +141,7 @@ export default function LandingPage() {
         title="Deadlock Match Analyzer and Player Reports | AfterMatch"
         description="Free Deadlock match analyzer. Get instant post-match grades, hero performance reports, economy breakdowns, item timing analysis, and personalized coaching — no login required."
         canonical={absoluteUrl('/')}
-        imageUrl="/images/og-share.png"
+        imageUrl="/images/og-share.webp"
         schema={landingSchema} 
       />
       {/* Background context (Minimal) */}

@@ -14,16 +14,18 @@
   "rewrites": [
     { "source": "/api/og/:matchId/:accountId", "destination": "/api/og/[matchId]/[accountId]" },
     { "source": "/api/(.*)", "destination": "/api/index" },
-    { "source": "/", "destination": "/index.html" },
-    { "source": "/about", "destination": "/index.html" },
-    { "source": "/faq", "destination": "/index.html" },
-    { "source": "/resources", "destination": "/index.html" },
-    { "source": "/privacy", "destination": "/index.html" },
-    { "source": "/matches/(.*)", "destination": "/index.html" },
-    { "source": "/player/(.*)", "destination": "/index.html" },
-    { "source": "/dashboard/(.*)", "destination": "/index.html" },
-    { "source": "/report/(.*)", "destination": "/index.html" },
-    { "source": "/guide/(.*)", "destination": "/index.html" }
+    { "source": "/sitemap.xml", "destination": "/api/index" },
+    { "source": "/robots.txt", "destination": "/api/index" },
+    { "source": "/", "destination": "/api/index" },
+    { "source": "/about", "destination": "/api/index" },
+    { "source": "/faq", "destination": "/api/index" },
+    { "source": "/resources", "destination": "/api/index" },
+    { "source": "/privacy", "destination": "/api/index" },
+    { "source": "/matches/(.*)", "destination": "/api/index" },
+    { "source": "/player/(.*)", "destination": "/api/index" },
+    { "source": "/dashboard/(.*)", "destination": "/api/index" },
+    { "source": "/report/(.*)", "destination": "/api/index" },
+    { "source": "/guide/(.*)", "destination": "/api/index" }
   ],
   "headers": [
     {

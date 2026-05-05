@@ -234,9 +234,35 @@ app.get('/health', (_req, res) => {
 
 // 2. API Mounting
 // Vercel rewrites can be inconsistent with prefix stripping. 
-// Mounting on both ensures we catch all variations safely.
 app.use('/api', routes);
-app.use('/', routes); 
+
+// 3. SSR Proxy and Static Frontend
+// Vercel routes non-API traffic here. We intercept bots for SSR, and serve the static SPA for users.
+const ssrProxy = require('./middleware/ssrProxy');
+app.use(ssrProxy);
+
+// Serve SEO dynamic routes before static files so they override public/sitemap.xml
+const seoRoutes = require('./routes/seo');
+app.use('/', seoRoutes);
+
+// Serve static frontend assets (if running locally or as a Vercel fallback)
+const distPath = path.join(__dirname, '../client/dist');
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath, { index: false }));
+}
+
+// Catch-all route to serve the React SPA for real users
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api/') || req.path.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|webp)$/)) {
+    return next();
+  }
+  const indexPath = path.join(__dirname, '../client/dist/index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    next();
+  }
+});
 
 // --------------- Error Handling ---------------
 
