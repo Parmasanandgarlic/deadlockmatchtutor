@@ -1,4 +1,3 @@
-```
 # Dependencies
 node_modules/
 
@@ -59,5 +58,15 @@ htmlcov/
 .coverage
 .coverage.*
 .nyc_output
-```
+
+# Vercel
 .vercel
+
+# Generated OpenAPI clients
+temp-openapi/
+
+# Stray directories
+-p/
+
+# Bundle stats
+bundle-stats.html
