@@ -161,7 +161,7 @@ class AuthService {
       secret: process.env.SESSION_SECRET || crypto.randomBytes(64).toString('hex'),
       resave: false,
       saveUninitialized: false,
-      store: redisClient.isConnected ? this.createRedisStore() : undefined,
+      store: config.redis.url ? this.createRedisStore() : undefined,
       cookie: {
         secure: !config.isDev,
         httpOnly: true,

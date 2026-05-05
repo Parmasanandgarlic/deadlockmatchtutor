@@ -1,6 +1,7 @@
 const { clamp } = require('../../utils/helpers');
 const { getHeroName } = require('../../utils/heroes');
 const { getRankInfo } = require('../../utils/ranks');
+const { MATCHUP_DIFFICULTY } = require('../scoringCalibration');
 
 /**
  * Matchup Difficulty Analyzer.
@@ -139,7 +140,7 @@ function analyzeMatchupDifficulty({ matchInfo, accountId, heroId, rankPredict })
 
   if (!target || playerTeam == null || players.length === 0) {
     return {
-      score: 50,
+      score: MATCHUP_DIFFICULTY.neutralScore,
       difficulty: 'unknown',
       note: 'Match info missing — cannot evaluate matchup difficulty.',
     };
@@ -176,12 +177,12 @@ function analyzeMatchupDifficulty({ matchInfo, accountId, heroId, rankPredict })
     const eArch = getArchetype(eHeroId);
     const archCounter = COUNTER_MATRIX[eArch]?.[playerArch] ?? 0;
     const isSpecific = (SPECIFIC_COUNTERS[heroId] || []).includes(eHeroId);
-    if (archCounter >= 0.4 || isSpecific) {
+    if (archCounter >= MATCHUP_DIFFICULTY.counterScore.trigger || isSpecific) {
       counters.push({
         heroId: eHeroId,
         heroName: getHeroName(eHeroId),
         archetype: eArch,
-        strength: isSpecific ? 'hard' : archCounter >= 0.5 ? 'moderate' : 'soft',
+        strength: isSpecific ? 'hard' : archCounter >= MATCHUP_DIFFICULTY.counterScore.moderateTrigger ? 'moderate' : 'soft',
         reason: isSpecific
           ? `${getHeroName(eHeroId)} is a known counter to ${getHeroName(heroId)}.`
           : `${eArch} heroes tend to pressure ${playerArch} heroes.`,
@@ -190,30 +191,34 @@ function analyzeMatchupDifficulty({ matchInfo, accountId, heroId, rankPredict })
   }
 
   // Difficulty score: starts at 50, shifts based on factors.
-  let score = 50;
+  let score = MATCHUP_DIFFICULTY.neutralScore;
   // Rank delta: each tier differential shifts ±10
-  score += clamp(rankDelta * 1.0, -20, 20);
+  score += clamp(
+    rankDelta * MATCHUP_DIFFICULTY.rankDeltaScale,
+    -MATCHUP_DIFFICULTY.rankDeltaClamp,
+    MATCHUP_DIFFICULTY.rankDeltaClamp
+  );
   // Counters: each hard counter +8 difficulty, moderate +4
   for (const c of counters) {
-    if (c.strength === 'hard') score += 10;
-    else if (c.strength === 'moderate') score += 5;
-    else score += 2;
+    if (c.strength === 'hard') score += MATCHUP_DIFFICULTY.counterScore.hard;
+    else if (c.strength === 'moderate') score += MATCHUP_DIFFICULTY.counterScore.moderate;
+    else score += MATCHUP_DIFFICULTY.counterScore.soft;
   }
   // Heavy enemy carry presence increases difficulty
-  if (composition.carry >= 3) score += 6;
-  if (composition.tank === 0) score -= 3; // no enemy tanks → easier
-  if (composition.support >= 2) score += 4; // strong enemy utility
+  if (composition.carry >= MATCHUP_DIFFICULTY.compositionAdjustment.manyCarriesAt) score += MATCHUP_DIFFICULTY.compositionAdjustment.manyCarries;
+  if (composition.tank === 0) score += MATCHUP_DIFFICULTY.compositionAdjustment.noTanks;
+  if (composition.support >= MATCHUP_DIFFICULTY.compositionAdjustment.manySupportsAt) score += MATCHUP_DIFFICULTY.compositionAdjustment.manySupports;
 
   // Net worth gap: if ally team out-farmed enemies, difficulty was lower
-  if (netWorthDelta > 5000) score -= 8;
-  else if (netWorthDelta < -5000) score += 8;
+  if (netWorthDelta > MATCHUP_DIFFICULTY.netWorthSwing.threshold) score -= MATCHUP_DIFFICULTY.netWorthSwing.adjustment;
+  else if (netWorthDelta < -MATCHUP_DIFFICULTY.netWorthSwing.threshold) score += MATCHUP_DIFFICULTY.netWorthSwing.adjustment;
 
   score = Math.round(clamp(score, 0, 100));
 
   let difficulty = 'balanced';
-  if (score >= 75) difficulty = 'extreme';
-  else if (score >= 60) difficulty = 'hard';
-  else if (score <= 35) difficulty = 'easy';
+  if (score >= MATCHUP_DIFFICULTY.bands.extreme) difficulty = 'extreme';
+  else if (score >= MATCHUP_DIFFICULTY.bands.hard) difficulty = 'hard';
+  else if (score <= MATCHUP_DIFFICULTY.bands.easy) difficulty = 'easy';
 
   const playerRankInfo = getRankInfo(playerTeamAvgRank);
   const enemyRankInfo = getRankInfo(enemyTeamAvgRank);

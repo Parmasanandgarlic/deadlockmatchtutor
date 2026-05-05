@@ -54,7 +54,7 @@
 | **Deployment** | Vercel (serverless functions) | ✅ Cost-effective for startup |
 | **Security** | Helmet, CORS, express-rate-limit | ✅ Basic security covered |
 | **Authentication** | Passport.js, Steam OpenID | ✅ Game-appropriate auth |
-| **Caching** | Redis (optional) | ⚠️ Optional = potential performance issues |
+| **Caching** | Redis (required in production) | ✅ Shared cache and throttles enforced |
 
 ### 1.3 Core Features
 
@@ -70,7 +70,7 @@
 5. **Letter Grade System** - A+ to F overall grading
 6. **User Authentication** - Steam OAuth login
 7. **Favorites System** - Bookmark players and matches
-8. **Caching Layer** - Supabase + optional Redis
+8. **Caching Layer** - Supabase + Redis
 9. **Rate Limiting** - 100 requests per 15 minutes per IP
 10. **Comprehensive Testing** - 62 tests across 12 suites
 
@@ -175,7 +175,7 @@
 - Missing item build path optimization suggestions
 
 ❌ **Performance Concerns**
-- Redis caching is optional (not required)
+- Redis caching is required in production; local development can use in-memory stubs
 - No CDN for static assets
 - Serverless cold starts on Vercel Hobby plan
 
@@ -492,7 +492,7 @@ function analyzeLanePhase(firstTenMinutes) { }
 ---
 
 #### **Priority 6: Performance Optimization** ⚡
-**Current State**: Optional Redis, Vercel cold starts
+**Current State**: Production Redis required; Vercel cold starts remain a deployment risk
 
 **Recommendations**:
 1. **Mandatory Redis Caching**

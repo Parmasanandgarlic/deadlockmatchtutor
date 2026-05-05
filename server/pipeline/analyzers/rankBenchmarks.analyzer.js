@@ -1,5 +1,6 @@
 const { clamp, safeDivide } = require('../../utils/helpers');
 const { getRankInfo } = require('../../utils/ranks');
+const { RANK_BENCHMARKS } = require('../scoringCalibration');
 
 /**
  * Dynamic Rank Benchmarks Analyzer.
@@ -23,18 +24,8 @@ const { getRankInfo } = require('../../utils/ranks');
  *   Eternus  (12)→ 1.72 ×
  */
 
-const BASELINE = {
-  soulsPerMin: 550,
-  kda: 3.0,
-  damagePerMin: 900,
-  objectiveDamage: 8000,
-  winrate: 50,
-};
-
-const TIER_MULTIPLIER = {
-  1: 0.55, 2: 0.65, 3: 0.75, 4: 0.88, 5: 1.0,
-  6: 1.12, 7: 1.22, 8: 1.32, 9: 1.42, 10: 1.52, 11: 1.62, 12: 1.72,
-};
+const BASELINE = RANK_BENCHMARKS.baseline;
+const TIER_MULTIPLIER = RANK_BENCHMARKS.tierMultiplier;
 
 function tierFromBadge(badge) {
   if (badge == null || typeof badge !== 'number') return null;
@@ -42,7 +33,7 @@ function tierFromBadge(badge) {
 }
 
 function scaleBaselineForTier(tier) {
-  const mult = TIER_MULTIPLIER[tier] ?? 1.0;
+  const mult = TIER_MULTIPLIER[tier] ?? TIER_MULTIPLIER[RANK_BENCHMARKS.defaultTier];
   return {
     soulsPerMin: Math.round(BASELINE.soulsPerMin * mult),
     kda: Number((BASELINE.kda * Math.sqrt(mult)).toFixed(2)),
@@ -58,8 +49,8 @@ function scaleBaselineForTier(tier) {
 function percentileScore(observed, expected) {
   if (!expected || expected <= 0) return null;
   const ratio = observed / expected;
-  // log2 scale so 2x = ~85, 0.5x = ~15
-  const score = 50 + 35 * Math.log2(clamp(ratio, 0.25, 4));
+  const { benchmarkScore, logScale, ratioFloor, ratioCeiling } = RANK_BENCHMARKS.percentileCurve;
+  const score = benchmarkScore + logScale * Math.log2(clamp(ratio, ratioFloor, ratioCeiling));
   return Math.round(clamp(score, 0, 100));
 }
 
@@ -72,7 +63,7 @@ function percentileScore(observed, expected) {
  */
 function analyzeRankBenchmarks({ combat = {}, itemization = {}, rankPredict, playerStats = {} }) {
   const badge = rankPredict?.badge ?? null;
-  const tier = tierFromBadge(badge) ?? 5; // default to Arcanist
+  const tier = tierFromBadge(badge) ?? RANK_BENCHMARKS.defaultTier;
   const rankInfo = getRankInfo(badge);
   const expected = scaleBaselineForTier(tier);
 
@@ -147,9 +138,9 @@ function analyzeRankBenchmarks({ combat = {}, itemization = {}, rankPredict, pla
     },
     comparisons,
     summary:
-      score >= 65
+      score >= RANK_BENCHMARKS.summaryBands.above
         ? `You performed ABOVE the typical ${rankInfo.name} player this match.`
-        : score >= 45
+        : score >= RANK_BENCHMARKS.summaryBands.inline
         ? `You performed in line with a typical ${rankInfo.name} player this match.`
         : `You performed BELOW a typical ${rankInfo.name} player this match.`,
   };

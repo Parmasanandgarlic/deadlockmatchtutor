@@ -12,13 +12,15 @@ const config = require('./config');
 const logger = require('./utils/logger');
 const routes = require('./routes');
 const swaggerUi = require('swagger-ui-express');
-const swaggerJsdoc = require('swagger-jsdoc');
 const Sentry = require('@sentry/node');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { serviceKeyGuard } = require('./middleware/security.middleware');
 const { csrfProtection } = require('./middleware/csrf.middleware');
+const { RedisRateLimitStore } = require('./middleware/redisRateLimitStore');
 const authService = require('./services/auth.service');
 const redisClient = require('./services/redis.service');
+const { logOptionalFailure } = require('./utils/logging');
+const { createOpenApiSpec } = require('./docs/openapi');
 
 // Initializing Sentry (v8+ structure)
 Sentry.init({
@@ -46,6 +48,60 @@ process.on('uncaughtException', (err) => {
 const app = express();
 app.set('trust proxy', 1);
 
+const redisRequired = config.nodeEnv === 'production';
+const startupState = {
+  redisError: null,
+};
+
+const redisReadyPromise = (async () => {
+  if (redisRequired && !config.redis.url) {
+    const err = new Error('REDIS_URL is required when NODE_ENV=production.');
+    err.code = 'REDIS_NOT_CONFIGURED';
+    startupState.redisError = err;
+    throw err;
+  }
+
+  try {
+    await redisClient.connect();
+    return redisClient.isReady();
+  } catch (err) {
+    startupState.redisError = err;
+    logger.error('Redis initialization error:', err.message);
+    if (redisRequired) throw err;
+    return false;
+  }
+})();
+redisReadyPromise.catch((err) => {
+  logOptionalFailure('Redis readiness promise failed during startup', err, redisRequired ? 'error' : 'warn');
+});
+
+async function redisReadinessGate(req, res, next) {
+  if (!redisRequired || req.path === '/health') {
+    return next();
+  }
+
+  try {
+    await redisReadyPromise;
+  } catch (err) {
+    logOptionalFailure('Redis readiness gate blocked request', err, 'warn');
+    return res.status(503).json({
+      error: 'Service temporarily unavailable',
+      code: 'REDIS_REQUIRED',
+      message: 'Redis is required in production and is not ready.',
+    });
+  }
+
+  if (startupState.redisError) {
+    return res.status(503).json({
+      error: 'Service temporarily unavailable',
+      code: 'REDIS_REQUIRED',
+      message: 'Redis is required in production and is not ready.',
+    });
+  }
+
+  next();
+}
+
 // (Note: In Sentry v8+, Handlers.requestHandler is no longer required for basic tracking)
 
 // Ensure temp directory exists for .dem file storage
@@ -68,8 +124,8 @@ app.use((req, res, next) => {
 });
 
 // Security headers with hardened CSP
-// SECURITY FIX: Removed 'unsafe-inline' and 'unsafe-eval' from scriptSrc.
-// These directives completely negate CSP's XSS protection.
+// SECURITY FIX: removed inline-script and eval allowances from scriptSrc.
+// Those directives completely negate CSP's XSS protection.
 // Scripts that need inline execution must use the per-request nonce.
 app.use(helmet({
   contentSecurityPolicy: {
@@ -79,16 +135,22 @@ app.use(helmet({
         "'self'",
         (req, res) => `'nonce-${res.locals.cspNonce}'`,
       ],
+      scriptSrcAttr: ["'none'"],
       styleSrc: ["'self'", 'https://fonts.googleapis.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com'],
       imgSrc: ["'self'", 'data:', 'https://assets-bucket.deadlock-api.com', 'https://assets.deadlock-api.com', 'https://deadlock-api.com'],
       connectSrc: ["'self'", 'https://api.deadlock-api.com', 'https://assets.deadlock-api.com', 'https://steamcommunity.com'],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'none'"],
     },
   },
 }));
 app.use(serviceKeyGuard);
 app.use(compression());
 app.use(cors({ origin: config.cors.origin, credentials: true }));
+app.use(redisReadinessGate);
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -100,19 +162,6 @@ if (config.isDev) {
 // CSRF Protection — validates state-changing requests have matching tokens.
 // Must come after cookieParser so req.cookies is populated.
 app.use(csrfProtection);
-
-// Initialize Redis connection (async, with proper error handling)
-// The connection guard in redis.service.js prevents duplicate connections
-// on serverless cold-starts.
-(async () => {
-  try {
-    await redisClient.connect();
-  } catch (err) {
-    // Redis is optional in some deployments (e.g. serverless). Log and continue
-    // so API routes can still respond in degraded mode.
-    logger.error('Redis initialization error:', err.message);
-  }
-})();
 
 // Initialize authentication service
 const authConfigured = authService.initialize();
@@ -126,30 +175,9 @@ if (authConfigured) {
   logger.warn('Authentication not configured - Steam API key missing');
 }
 
-// Swagger configuration
-const swaggerOptions = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Deadlock AfterMatch API',
-      version: '1.0.0',
-      description: 'REST API documentation for the Deadlock match analysis and player tracking tool.',
-      contact: {
-        name: 'Support',
-        email: 'contact@aftermatch.xyz'
-      }
-    },
-    servers: [
-      {
-        url: config.isDev ? `http://localhost:${config.port}` : 'https://api.aftermatch.xyz',
-        description: config.isDev ? 'Local Development Server' : 'Production API Server'
-      }
-    ]
-  },
-  apis: [path.join(__dirname, 'routes/*.js')], // Scan route files for JSDoc annotations
-};
-
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
+const swaggerSpec = createOpenApiSpec({ isDev: config.isDev, port: config.port });
+app.get('/openapi.json', (_req, res) => res.json(swaggerSpec));
+app.get('/api/openapi.json', (_req, res) => res.json(swaggerSpec));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // General API rate limiter
@@ -165,8 +193,9 @@ app.use('/api', limiter);
 // SECURITY FIX: Stricter rate limiter for authentication endpoints.
 // Without this, brute force attacks on session tokens are trivial.
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,  // 15-minute window
-  max: 10,                     // 10 attempts per window
+  windowMs: config.authRateLimit.windowMs,
+  max: config.authRateLimit.max,
+  store: new RedisRateLimitStore('ratelimit:auth'),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many authentication attempts. Please try again later.' },
@@ -186,9 +215,13 @@ app.use((req, res, next) => {
 
 // 1. Critical Health Check (Must be at the very top)
 app.get('/health', (_req, res) => {
-  res.json({ 
-    status: 'ok', 
+  const hasFatalRedisError = redisRequired && startupState.redisError;
+
+  res.status(hasFatalRedisError ? 503 : 200).json({
+    status: hasFatalRedisError ? 'error' : 'ok',
     redis: redisClient.isReady() ? 'connected' : redisClient.isDegraded ? 'degraded' : 'disconnected',
+    redisRequired,
+    error: hasFatalRedisError ? startupState.redisError.message : undefined,
     uptime: Math.floor(process.uptime()), 
     version: process.env.DEPLOYMENT_VERSION || '1.0.1-radar-timeline',
     timestamp: new Date().toISOString()
@@ -213,10 +246,21 @@ app.use(errorHandler);
 
 // Start server if this script is executed directly (not required as a module) and not on Vercel
 if (require.main === module && (!process.env.VERCEL)) {
-  app.listen(config.port, () => {
-    logger.info(`Deadlock Analyzer API running on port ${config.port} [${config.nodeEnv}]`);
-    logger.info(`CORS Origins Allowed: ${Array.isArray(config.cors.origin) ? config.cors.origin.join(', ') : config.cors.origin}`);
-  });
+  (async () => {
+    try {
+      if (redisRequired) {
+        await redisReadyPromise;
+      }
+
+      app.listen(config.port, () => {
+        logger.info(`Deadlock Analyzer API running on port ${config.port} [${config.nodeEnv}]`);
+        logger.info(`CORS Origins Allowed: ${Array.isArray(config.cors.origin) ? config.cors.origin.join(', ') : config.cors.origin}`);
+      });
+    } catch (err) {
+      logger.error('Startup failed:', err.message);
+      process.exit(1);
+    }
+  })();
 }
 
 // Export for Vercel serverless

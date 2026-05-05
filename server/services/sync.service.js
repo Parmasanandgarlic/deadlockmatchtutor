@@ -2,6 +2,7 @@ const { supabase } = require('../utils/supabase');
 const { getMatchHistory } = require('./deadlockApi.service');
 const redisClient = require('./redis.service');
 const logger = require('../utils/logger');
+const { logAndFallback } = require('../utils/logging');
 
 /**
  * Record an account as 'tracked' and update its last seen time.
@@ -43,7 +44,9 @@ async function invalidatePlayerCaches(accountId, { includeAnalyses = true } = {}
     `mmr:${accountId}`,
   ].filter(Boolean);
 
-  await Promise.all(cacheKeys.map((key) => redisClient.del(key).catch(() => false)));
+  await Promise.all(cacheKeys.map((key) => (
+    redisClient.del(key).catch(logAndFallback(`[Redis] Failed to delete cache key ${key}`, false))
+  )));
 
   if (includeAnalyses && supabase) {
     try {

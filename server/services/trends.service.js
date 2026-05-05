@@ -1,5 +1,6 @@
 const { supabase } = require('../utils/supabase');
 const logger = require('../utils/logger');
+const { TRENDS } = require('../pipeline/scoringCalibration');
 
 /**
  * Calculates a linear trendline slope to determine if a stat is improving or declining.
@@ -32,8 +33,8 @@ function calculateTrendSlug(values) {
   if (!Number.isFinite(average) || average === 0) return 'stable';
   const percentageChangePerMatch = (slope / average) * 100;
   
-  if (percentageChangePerMatch > 1) return 'improving';
-  if (percentageChangePerMatch < -1) return 'declining';
+  if (percentageChangePerMatch > TRENDS.stablePercentChangePerMatch) return 'improving';
+  if (percentageChangePerMatch < -TRENDS.stablePercentChangePerMatch) return 'declining';
   return 'stable';
 }
 
@@ -42,7 +43,7 @@ function calculateTrendSlug(values) {
  * @param {string} accountId 
  * @param {number} limit Number of recent matches to analyze (default 10)
  */
-async function getPlayerProfileTrends(accountId, limit = 10) {
+async function getPlayerProfileTrends(accountId, limit = TRENDS.defaultLimit) {
   try {
     const { data: analyses, error } = await supabase
       .from('analyses')
@@ -102,7 +103,7 @@ async function getPlayerProfileTrends(accountId, limit = 10) {
       validMatches++;
     });
 
-    if (validMatches < 3) {
+    if (validMatches < TRENDS.minimumValidMatches) {
       return {
         available: true,
         insufficientData: true,

@@ -2,11 +2,14 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Deadlock AfterMatch API",
-    "version": "1.0.0",
-    "description": "REST API for Deadlock AfterMatch (player resolution, match retrieval, analysis pipeline, trends, and metadata).",
+    "version": "1.0.1",
+    "description": "REST API for Deadlock AfterMatch: Steam player resolution, match retrieval, match analysis, trends, metadata, favorites, and auth/session operations.",
     "contact": {
       "name": "Support",
       "email": "contact@aftermatch.xyz"
+    },
+    "license": {
+      "name": "Proprietary"
     }
   },
   "servers": [
@@ -23,6 +26,345 @@
     "description": "Deadlock AfterMatch",
     "url": "https://www.aftermatch.xyz"
   },
+  "components": {
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "aftermatch.sid"
+      },
+      "csrfToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-csrf-token"
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "nullable": true
+          }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "timestamp"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "error"
+            ]
+          },
+          "redis": {
+            "type": "string"
+          },
+          "redisRequired": {
+            "type": "boolean"
+          },
+          "uptime": {
+            "type": "integer"
+          },
+          "version": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CsrfResponse": {
+        "type": "object",
+        "required": [
+          "csrfToken"
+        ],
+        "properties": {
+          "csrfToken": {
+            "type": "string"
+          }
+        }
+      },
+      "PlayerResolveRequest": {
+        "type": "object",
+        "required": [
+          "steamInput"
+        ],
+        "properties": {
+          "steamInput": {
+            "type": "string",
+            "minLength": 2,
+            "description": "Steam ID, Steam vanity name, profile URL, or custom URL."
+          }
+        }
+      },
+      "MatchSummary": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "match_id": {
+            "type": "integer"
+          },
+          "hero_id": {
+            "type": "integer"
+          },
+          "start_time": {
+            "type": "integer"
+          },
+          "match_duration_s": {
+            "type": "integer"
+          },
+          "player_kills": {
+            "type": "integer"
+          },
+          "player_deaths": {
+            "type": "integer"
+          },
+          "player_assists": {
+            "type": "integer"
+          },
+          "net_worth": {
+            "type": "integer"
+          }
+        }
+      },
+      "AnalysisRequest": {
+        "type": "object",
+        "required": [
+          "matchId",
+          "accountId"
+        ],
+        "properties": {
+          "matchId": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "accountId": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "refresh": {
+            "type": "boolean",
+            "description": "Bypass cached analysis when supported."
+          }
+        }
+      },
+      "AnalysisResponse": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "meta": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "overall": {
+            "type": "object",
+            "properties": {
+              "impactScore": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "letterGrade": {
+                "type": "string"
+              }
+            }
+          },
+          "modules": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "insights": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "PlayerProfile": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "accountId": {
+            "type": "integer"
+          },
+          "rank": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "stats": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "topHeroes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "TrendResponse": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "accountId": {
+            "type": "integer"
+          },
+          "sampleSize": {
+            "type": "integer"
+          },
+          "overallTrend": {
+            "type": "string"
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "FavoriteRequest": {
+        "type": "object",
+        "required": [
+          "type",
+          "targetId"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "player",
+              "match"
+            ]
+          },
+          "targetId": {
+            "type": "integer"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Authentication required",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "TooManyRequests": {
+        "description": "Rate limit exceeded",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "ServerError": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Utility",
+      "description": "Health, CSRF, cron, and operational endpoints."
+    },
+    {
+      "name": "Players",
+      "description": "Steam resolution, player profile, match history, and rank timelines."
+    },
+    {
+      "name": "Matches",
+      "description": "Match detail and metadata retrieval."
+    },
+    {
+      "name": "Analysis",
+      "description": "Match analysis pipeline and cached reports."
+    },
+    {
+      "name": "Trends",
+      "description": "Aggregated performance trends over recent analyses."
+    },
+    {
+      "name": "Metadata",
+      "description": "Heroes, items, and ranks."
+    },
+    {
+      "name": "Authentication",
+      "description": "Steam login and session endpoints."
+    },
+    {
+      "name": "Favorites",
+      "description": "Authenticated user favorite players and matches."
+    },
+    {
+      "name": "Users",
+      "description": "Authenticated user preferences."
+    }
+  ],
   "paths": {
     "/api/analysis/run": {
       "post": {
@@ -35,31 +377,30 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "matchId",
-                  "accountId"
-                ],
-                "properties": {
-                  "matchId": {
-                    "type": "integer",
-                    "description": "The unique ID of the match to analyze"
-                  },
-                  "accountId": {
-                    "type": "integer",
-                    "description": "The account ID of the player being analyzed"
-                  }
-                }
+                "$ref": "#/components/schemas/AnalysisRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Analysis complete or retrieved from cache"
+            "description": "Analysis complete or retrieved from cache",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisResponse"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Missing or invalid parameters"
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
           }
         }
       }
@@ -90,10 +431,17 @@
         ],
         "responses": {
           "200": {
-            "description": "Cached analysis payload"
+            "description": "Cached analysis payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisResponse"
+                }
+              }
+            }
           },
           "404": {
-            "description": "Analysis not found"
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -368,7 +716,64 @@
         "summary": "Trigger background match synchronization for active accounts.",
         "tags": [
           "Utility"
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Sync result"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "summary": "Lightweight API health check",
+        "tags": [
+          "Utility"
+        ],
+        "responses": {
+          "200": {
+            "description": "API router is reachable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/csrf": {
+      "get": {
+        "summary": "Issue a CSRF token for state-changing requests",
+        "tags": [
+          "Utility"
+        ],
+        "responses": {
+          "200": {
+            "description": "CSRF token response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CsrfResponse"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/matches/{matchId}": {
@@ -389,10 +794,18 @@
         ],
         "responses": {
           "200": {
-            "description": "Full match data object"
+            "description": "Full match data object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
           },
           "404": {
-            "description": "Match not found"
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -415,7 +828,90 @@
         ],
         "responses": {
           "200": {
-            "description": "Match metadata (salt, cluster_id, etc.)"
+            "description": "Match metadata (salt, cluster_id, etc.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/meta/heroes": {
+      "get": {
+        "summary": "List known Deadlock heroes",
+        "tags": [
+          "Metadata"
+        ],
+        "responses": {
+          "200": {
+            "description": "Hero metadata list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/meta/items": {
+      "get": {
+        "summary": "List known Deadlock items",
+        "tags": [
+          "Metadata"
+        ],
+        "responses": {
+          "200": {
+            "description": "Item metadata list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/meta/ranks": {
+      "get": {
+        "summary": "List Deadlock rank metadata",
+        "tags": [
+          "Metadata"
+        ],
+        "responses": {
+          "200": {
+            "description": "Rank metadata list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -431,26 +927,25 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "steamInput"
-                ],
-                "properties": {
-                  "steamInput": {
-                    "type": "string",
-                    "description": "Steam ID, Vanity name, or Profile URL"
-                  }
-                }
+                "$ref": "#/components/schemas/PlayerResolveRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Resolved player IDs and basic info"
+            "description": "Resolved player IDs and basic info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
           },
           "400": {
-            "description": "Invalid input format"
+            "$ref": "#/components/responses/BadRequest"
           }
         }
       }
@@ -473,7 +968,20 @@
         ],
         "responses": {
           "200": {
-            "description": "List of recent matches"
+            "description": "List of recent matches",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MatchSummary"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           }
         }
       }
@@ -483,7 +991,25 @@
         "summary": "Trigger manual match history refresh from API",
         "tags": [
           "Players"
-        ]
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accountId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Manual sync result"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
       }
     },
     "/api/players/{accountId}/mmr-history": {
@@ -501,7 +1027,23 @@
               "type": "integer"
             }
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Rank prediction timeline",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
       }
     },
     "/api/players/{accountId}/profile": {
@@ -519,7 +1061,22 @@
               "type": "integer"
             }
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Unified player profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerProfile"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
       }
     },
     "/api/trends/{accountId}": {
@@ -550,18 +1107,23 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful trend aggregation"
+            "description": "Successful trend aggregation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrendResponse"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Invalid account ID format"
+            "$ref": "#/components/responses/BadRequest"
           },
           "500": {
-            "description": "Internal server error"
+            "$ref": "#/components/responses/ServerError"
           }
         }
       }
     }
-  },
-  "components": {},
-  "tags": []
+  }
 }

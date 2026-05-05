@@ -21,18 +21,17 @@ const router = Router();
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - steamInput
- *             properties:
- *               steamInput:
- *                 type: string
- *                 description: Steam ID, Vanity name, or Profile URL
+ *             $ref: '#/components/schemas/PlayerResolveRequest'
  *     responses:
  *       200:
  *         description: Resolved player IDs and basic info
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               additionalProperties: true
  *       400:
- *         description: Invalid input format
+ *         $ref: '#/components/responses/BadRequest'
  */
 router.post('/resolve', validateSteamInput, resolvePlayer);
 
@@ -51,6 +50,14 @@ router.post('/resolve', validateSteamInput, resolvePlayer);
  *     responses:
  *       200:
  *         description: List of recent matches
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/MatchSummary'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  */
 router.get('/:accountId/matches', requireNumericParam('accountId'), getPlayerMatches);
 
@@ -60,6 +67,17 @@ router.get('/:accountId/matches', requireNumericParam('accountId'), getPlayerMat
  *   post:
  *     summary: Trigger manual match history refresh from API
  *     tags: [Players]
+ *     parameters:
+ *       - in: path
+ *         name: accountId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Manual sync result
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  */
 router.post('/:accountId/sync', requireNumericParam('accountId'), handleManualSync);
 
@@ -75,6 +93,16 @@ router.post('/:accountId/sync', requireNumericParam('accountId'), handleManualSy
  *         required: true
  *         schema:
  *           type: integer
+ *     responses:
+ *       200:
+ *         description: Rank prediction timeline
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               additionalProperties: true
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  */
 router.get('/:accountId/mmr-history', requireNumericParam('accountId'), getPlayerMmrHistory);
 
@@ -90,6 +118,15 @@ router.get('/:accountId/mmr-history', requireNumericParam('accountId'), getPlaye
  *         required: true
  *         schema:
  *           type: integer
+ *     responses:
+ *       200:
+ *         description: Unified player profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PlayerProfile'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  */
 router.get('/:accountId/profile', requireNumericParam('accountId'), getPlayerProfile);
 

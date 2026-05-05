@@ -1,6 +1,7 @@
 const { TEAMFIGHT, PHASES } = require('../utils/constants');
 const { safeDivide, formatTime, clusterEvents, distance3D, idsMatch } = require('../utils/helpers');
 const logger = require('../utils/logger');
+const { COMBAT_REPLAY } = require('./scoringCalibration');
 
 /**
  * Combat & Engagement Analyzer (Module 2.3)
@@ -13,7 +14,7 @@ const logger = require('../utils/logger');
  *   - spellRotationEfficiency: Ability sequencing score (placeholder)
  *   - score                  : 0–100 module score
  */
-function analyzeCombat(parsedData, playerSteamId, actualSpm = 80) {
+function analyzeCombat(parsedData, playerSteamId, actualSpm = COMBAT_REPLAY.lostFarmSoulsPerMinuteFallback) {
   logger.debug(`Running combat analysis for ${playerSteamId}`);
 
   const { combatLog, playerTicks, matchMeta } = parsedData;
@@ -146,7 +147,9 @@ function analyzeDamageTaken(combatLog, teamfights, steamId) {
 
   for (const dmg of damageEvents) {
     const inFight = teamfights.some(
-      (tf) => dmg.timeSeconds >= tf.startSeconds - 5 && dmg.timeSeconds <= tf.endSeconds + 5
+      (tf) =>
+        dmg.timeSeconds >= tf.startSeconds - COMBAT_REPLAY.fightDamagePaddingSeconds &&
+        dmg.timeSeconds <= tf.endSeconds + COMBAT_REPLAY.fightDamagePaddingSeconds
     );
     if (inFight) {
       fightDamage += dmg.damage;
@@ -194,7 +197,8 @@ function computeDeadTimePenalty(playerTicks, steamId, duration, actualSpm) {
   }
 
   // Use actual SPM for lost-farm calculation
-  const lostFarmEstimate = Math.round((totalDeadSeconds / 60) * actualSpm);
+  const effectiveSpm = actualSpm || COMBAT_REPLAY.lostFarmSoulsPerMinuteFallback;
+  const lostFarmEstimate = Math.round((totalDeadSeconds / 60) * effectiveSpm);
 
   return {
     totalDeadSeconds: Math.round(totalDeadSeconds),
@@ -208,23 +212,23 @@ function computeDeadTimePenalty(playerTicks, steamId, duration, actualSpm) {
  * Compute 0–100 combat score.
  */
 function computeCombatScore({ teamfightParticipation, damageTakenBreakdown, deadTimePenalty, spellRotationEfficiency, duration }) {
-  let score = 50;
+  let score = COMBAT_REPLAY.baselineScore;
 
   // Participation bonus (up to +25)
-  score += Math.min(teamfightParticipation.participationPercent / 100, 1) * 25;
+  score += Math.min(teamfightParticipation.participationPercent / 100, 1) * COMBAT_REPLAY.participationBonusMax;
 
   // Low poke damage bonus (up to +10) — less poke = better positioning
   const pokeRatio = damageTakenBreakdown.pokeRatio || 0;
-  score += (1 - pokeRatio) * 10;
+  score += (1 - pokeRatio) * COMBAT_REPLAY.lowPokeDamageBonusMax;
 
   // Dead-time penalty (up to -20)
   // Dynamic threshold: Being dead for 12% of the match is the max penalty threshold.
-  const expectedMaxDeadSeconds = Math.max(duration * 0.12, 1);
+  const expectedMaxDeadSeconds = Math.max(duration * COMBAT_REPLAY.deadTimePenaltyDurationRatio, 1);
   const deadRatio = Math.min(deadTimePenalty.totalDeadSeconds / expectedMaxDeadSeconds, 1);
-  score -= deadRatio * 20;
+  score -= deadRatio * COMBAT_REPLAY.deadTimePenaltyMax;
 
   // Spell rotation (up to +10, placeholder)
-  score += (spellRotationEfficiency.score / 100) * 10;
+  score += (spellRotationEfficiency.score / 100) * COMBAT_REPLAY.spellRotationBonusMax;
 
   return Math.round(Math.max(0, Math.min(100, score)));
 }

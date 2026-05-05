@@ -8,6 +8,13 @@ const syncController = require('../controllers/sync.controller');
  *   get:
  *     summary: Trigger background match synchronization for active accounts.
  *     tags: [Utility]
+ *     responses:
+ *       200:
+ *         description: Sync result
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
  */
 router.get('/sync', syncController.handleCronSync);
 

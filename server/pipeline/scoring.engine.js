@@ -1,6 +1,6 @@
-const { MODULE_WEIGHTS, GRADE_THRESHOLDS } = require('../utils/constants');
 const { clamp } = require('../utils/helpers');
 const logger = require('../utils/logger');
+const { DEFAULT_ROLE, GRADE_THRESHOLDS, ROLE_WEIGHTS } = require('./scoringCalibration');
 
 /**
  * Scoring Engine (API-based)
@@ -23,27 +23,8 @@ const logger = require('../utils/logger');
  *
  * Each set must sum to 1.0 (with and without decisionQuality).
  */
-const ROLE_WEIGHTS = {
-  carry: {
-    withDQ:    { heroPerformance: 0.20, itemization: 0.25, combat: 0.18, benchmarks: 0.17, decisionQuality: 0.20 },
-    withoutDQ: { heroPerformance: 0.28, itemization: 0.30, combat: 0.22, benchmarks: 0.20 },
-  },
-  support: {
-    withDQ:    { heroPerformance: 0.24, itemization: 0.15, combat: 0.24, benchmarks: 0.17, decisionQuality: 0.20 },
-    withoutDQ: { heroPerformance: 0.30, itemization: 0.18, combat: 0.30, benchmarks: 0.22 },
-  },
-  tank: {
-    withDQ:    { heroPerformance: 0.22, itemization: 0.18, combat: 0.25, benchmarks: 0.15, decisionQuality: 0.20 },
-    withoutDQ: { heroPerformance: 0.28, itemization: 0.22, combat: 0.28, benchmarks: 0.22 },
-  },
-  brawler: {
-    withDQ:    { heroPerformance: 0.22, itemization: 0.20, combat: 0.22, benchmarks: 0.16, decisionQuality: 0.20 },
-    withoutDQ: { heroPerformance: 0.30, itemization: 0.25, combat: 0.25, benchmarks: 0.20 },
-  },
-};
-
 function getWeightsForRole(role, hasDecisionQuality) {
-  const roleConfig = ROLE_WEIGHTS[role] || ROLE_WEIGHTS.brawler;
+  const roleConfig = ROLE_WEIGHTS[role] || ROLE_WEIGHTS[DEFAULT_ROLE];
   return hasDecisionQuality ? roleConfig.withDQ : roleConfig.withoutDQ;
 }
 
@@ -62,7 +43,10 @@ function computeOverallScore(moduleScores, role) {
   const hasDecisionQuality = typeof moduleScores.decisionQuality === 'number';
   const decisionQuality = clamp(moduleScores.decisionQuality ?? 0, 0, 100);
 
-  const weights = getWeightsForRole(role || 'brawler', hasDecisionQuality);
+  const resolvedRole = role || DEFAULT_ROLE;
+  const weights = getWeightsForRole(resolvedRole, hasDecisionQuality);
+  // Updated weights — when decision quality is present, it is the single
+  // strongest signal because it synthesizes the others.
 
   let impactScore = Math.round(
     heroPerformance * weights.heroPerformance +
@@ -88,7 +72,7 @@ function computeOverallScore(moduleScores, role) {
     };
   }
 
-  logger.info(`Impact Score: ${impactScore} (${letterGrade}) [role: ${role || 'brawler'}]`);
+  logger.info(`Impact Score: ${impactScore} (${letterGrade}) [role: ${resolvedRole}]`);
 
   return {
     impactScore,

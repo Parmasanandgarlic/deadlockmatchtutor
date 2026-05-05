@@ -6,6 +6,7 @@ const redisClient = require('./redis.service');
 const { warnOnContractMismatch, MATCH_HISTORY_SCHEMA } = require('../utils/responseContracts');
 const { ApiUnavailableError } = require('../utils/apiAdapter');
 const { CircuitBreaker } = require('../utils/circuitBreaker');
+const { logAndFallback } = require('../utils/logging');
 
 const apiBreaker = new CircuitBreaker('DeadlockAPI', { failureThreshold: 3, resetTimeoutMs: 30000 });
 
@@ -37,7 +38,9 @@ async function fetchAssetList(label, path, redisKey) {
     return memoryHit.data;
   }
 
-  const cached = redisKey ? await redisClient.get(redisKey).catch(() => null) : null;
+  const cached = redisKey
+    ? await redisClient.get(redisKey).catch(logAndFallback(`[Redis] Asset cache read failed for ${label}`, null))
+    : null;
   if (Array.isArray(cached) && cached.length > 0) {
     assetMemoryCache.set(label, { data: cached, fetchedAt: now });
     return cached;
@@ -48,7 +51,9 @@ async function fetchAssetList(label, path, redisKey) {
   if (list.length > 0) {
     assetMemoryCache.set(label, { data: list, fetchedAt: now });
     if (redisKey) {
-      await redisClient.set(redisKey, list, ASSET_CACHE_TTL_SECONDS).catch(() => false);
+      await redisClient
+        .set(redisKey, list, ASSET_CACHE_TTL_SECONDS)
+        .catch(logAndFallback(`[Redis] Asset cache write failed for ${label}`, false));
     }
   }
   return list;
@@ -196,7 +201,9 @@ async function getMatchInfo(matchId) {
         throw new Error('Malformed bulk metadata payload: missing players array');
       }
       if (cacheKey) {
-        await redisClient.set(cacheKey, match, 2592000).catch(() => {});
+        await redisClient
+          .set(cacheKey, match, 2592000)
+          .catch(logAndFallback(`[Redis] Match info cache write failed for ${matchId}`, false));
       }
       return match;
     }
@@ -216,7 +223,9 @@ async function getMatchInfo(matchId) {
         throw new Error('Malformed metadata payload: missing players array');
       }
       if (cacheKey) {
-        await redisClient.set(cacheKey, data, 2592000).catch(() => {});
+        await redisClient
+          .set(cacheKey, data, 2592000)
+          .catch(logAndFallback(`[Redis] Match metadata cache write failed for ${matchId}`, false));
       }
       return data;
     }

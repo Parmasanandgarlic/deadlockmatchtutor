@@ -27,6 +27,11 @@ const config = {
     max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS, 10) || 100,
   },
 
+  authRateLimit: {
+    windowMs: parseInt(process.env.AUTH_RATE_LIMIT_WINDOW_MS, 10) || 15 * 60 * 1000,
+    max: parseInt(process.env.AUTH_RATE_LIMIT_MAX_REQUESTS, 10) || 10,
+  },
+
   redis: {
     url: process.env.REDIS_URL || null,
   },

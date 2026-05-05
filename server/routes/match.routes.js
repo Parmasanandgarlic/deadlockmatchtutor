@@ -19,8 +19,13 @@ const router = Router();
  *     responses:
  *       200:
  *         description: Full match data object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               additionalProperties: true
  *       404:
- *         description: Match not found
+ *         $ref: '#/components/responses/NotFound'
  */
 router.get('/:matchId', requireNumericParam('matchId'), getMatch);
 
@@ -39,6 +44,13 @@ router.get('/:matchId', requireNumericParam('matchId'), getMatch);
  *     responses:
  *       200:
  *         description: Match metadata (salt, cluster_id, etc.)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               additionalProperties: true
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
  */
 router.get('/:matchId/metadata', requireNumericParam('matchId'), getMetadata);
 

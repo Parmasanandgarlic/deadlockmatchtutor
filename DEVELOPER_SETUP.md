@@ -78,7 +78,7 @@ npx node-pg-migrate create my-migration-name --migrations-dir server/migrations
 - **Server Port**: Ensure the backend server on port `3001` is running before the frontend attempts to connect.
 - **Environment Variables**: Verify all environment variables are properly set in `server/.env`.
 - **Supabase Credentials**: Check that Supabase credentials match your existing setup on the Supabase dashboard.
-- **Redis (Production)**: Redis is **required** in production. If `REDIS_URL` is missing, the server will refuse to start. For local development, Redis is optional and the server runs with in-memory stubs.
+- **Redis (Production)**: Redis is **required** in production. If `REDIS_URL` is missing, the server will refuse to start. Local development can omit Redis and use in-memory stubs.
 
 > [!NOTE]
 > The `.env` file is ignored by Git and will not be pushed to the repository. Keep your credentials secure.

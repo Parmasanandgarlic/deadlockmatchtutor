@@ -1,4 +1,5 @@
 const { safeDivide, clamp } = require('../../utils/helpers');
+const { TEMPORAL } = require('../scoringCalibration');
 
 /**
  * Temporal Tracking Analyzer.
@@ -12,7 +13,7 @@ const { safeDivide, clamp } = require('../../utils/helpers');
  *   - comparisonVsAvg:  how THIS match compares to the recent rolling baseline
  */
 
-const DEFAULT_WINDOW = 20;
+const DEFAULT_WINDOW = TEMPORAL.defaultWindow;
 
 function extractMatchStats(m) {
   if (!m) return null;
@@ -80,7 +81,7 @@ function analyzeTemporal({ matchHistory = [], matchInHistory = null, window = DE
   const parsed = (matchHistory || [])
     .map(extractMatchStats)
     .filter(Boolean)
-    .filter((m) => m.durationMin >= 8); // ignore very short / abandoned games
+    .filter((m) => m.durationMin >= TEMPORAL.minimumDurationMinutes);
 
   // Sort oldest → newest by startTime if available
   parsed.sort((a, b) => (a.startTime || 0) - (b.startTime || 0));
@@ -88,7 +89,7 @@ function analyzeTemporal({ matchHistory = [], matchInHistory = null, window = DE
   const windowed = parsed.slice(-window);
   if (windowed.length === 0) {
     return {
-      score: 50,
+      score: TEMPORAL.neutralScore,
       sampleSize: 0,
       recentForm: null,
       trendSlope: 0,
@@ -128,15 +129,15 @@ function analyzeTemporal({ matchHistory = [], matchInHistory = null, window = DE
   }
 
   // Score: reward positive trend + high recent win rate
-  let score = 50;
-  if (kdaSlope > 0) score += clamp(kdaSlope * 60, 0, 25);
-  if (kdaSlope < 0) score += clamp(kdaSlope * 60, -25, 0);
-  if (winRate != null) score += (winRate - 50) * 0.4; // -20 … +20
+  let score = TEMPORAL.neutralScore;
+  if (kdaSlope > 0) score += clamp(kdaSlope * TEMPORAL.kdaSlopeScale, 0, TEMPORAL.maxTrendAdjustment);
+  if (kdaSlope < 0) score += clamp(kdaSlope * TEMPORAL.kdaSlopeScale, -TEMPORAL.maxTrendAdjustment, 0);
+  if (winRate != null) score += (winRate - TEMPORAL.winRateBaseline) * TEMPORAL.winRateScale;
   score = Math.round(clamp(score, 0, 100));
 
   let trendLabel = 'stable';
-  if (kdaSlope > 0.03) trendLabel = 'improving';
-  else if (kdaSlope < -0.03) trendLabel = 'declining';
+  if (kdaSlope > TEMPORAL.trendThreshold) trendLabel = 'improving';
+  else if (kdaSlope < -TEMPORAL.trendThreshold) trendLabel = 'declining';
 
   return {
     score,

@@ -103,9 +103,13 @@ vercel
 # - SUPABASE_URL
 # - SUPABASE_ANON_KEY
 # - SUPABASE_SERVICE_ROLE_KEY
+# - SESSION_SECRET (also signs CSRF tokens unless CSRF_SECRET is set)
+# - REDIS_URL (required when NODE_ENV=production)
 # - DEADLOCK_API_BASE_URL (default: https://api.deadlock-api.com)
 # - RATE_LIMIT_WINDOW_MS (default: 900000)
 # - RATE_LIMIT_MAX_REQUESTS (default: 100)
+# - AUTH_RATE_LIMIT_WINDOW_MS (default: 900000)
+# - AUTH_RATE_LIMIT_MAX_REQUESTS (default: 10)
 ```
 
 ## Data Flow
@@ -127,7 +131,7 @@ vercel
 | API Integration | Axios, OpenAPI-generated Deadlock API client |
 | Database/Cache | Supabase (PostgreSQL) |
 | Deployment | Vercel (serverless functions) |
-| Security | Helmet, CORS, express-rate-limit |
+| Security | Helmet, signed CSRF tokens, CORS, Redis-backed auth rate limits |
 
 ## Project Structure
 
@@ -179,9 +183,14 @@ deadlock-match-tutor/
 | `SUPABASE_URL` | Yes | Supabase project URL | - |
 | `SUPABASE_ANON_KEY` | Yes | Supabase anon/public key | - |
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service role key (bypasses RLS) | - |
+| `SESSION_SECRET` | Yes in production | Session signing secret; also signs CSRF tokens unless `CSRF_SECRET` is set | - |
+| `CSRF_SECRET` | No | Optional separate secret for CSRF token signing | `SESSION_SECRET` |
+| `REDIS_URL` | Yes in production | Redis connection URL for shared cache, sessions, and auth rate limits | - |
 | `CORS_ORIGIN` | No | Comma-separated allowed CORS origins | `http://localhost:5173` (dev) / `true` (prod) |
 | `RATE_LIMIT_WINDOW_MS` | No | Rate limit window in milliseconds | `900000` (15 min) |
 | `RATE_LIMIT_MAX_REQUESTS` | No | Max requests per window per IP | `100` |
+| `AUTH_RATE_LIMIT_WINDOW_MS` | No | Auth-specific rate limit window in milliseconds | `900000` (15 min) |
+| `AUTH_RATE_LIMIT_MAX_REQUESTS` | No | Max auth attempts per window per IP | `10` |
 
 ## Testing
 
@@ -257,7 +266,8 @@ npm run test:failover    # Disaster Recovery & Failover tests
 
 - **Helmet**: Security headers (CSP, HSTS, X-Frame-Options, etc.)
 - **CORS**: Configurable origin validation
-- **Rate Limiting**: Per-IP request throttling
+- **CSRF Protection**: Signed double-submit token validation for all non-safe methods
+- **Rate Limiting**: Per-IP request throttling, with Redis-backed auth throttles in production
 - **Input Validation**: Strict validation on all inputs
 - **SQL Injection Protection**: Parameterized queries via Supabase client
 
@@ -265,7 +275,7 @@ npm run test:failover    # Disaster Recovery & Failover tests
 
 - **Supabase Caching**: Analysis results cached for fast retrieval
 - **Efficient API Calls**: Batch API calls where possible
-- **Graceful Degradation**: Fallback mechanisms ensure availability
+- **Graceful Degradation**: Development fallback mechanisms preserve local availability; production requires Redis for shared cache and throttling
 
 ## Deployment Notes
 
