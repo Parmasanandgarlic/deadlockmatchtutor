@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "installCommand": "npm install --prefer-offline",
+  "installCommand": "npm ci",
   "buildCommand": "npm run build -w client",
   "outputDirectory": "client/dist",
   "cleanUrls": true,
