@@ -59,6 +59,7 @@ export default function ItemizationModule({ data, meta }) {
       {/* Key Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Tooltip
+          className="group relative w-full"
           content={{
             term: 'Net Worth',
             definition: 'Total gold value of your items plus unspent gold. Higher net worth enables stronger item spikes.',
@@ -72,6 +73,7 @@ export default function ItemizationModule({ data, meta }) {
           />
         </Tooltip>
         <Tooltip
+          className="group relative w-full"
           content={{
             term: 'Souls Per Minute',
             definition: 'Average souls collected per minute. Critical for power spike timing and item progression in Deadlock.',
@@ -85,6 +87,7 @@ export default function ItemizationModule({ data, meta }) {
           />
         </Tooltip>
         <Tooltip
+          className="group relative w-full"
           content={{
             term: 'Last Hits',
             definition: 'Total souls collected from last-hitting creeps. Foundation of reliable farm and item timing.',

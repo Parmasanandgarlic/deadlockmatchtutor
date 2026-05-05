@@ -27,6 +27,7 @@ export default function HeroPerformanceModule({ data }) {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Tooltip
+              className="group relative w-full"
               content={{
                 term: 'Match KDA',
                 definition: 'Your kills/deaths/assists ratio for this specific match. Compare to career average to gauge performance.',
@@ -41,6 +42,7 @@ export default function HeroPerformanceModule({ data }) {
               />
             </Tooltip>
             <Tooltip
+              className="group relative w-full"
               content={{
                 term: 'Souls Per Minute',
                 definition: 'Average souls collected per minute. Critical for power spike timing and item progression in Deadlock.',
@@ -54,6 +56,7 @@ export default function HeroPerformanceModule({ data }) {
               />
             </Tooltip>
             <Tooltip
+              className="group relative w-full"
               content={{
                 term: 'Damage Per Minute',
                 definition: 'Average damage dealt to heroes per minute. Indicates fight participation and damage consistency.',
@@ -67,6 +70,7 @@ export default function HeroPerformanceModule({ data }) {
               />
             </Tooltip>
             <Tooltip
+              className="group relative w-full"
               content={{
                 term: 'Deaths',
                 definition: 'Total deaths in this match. Each death grants souls to enemies and removes you from map control.',
@@ -94,6 +98,7 @@ export default function HeroPerformanceModule({ data }) {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Tooltip
+            className="group relative w-full"
             content={{
               term: 'Win Rate',
               definition: 'Percentage of matches won with this hero across your career. Reflects overall mastery and effectiveness.',
@@ -108,6 +113,7 @@ export default function HeroPerformanceModule({ data }) {
             />
           </Tooltip>
           <Tooltip
+            className="group relative w-full"
             content={{
               term: 'Average KDA',
               definition: 'Your typical KDA ratio when playing this hero. Use this as a baseline to compare individual match performance.',
@@ -122,6 +128,7 @@ export default function HeroPerformanceModule({ data }) {
             />
           </Tooltip>
           <Tooltip
+            className="group relative w-full"
             content={{
               term: 'Matches Played',
               definition: 'Total number of matches played with this hero. More matches indicate greater experience and familiarity.',
@@ -135,6 +142,7 @@ export default function HeroPerformanceModule({ data }) {
             />
           </Tooltip>
           <Tooltip
+            className="group relative w-full"
             content={{
               term: 'Average Souls',
               definition: 'Typical soul count at game end when playing this hero. Reflects farming patterns and game impact.',

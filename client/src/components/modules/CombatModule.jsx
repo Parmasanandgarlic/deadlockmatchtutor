@@ -18,6 +18,7 @@ export default function CombatModule({ data }) {
       {/* Key Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Tooltip
+          className="group relative w-full"
           content={{
             term: 'Kills',
             definition: 'Enemy heroes eliminated. Kills provide gold, souls, and map pressure but should be balanced with farming.',
@@ -31,6 +32,7 @@ export default function CombatModule({ data }) {
           />
         </Tooltip>
         <Tooltip
+          className="group relative w-full"
           content={{
             term: 'Deaths',
             definition: 'Times your hero died. Deaths are especially punishing in Deadlock as they grant souls to enemies and remove you from map control.',
@@ -44,6 +46,7 @@ export default function CombatModule({ data }) {
           />
         </Tooltip>
         <Tooltip
+          className="group relative w-full"
           content={{
             term: 'Assists',
             definition: 'Contributions to kills where you dealt damage or provided utility within 5 seconds of the kill.',
@@ -57,6 +60,7 @@ export default function CombatModule({ data }) {
           />
         </Tooltip>
         <Tooltip
+          className="group relative w-full"
           content={{
             term: 'KDA',
             definition: '(Kills + Assists) / Deaths ratio. A measure of combat effectiveness and survivability.',
@@ -97,6 +101,7 @@ export default function CombatModule({ data }) {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Tooltip
+            className="group relative w-full"
             content={{
               term: 'Damage Per Minute',
               definition: 'Average damage dealt to heroes per minute. Higher values indicate consistent fight participation and damage output.',
@@ -114,6 +119,7 @@ export default function CombatModule({ data }) {
             </div>
           </Tooltip>
           <Tooltip
+            className="group relative w-full"
             content={{
               term: 'Deaths Per Minute',
               definition: 'Average deaths per minute. Lower is better—high values suggest overextension or poor positioning.',

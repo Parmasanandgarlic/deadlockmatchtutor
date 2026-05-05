@@ -20,6 +20,7 @@ export default function BenchmarksModule({ data }) {
       {/* Key Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
         <Tooltip
+          className="group relative w-full"
           content={{
             term: 'Match vs Career Score',
             definition: 'How your performance in this match compares to your career average with this hero. Higher percentiles indicate above-average performance.',
