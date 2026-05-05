@@ -14,7 +14,6 @@ const config = {
 
   deadlockApi: {
     baseUrl: process.env.DEADLOCK_API_BASE_URL || 'https://api.deadlock-api.com',
-    apiKey: process.env.DEADLOCK_API_KEY || null,
   },
 
   valveCdn: {
