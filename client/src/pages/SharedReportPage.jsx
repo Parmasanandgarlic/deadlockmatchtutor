@@ -73,7 +73,6 @@ export default function SharedReportPage() {
         title={dynamicTitle}
         description={dynamicDesc}
         canonical={absoluteUrl(`/report/${matchId}/${accountId}`)}
-        robots="noindex,nofollow"
         schema={reportSchema}
         imageUrl={absoluteUrl(`/api/og/${matchId}/${accountId}`)}
       />
@@ -84,6 +83,24 @@ export default function SharedReportPage() {
       <HeroHeader meta={analysis.meta} overall={analysis.overall} />
       <InsightDeck insights={analysis.insights} />
       <ModuleTabs modules={analysis.modules} meta={analysis.meta} />
+
+      <section aria-label="Related Resources" className="mt-12 pt-8 border-t border-dark-500 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-dark-600 rounded-lg p-5 border border-dark-500 hover:border-deadlock-accent/50 transition-colors">
+          <h3 className="font-bold text-gray-100 mb-2">Player Profile</h3>
+          <p className="text-sm text-gray-400 mb-4">View complete match history and overall performance stats.</p>
+          <Link to={`/player/${accountId}`} className="text-deadlock-accent text-sm hover:underline font-medium">View Profile &rarr;</Link>
+        </div>
+        <div className="bg-dark-600 rounded-lg p-5 border border-dark-500 hover:border-deadlock-accent/50 transition-colors">
+          <h3 className="font-bold text-gray-100 mb-2">Hero Guide</h3>
+          <p className="text-sm text-gray-400 mb-4">Learn advanced strategies and build orders for {analysis.meta.heroName}.</p>
+          <Link to={`/guide/${analysis.meta.heroId}`} className="text-deadlock-accent text-sm hover:underline font-medium">Read Guide &rarr;</Link>
+        </div>
+        <div className="bg-dark-600 rounded-lg p-5 border border-dark-500 hover:border-deadlock-accent/50 transition-colors">
+          <h3 className="font-bold text-gray-100 mb-2">Meta Rankings</h3>
+          <p className="text-sm text-gray-400 mb-4">See how {analysis.meta.heroName} compares to other heroes in the current patch.</p>
+          <Link to="/resources" className="text-deadlock-accent text-sm hover:underline font-medium">View Tier List &rarr;</Link>
+        </div>
+      </section>
     </div>
   );
 }

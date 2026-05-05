@@ -5,7 +5,6 @@ import {
   breadcrumbSchema,
   faqSchema,
   organizationSchema,
-  speakableSchema,
   websiteSchema,
 } from '../utils/seo';
 
@@ -16,15 +15,15 @@ const faqs = [
   },
   {
     question: 'How is MMR calculated in Deadlock?',
-    answer: 'Deadlock uses a hidden MMR (Matchmaking Rating) system. AfterMatch predicts your rank tier by analyzing the average badge of players in your lobbies, providing a longitudinal rank-predict timeline.',
+    answer: 'As of Patch 0.14, Deadlock uses a hidden MMR (Matchmaking Rating) system. AfterMatch predicts your rank tier by analyzing the average badge of players in your lobbies, providing a longitudinal rank-predict timeline.',
   },
   {
     question: 'What is a good souls per minute (SPM) in Deadlock?',
-    answer: 'A strong SPM in Deadlock typically exceeds 1000 by the mid-game, though it varies heavily by hero. AfterMatch compares your SPM against community benchmarks to grade your economy efficiency.',
+    answer: 'A strong SPM in Deadlock typically exceeds 1200 by the 15-minute mark, though it varies heavily by hero role. AfterMatch compares your SPM against community benchmarks to grade your economy efficiency.<br/><br/><strong>Target Benchmarks:</strong><ul><li>Support/Utility: 800-1000 SPM</li><li>Flex/Roamer: 1000-1200 SPM</li><li>Carry/Core: 1200-1500+ SPM</li></ul>',
   },
   {
     question: 'How do I analyze my item build?',
-    answer: 'The Itemization Module in AfterMatch breaks down your power spikes. It shows exactly when you purchased Tier 1, 2, 3, and 4 items, and highlights if your build was too delayed compared to the lobby.',
+    answer: 'The Itemization Module in AfterMatch breaks down your power spikes. It shows exactly when you purchased Tier 1 (500s), Tier 2 (1250s), Tier 3 (3000s), and Tier 4 (6300s) items, and highlights if your build was too delayed compared to the lobby.',
   },
   {
     question: 'What does objective pressure mean?',
@@ -126,8 +125,10 @@ export default function FaqPage() {
       { name: 'Home', path: '/' },
       { name: 'FAQ', path: '/faq' },
     ]),
-    faqSchema(faqs),
-    speakableSchema('/faq'),
+    faqSchema(faqs.map(f => ({
+      question: f.question,
+      answer: f.answer.replace(/<[^>]*>?/gm, '') // Strip HTML for schema
+    }))),
   ];
 
   return (
@@ -164,7 +165,10 @@ export default function FaqPage() {
         {faqs.map(({ question, answer }) => (
           <article key={question} className="card">
             <h2 className="text-base font-bold text-deadlock-text mb-3">{question}</h2>
-            <p className="text-sm text-deadlock-text-dim leading-relaxed">{answer}</p>
+            <div 
+              className="text-sm text-deadlock-text-dim leading-relaxed prose prose-invert max-w-none prose-ul:my-2 prose-ul:ml-4 prose-ul:list-disc" 
+              dangerouslySetInnerHTML={{ __html: answer }} 
+            />
           </article>
         ))}
       </section>

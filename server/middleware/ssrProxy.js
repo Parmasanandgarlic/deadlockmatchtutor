@@ -81,7 +81,7 @@ async function ssrProxy(req, res, next) {
     }
 
     // Route matching for Match Report
-    const reportMatch = req.path.match(/^\/matches\/([^\/]+)\/([^\/]+)$/);
+    const reportMatch = req.path.match(/^\/report\/([^\/]+)\/([^\/]+)$/);
     if (reportMatch) {
       const matchId = reportMatch[1];
       const accountId = reportMatch[2];
@@ -95,6 +95,21 @@ async function ssrProxy(req, res, next) {
       if (data) {
         title = `Match ${matchId} Analysis | Deadlock AfterMatch`;
         description = `Detailed post-match report and performance grades for Match ${matchId}.`;
+        schema = {
+          '@context': 'https://schema.org',
+          '@type': 'Article',
+          headline: title,
+          description: description,
+          author: {
+            '@type': 'Organization',
+            name: 'Deadlock AfterMatch contributors'
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: 'Deadlock AfterMatch'
+          },
+          mainEntityOfPage: url
+        };
       }
     }
 
@@ -108,6 +123,7 @@ async function ssrProxy(req, res, next) {
     const metaTags = `
       <title>${title}</title>
       <meta name="description" content="${description}" />
+      <link rel="canonical" href="${url}" />
       <meta property="og:title" content="${title}" />
       <meta property="og:description" content="${description}" />
       <meta property="og:type" content="website" />

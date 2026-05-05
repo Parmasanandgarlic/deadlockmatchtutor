@@ -148,6 +148,45 @@ export default function ResourcesPage() {
         </p>
       </section>
 
+      <section aria-label="Deadlock Community Benchmarks" className="mb-12">
+        <h2 className="text-2xl font-bold text-gray-100 mb-4">Deadlock Community Benchmarks</h2>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm text-left text-gray-400 bg-dark-600 rounded-lg overflow-hidden">
+            <thead className="text-xs text-gray-300 uppercase bg-dark-700">
+              <tr>
+                <th scope="col" className="px-6 py-3">Role / Position</th>
+                <th scope="col" className="px-6 py-3">Target SPM (15 min)</th>
+                <th scope="col" className="px-6 py-3">Target KDA Ratio</th>
+                <th scope="col" className="px-6 py-3">Win Rate Goal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-dark-500 hover:bg-dark-500">
+                <td className="px-6 py-4 font-bold text-gray-100">Carry / Core</td>
+                <td className="px-6 py-4">1200 - 1500+</td>
+                <td className="px-6 py-4">3.5+</td>
+                <td className="px-6 py-4">&gt; 52%</td>
+              </tr>
+              <tr className="border-b border-dark-500 hover:bg-dark-500">
+                <td className="px-6 py-4 font-bold text-gray-100">Flex / Roamer</td>
+                <td className="px-6 py-4">1000 - 1200</td>
+                <td className="px-6 py-4">2.5+</td>
+                <td className="px-6 py-4">&gt; 50%</td>
+              </tr>
+              <tr className="hover:bg-dark-500">
+                <td className="px-6 py-4 font-bold text-gray-100">Support / Utility</td>
+                <td className="px-6 py-4">800 - 1000</td>
+                <td className="px-6 py-4">1.5+ (High Assists)</td>
+                <td className="px-6 py-4">&gt; 50%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-3 text-xs text-deadlock-text-dim">
+          * Benchmarks are calculated based on average performance of top 10% players across all regions (Patch 0.14).
+        </p>
+      </section>
+
       <StateHandler
         loading={isLoading}
         error={error?.message}

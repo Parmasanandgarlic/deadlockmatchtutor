@@ -93,7 +93,6 @@ export default function MatchListPage() {
           title={`Deadlock Match History for Player ${accountId}`}
           description="Browse recent Deadlock matches for this player account, then open a match report with grades, insights, item timing, and trends."
           canonical={absoluteUrl(`/matches/${accountId}`)}
-          robots="noindex,nofollow"
           schema={matchListSchema}
         />
 

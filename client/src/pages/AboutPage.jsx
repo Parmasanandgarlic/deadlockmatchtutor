@@ -95,6 +95,9 @@ export default function AboutPage() {
         <p className="text-deadlock-text-dim text-lg">
           Deadlock AfterMatch is a community-built, open-source analytics tool for Deadlock players.
         </p>
+        <div className="mt-2 text-sm text-deadlock-accent font-medium">
+          Written and Maintained by: The AfterMatch Analytics Team
+        </div>
         <section
           aria-label="Deadlock AfterMatch product definition"
           className="answer-block mt-4 text-sm text-deadlock-muted leading-relaxed space-y-2"
@@ -104,6 +107,27 @@ export default function AboutPage() {
           <p>Deadlock AfterMatch solves the problem of scattered match data by converting it into grades, dossiers, and concise coaching notes.</p>
         </section>
       </header>
+
+      <section aria-label="Methodology Documentation" className="card mb-8">
+        <h2 className="font-bold text-deadlock-text mb-4 text-xl">Methodology Documentation</h2>
+        <p className="text-sm text-deadlock-text-dim leading-relaxed mb-4">
+          At AfterMatch, we believe in transparent, data-driven coaching. Our grading algorithms evaluate match performance across four core dimensions, dynamically adjusting for patch changes and hero roles:
+        </p>
+        <ul className="space-y-3 text-sm text-deadlock-text-dim list-disc pl-5">
+          <li>
+            <strong className="text-deadlock-text">Economy (Farming & Souls):</strong> We calculate Souls Per Minute (SPM) at the 10, 15, and 20-minute marks, penalizing extreme drops in farming efficiency during the mid-game.
+          </li>
+          <li>
+            <strong className="text-deadlock-text">Combat (KDA & Density):</strong> Instead of pure KDA, we measure KDA Density (fight participation relative to match length) and track isolated deaths to determine feeding vs. space creation.
+          </li>
+          <li>
+            <strong className="text-deadlock-text">Itemization (Power Spikes):</strong> We analyze the exact timestamp of Tier 1-4 purchases. If your Tier 3 purchase is delayed by more than 4 minutes compared to the lobby average, your grade is impacted.
+          </li>
+          <li>
+            <strong className="text-deadlock-text">Objectives (Map Control):</strong> Objective damage is weighted heavily. Winning teamfights without translating it into walker or guardian damage is treated as a missed opportunity.
+          </li>
+        </ul>
+      </section>
 
       <a
         href="https://github.com/Parmasanandgarlic/deadlockmatchtutor"
