@@ -137,6 +137,24 @@ export default function MatchListPage() {
           </div>
         </div>
 
+        {/* Tracking Bot Banner */}
+        <div className="mb-6 bg-[#ffad1c]/10 border border-[#ffad1c]/30 rounded-lg p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
+          <div>
+            <h3 className="font-bold text-white mb-1">Missing Recent Matches?</h3>
+            <p className="text-sm text-gray-300">
+              Valve recently locked public match history. To sync live, up-to-date matches, you must add the Deadlock API tracking bot as a friend on Steam.
+            </p>
+          </div>
+          <a
+            href="https://discord.gg/deadlockapi" // Replace with the actual bot friend link if known
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary text-xs whitespace-nowrap shrink-0 border border-[#ffad1c]"
+          >
+            Add Steam Tracking Bot
+          </a>
+        </div>
+
         {loading && (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 text-deadlock-accent animate-spin" />
