@@ -137,23 +137,7 @@ export default function MatchListPage() {
           </div>
         </div>
 
-        {/* Tracking Bot Banner */}
-        <div className="mb-6 bg-[#ffad1c]/10 border border-[#ffad1c]/30 rounded-lg p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
-          <div>
-            <h3 className="font-bold text-white mb-1">Missing Recent Matches?</h3>
-            <p className="text-sm text-gray-300">
-              Valve recently locked public match history. To sync live, up-to-date matches, you must run the community Deadlock API Ingest client while playing.
-            </p>
-          </div>
-          <a
-            href="https://github.com/deadlock-api/deadlock-api-ingest"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-primary text-xs whitespace-nowrap shrink-0 border border-[#ffad1c]"
-          >
-            Get Auto-Sync Client
-          </a>
-        </div>
+
 
         {loading && (
           <div className="flex items-center justify-center py-20">

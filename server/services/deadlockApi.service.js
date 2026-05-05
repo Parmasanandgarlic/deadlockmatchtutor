@@ -12,6 +12,7 @@ const apiBreaker = new CircuitBreaker('DeadlockAPI', { failureThreshold: 3, rese
 
 const configuration = new Configuration({
   basePath: config.deadlockApi.baseUrl,
+  apiKey: config.deadlockApi.apiKey,
 });
 
 const playersApi = new PlayersApi(configuration);
@@ -61,7 +62,13 @@ async function fetchAssetList(label, path, redisKey) {
 
 async function fetchMatchHistoryFromApi(accountId) {
   const url = `${config.deadlockApi.baseUrl}/v1/players/${Number(accountId)}/match-history`;
+  const headers = {};
+  if (config.deadlockApi.apiKey) {
+    headers['X-API-KEY'] = config.deadlockApi.apiKey;
+  }
+  
   const { data } = await apiBreaker.call(() => axios.get(url, {
+    headers,
     timeout: 15000,
   }));
   return data;

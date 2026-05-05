@@ -131,22 +131,9 @@ export default function PlayerProfilePage() {
               <br />
               Matches analyzed: <span className="text-[#ffad1c] font-bold">{trendsData.matchesAnalyzed || 0}</span>
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to={`/matches/${accountId}`} className="inline-block bg-[#1a2130] hover:bg-[#20293b] text-[#ffad1c] px-6 py-2 border border-[#3b7db2]/50 font-serif transition-colors">
-                Analyze Recent Matches
-              </Link>
-              <a
-                href="https://github.com/deadlock-api/deadlock-api-ingest"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block bg-[#ffad1c] text-black hover:bg-amber-500 font-bold px-6 py-2 border border-[#ffad1c] font-serif transition-colors"
-              >
-                Get Auto-Sync Client
-              </a>
-            </div>
-            <p className="mt-4 text-xs text-gray-500 max-w-lg mx-auto">
-              Missing recent matches? Valve locked public match history. You must run the community Deadlock API Ingest client while playing to sync live data.
-            </p>
+            <Link to={`/matches/${accountId}`} className="inline-block bg-[#1a2130] hover:bg-[#20293b] text-[#ffad1c] px-6 py-2 border border-[#3b7db2]/50 font-serif transition-colors">
+              Analyze Recent Matches
+            </Link>
           </div>
         </div>
       </div>
