@@ -26,7 +26,7 @@ const { createOpenApiSpec } = require('./docs/openapi');
 Sentry.init({
   dsn: config.sentry?.dsn || process.env.SENTRY_DSN,
   environment: config.nodeEnv,
-  tracesSampleRate: 1.0,
+  tracesSampleRate: config.isDev ? 1.0 : 0.1,
 });
 
 // Global error handling for unhandled rejections and exceptions

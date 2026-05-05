@@ -29,6 +29,11 @@ export default function MatchCard({ match, accountId }) {
   const relative = startTime ? formatRelativeTime(startTime) : '';
   const absolute = startTime ? formatDateTime(startTime) : '';
 
+  // Flag matches older than 24 hours — helps set expectations about data freshness
+  const isStale = startTime
+    ? (Date.now() - (typeof startTime === 'number' ? (startTime < 1e12 ? startTime * 1000 : startTime) : new Date(startTime).getTime())) > 86400000
+    : false;
+
   const avatarUrl = heroAsset?.images?.icon_image_small_webp || heroAsset?.images?.icon_image_small;
 
   // Deadlock-style framing: win → legendary (gold), loss → rare (purple fade),

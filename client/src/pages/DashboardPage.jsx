@@ -96,7 +96,7 @@ export default function DashboardPage() {
         title={dynamicTitle}
         description={dynamicDesc}
         canonical={absoluteUrl(`/dashboard/${matchId}/${accountId}`)}
-        robots="noindex,nofollow"
+        robots="index,follow"
         schema={dashboardSchema}
         imageUrl={absoluteUrl(`/api/og/${matchId}/${accountId}`)}
       />

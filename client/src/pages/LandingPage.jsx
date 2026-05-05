@@ -183,7 +183,7 @@ export default function LandingPage() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onFocus={() => history.length > 0 && setShowHistory(true)}
-                  placeholder="PROCEED TO ANALYSIS (STEAM ID/URL)..."
+                  placeholder="Enter Steam profile URL or Steam ID..."
                   className="w-full bg-deadlock-surface border border-deadlock-border text-deadlock-text placeholder-deadlock-muted h-14 pl-12 pr-4 text-sm font-bold tracking-widest focus:outline-none focus:border-deadlock-amber transition-colors"
                   disabled={loading}
                 />
@@ -256,54 +256,30 @@ export default function LandingPage() {
               </button>
             </div>
           </form>
+
+          {/* Example inputs hint */}
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[10px] text-deadlock-text-dim/40 tracking-widest uppercase">
+            <span>Try:</span>
+            <button type="button" onClick={() => setInput('76561198072944445')} className="hover:text-deadlock-amber transition-colors cursor-pointer">76561198072944445</button>
+            <span className="text-deadlock-border">|</span>
+            <button type="button" onClick={() => setInput('steamcommunity.com/id/yourname')} className="hover:text-deadlock-amber transition-colors cursor-pointer">steamcommunity.com/id/yourname</button>
+          </div>
+
           {error && (
-            <div className="mt-6 p-4 bg-deadlock-red/5 border-l-4 border-deadlock-red flex flex-col gap-4 transition-all animate-in fade-in slide-in-from-top-2">
-              <div className="flex gap-4">
-                <div className="shrink-0 mt-0.5">
-                  <Shield className="w-4 h-4 text-deadlock-red" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-[10px] font-bold text-deadlock-red uppercase tracking-widest mb-1">
-                    System Exception
-                  </h4>
-                  <p className="text-xs text-deadlock-text-dim leading-normal font-medium italic">
-                    "{toErrorMessage(error)}"
-                  </p>
-                </div>
+            <div className="mt-6 p-4 bg-deadlock-red/5 border-l-4 border-deadlock-red flex gap-4 transition-all animate-in fade-in slide-in-from-top-2">
+              <div className="shrink-0 mt-0.5">
+                <Shield className="w-4 h-4 text-deadlock-red" />
               </div>
-              
-              <div className="border-t border-deadlock-red/10 pt-3">
-                <button
-                  type="button"
-                  onClick={() => setShowTechnical(!showTechnical)}
-                  className="text-[9px] font-bold text-deadlock-text-dim/50 uppercase tracking-widest hover:text-deadlock-red transition-colors flex items-center gap-1"
-                >
-                  {showTechnical ? 'Hide' : 'View'} System Diagnostics
-                </button>
-                
-                {showTechnical && (
-                  <div className="mt-3 p-3 bg-black/40 border border-deadlock-red/20 text-[10px] font-mono leading-relaxed space-y-1 overflow-x-auto">
-                    <div className="flex justify-between border-b border-white/5 pb-1 mb-1">
-                      <span className="text-deadlock-red/70 uppercase">Error Code</span>
-                      <span className="text-white">{String(error.errorCode || error.code || 'UNKNOWN')}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-white/5 pb-1 mb-1">
-                      <span className="text-deadlock-red/70 uppercase">HTTP Status</span>
-                      <span className="text-white">{String(error.status || 'N/A')}</span>
-                    </div>
-                    {error.details && (
-                      <div className="pt-1">
-                        <span className="text-deadlock-red/70 uppercase block mb-1">Raw Context</span>
-                        <span className="text-deadlock-text-dim block break-all whitespace-pre-wrap">
-                          {typeof error.details === 'object' ? JSON.stringify(error.details, null, 2) : String(error.details)}
-                        </span>
-                      </div>
-                    )}
-                    <div className="pt-1 opacity-50 italic">
-                      Check VITE_API_BASE_URL and server CORS configuration if this persists.
-                    </div>
-                  </div>
-                )}
+              <div className="flex-1">
+                <h4 className="text-[10px] font-bold text-deadlock-red uppercase tracking-widest mb-1">
+                  Could Not Find Player
+                </h4>
+                <p className="text-xs text-deadlock-text-dim leading-normal">
+                  {toErrorMessage(error)}
+                </p>
+                <p className="text-[10px] text-deadlock-text-dim/50 mt-2">
+                  Make sure you're entering a valid Steam profile URL, Steam ID, or custom URL name.
+                </p>
               </div>
             </div>
           )}

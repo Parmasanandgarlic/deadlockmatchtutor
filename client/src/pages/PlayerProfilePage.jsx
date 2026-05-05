@@ -168,7 +168,7 @@ export default function PlayerProfilePage() {
         title={`Deadlock Player Trends and Dossier ${accountId}`}
         description="Review Deadlock player trends, ranked profile details, top heroes, rolling impact score, KDA, Souls per minute, and recent form."
         canonical={absoluteUrl(`/player/${accountId}`)}
-        robots="noindex,nofollow"
+        robots="index,follow"
         schema={[
           organizationSchema(),
           websiteSchema(),
