@@ -236,14 +236,15 @@ app.get('/health', (_req, res) => {
 // Vercel rewrites can be inconsistent with prefix stripping. 
 app.use('/api', routes);
 
+// Serve SEO dynamic routes BEFORE the SSR proxy so bots get the actual sitemap.xml
+// instead of getting intercepted and served an injected index.html page.
+const seoRoutes = require('./routes/seo');
+app.use('/', seoRoutes);
+
 // 3. SSR Proxy and Static Frontend
 // Vercel routes non-API traffic here. We intercept bots for SSR, and serve the static SPA for users.
 const ssrProxy = require('./middleware/ssrProxy');
 app.use(ssrProxy);
-
-// Serve SEO dynamic routes before static files so they override public/sitemap.xml
-const seoRoutes = require('./routes/seo');
-app.use('/', seoRoutes);
 
 // Serve static frontend assets (if running locally or as a Vercel fallback)
 const distPath = path.join(__dirname, '../client/dist');

@@ -34,7 +34,7 @@ async function ssrProxy(req, res, next) {
   const isBot = BOT_AGENTS.some(bot => userAgent.includes(bot));
 
   // If not a bot, or it's an API route, fall through to the normal static file server or API handler
-  if (!isBot || req.path.startsWith('/api/') || req.path.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|webp)$/)) {
+  if (!isBot || req.path.startsWith('/api/') || req.path.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|webp|xml|txt)$/)) {
     return next();
   }
 
