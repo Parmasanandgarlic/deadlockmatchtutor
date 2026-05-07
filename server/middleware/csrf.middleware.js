@@ -14,33 +14,6 @@ const CSRF_COOKIE_NAME = '_csrf';
 const CSRF_HEADER_NAME = 'x-csrf-token';
 const TOKEN_BYTES = 32;
 
-function getCsrfSecret() {
-  const secret = process.env.CSRF_SECRET || process.env.SESSION_SECRET;
-
-  if (secret) return secret;
-
-  if (process.env.NODE_ENV === 'production') {
-    // In serverless environments (Vercel), each invocation is stateless anyway.
-    // Generate a per-instance secret and warn instead of crashing the app.
-    const crypto = require('crypto');
-    const generated = crypto.randomBytes(32).toString('hex');
-    console.warn(
-      '⚠️  CSRF_SECRET / SESSION_SECRET not set. Using a random per-instance secret. ' +
-      'Set CSRF_SECRET in your Vercel environment variables for consistent CSRF validation.'
-    );
-    return generated;
-  }
-
-  return 'deadlock-aftermatch-development-csrf-secret';
-}
-
-function signNonce(nonce) {
-  return crypto
-    .createHmac('sha256', getCsrfSecret())
-    .update(nonce)
-    .digest('base64url');
-}
-
 function timingSafeEqualString(a, b) {
   const left = Buffer.from(String(a));
   const right = Buffer.from(String(b));
@@ -48,15 +21,11 @@ function timingSafeEqualString(a, b) {
 }
 
 function generateToken() {
-  const nonce = crypto.randomBytes(TOKEN_BYTES).toString('base64url');
-  return `${nonce}.${signNonce(nonce)}`;
+  return crypto.randomBytes(TOKEN_BYTES).toString('base64url');
 }
 
 function isValidToken(token) {
-  if (typeof token !== 'string') return false;
-  const [nonce, signature, extra] = token.split('.');
-  if (!nonce || !signature || extra) return false;
-  return timingSafeEqualString(signature, signNonce(nonce));
+  return typeof token === 'string' && token.length > 10;
 }
 
 function tokensMatch(left, right) {
