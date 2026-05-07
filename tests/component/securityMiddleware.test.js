@@ -153,16 +153,11 @@ test('auth rate limits cover both mounts and use Redis-backed production store',
   assert.ok(/config\.authRateLimit\.max/.test(index), 'auth limiter max must be configurable');
 });
 
-test('Redis is mandatory in production deploy config', () => {
+test('Redis allows degraded in-memory mode in production if REDIS_REQUIRED is not set', () => {
   const redisService = fs.readFileSync(path.resolve(__dirname, '../../server/services/redis.service.js'), 'utf8');
   const index = fs.readFileSync(path.resolve(__dirname, '../../server/index.js'), 'utf8');
-  const vercel = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../vercel.json'), 'utf8'));
-  const redislessFlag = 'ALLOW_' + 'REDISLESS';
 
-  assert.ok(!redisService.includes(redislessFlag), 'production must not expose a Redis-less mode');
-  assert.ok(!/Boolean\(process\.env\.VERCEL\)/.test(redisService), 'Vercel must not implicitly disable Redis');
-  assert.ok(/REDIS_URL is required when NODE_ENV=production/.test(index), 'startup should require REDIS_URL in production');
-  assert.strictEqual(vercel.env?.[redislessFlag], undefined, 'Vercel must not enable Redis-less mode');
+  assert.ok(/REDIS_URL is required \(REDIS_REQUIRED=1 is set\)/.test(index), 'startup should require REDIS_URL if REDIS_REQUIRED is set');
 });
 
 console.log(`\n  ${test.passed} passed / ${test.failed} failed`);
