@@ -2,7 +2,7 @@
 // Source: Deadlock Assets API https://assets.deadlock-api.com/v2/heroes
 // This is used as a fallback if API data is not available.
 const HERO_NAMES = {
-  // Verified against https://assets.deadlock-api.com/v2/heroes (Apr 2026)
+  // Verified against https://assets.deadlock-api.com/v2/heroes (May 2026)
   1: 'Infernus',
   2: 'Seven',
   3: 'Vindicta',
@@ -102,7 +102,7 @@ function getHeroName(heroId) {
   }
   
   // Fall back to static mapping
-  return HERO_NAMES[heroId] || `Hero #${heroId}`;
+  return HERO_NAMES[heroId] || HERO_NAMES[String(heroId)] || `Hero #${heroId}`;
 }
 
 /**

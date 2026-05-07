@@ -1,45 +1,68 @@
 // Deadlock hero ID → display name mapping.
 // Source: Deadlock Assets API https://assets.deadlock-api.com/v2/heroes
 // This is used as a fallback if API data is not available.
+// IMPORTANT: IDs are sparse (not contiguous) — they MUST match the API exactly.
 export const HERO_NAMES = {
+  // Verified against https://assets.deadlock-api.com/v2/heroes (May 2026)
   1: 'Infernus',
   2: 'Seven',
   3: 'Vindicta',
   4: 'Lady Geist',
-  5: 'Dynamo',
   6: 'Abrams',
   7: 'Wraith',
   8: 'McGinnis',
-  9: 'Kelvin',
   10: 'Paradox',
-  11: 'Haze',
-  12: 'Holliday',
-  13: 'Bebop',
-  14: 'Calico',
-  15: 'Grey Talon',
-  16: 'Mo & Krill',
-  17: 'Shiv',
-  18: 'Ivy',
-  19: 'Lash',
-  20: 'Viscous',
-  21: 'Mirage',
-  22: 'Pocket',
-  23: 'Warden',
-  24: 'Yamato',
-  25: 'Sinclair',
-  26: 'Vyper',
-  27: 'Wrecker',
-  28: 'Magician',
-  29: 'Fathom',
-  30: 'Raven',
-  31: 'Victor',
-  32: 'Drifter',
-  33: 'Billy',
-  34: 'Frank',
-  35: 'Doorman',
-  36: 'Trapper',
-  37: 'Bookworm',
-  38: 'Hornet',
+  11: 'Dynamo',
+  12: 'Kelvin',
+  13: 'Haze',
+  14: 'Holliday',
+  15: 'Bebop',
+  16: 'Calico',
+  17: 'Grey Talon',
+  18: 'Mo & Krill',
+  19: 'Shiv',
+  20: 'Ivy',
+  21: 'Kali',
+  25: 'Warden',
+  27: 'Yamato',
+  31: 'Lash',
+  35: 'Viscous',
+  38: 'Gunslinger',
+  39: 'The Boss',
+  47: 'Tokamak',
+  48: 'Wrecker',
+  49: 'Rutger',
+  50: 'Pocket',
+  51: 'Thumper',
+  52: 'Mirage',
+  53: 'Fathom',
+  54: 'Cadence',
+  56: 'Bomber',
+  58: 'Vyper',
+  59: 'Vandal',
+  60: 'Sinclair',
+  61: 'Trapper',
+  62: 'Raven',
+  63: 'Mina',
+  64: 'Drifter',
+  65: 'Venator',
+  66: 'Victor',
+  67: 'Paige',
+  68: 'Boho',
+  69: 'The Doorman',
+  70: 'Skyrunner',
+  71: 'Swan',
+  72: 'Billy',
+  73: 'Druid',
+  74: 'Graf',
+  75: 'Fortuna',
+  76: 'Graves',
+  77: 'Apollo',
+  78: 'Airheart',
+  79: 'Rem',
+  80: 'Silver',
+  81: 'Celeste',
+  82: 'Opera',
 };
 
 // Cache for API-provided hero data
@@ -79,7 +102,7 @@ export function getHeroName(heroId) {
   }
   
   // Fall back to static mapping
-  return HERO_NAMES[heroId] || `Hero #${heroId}`;
+  return HERO_NAMES[heroId] || HERO_NAMES[String(heroId)] || `Hero #${heroId}`;
 }
 
 /**
@@ -104,25 +127,29 @@ export function getHeroData(heroId) {
 }
 
 /**
- * Hero archetype/role metadata — based on official Deadlock wiki descriptors.
+ * Hero archetype/role metadata — based on official Deadlock wiki descriptors
+ * and API hero_type values (marksman, mystic, brawler).
  * Each role doubles as a playstyle hint shown in the UI:
- *   – Tank     : brawlers / frontline engagers
- *   – Carry    : farm-focused late-game damage dealers
- *   – Support  : utility, heals, crowd control
- *   – Assassin : burst / stealth killers
- *   – Specialist: hybrid / niche mechanics
+ *   – Tank       : brawlers / frontline engagers
+ *   – Carry      : farm-focused late-game damage dealers
+ *   – Support    : utility, heals, crowd control
+ *   – Assassin   : burst / stealth killers
+ *   – Specialist : hybrid / niche mechanics
+ *
+ * Keys are display names; IDs must match the API.
  */
 export const HERO_ROLES = {
+  // Original roster
   Infernus: 'Carry',
   Seven: 'Specialist',
   Vindicta: 'Carry',
   'Lady Geist': 'Specialist',
-  Dynamo: 'Support',
   Abrams: 'Tank',
   Wraith: 'Assassin',
   McGinnis: 'Support',
-  Kelvin: 'Support',
   Paradox: 'Specialist',
+  Dynamo: 'Support',
+  Kelvin: 'Support',
   Haze: 'Assassin',
   Holliday: 'Carry',
   Bebop: 'Specialist',
@@ -131,26 +158,49 @@ export const HERO_ROLES = {
   'Mo & Krill': 'Tank',
   Shiv: 'Assassin',
   Ivy: 'Support',
-  Lash: 'Specialist',
-  Viscous: 'Tank',
-  Mirage: 'Specialist',
-  Pocket: 'Specialist',
+  Kali: 'Carry',
   Warden: 'Tank',
   Yamato: 'Assassin',
-  Sinclair: 'Specialist',
+  Lash: 'Specialist',
+  Viscous: 'Tank',
+
+  // Extended roster
+  Gunslinger: 'Carry',
+  'The Boss': 'Tank',
+  Tokamak: 'Specialist',
+  Wrecker: 'Tank',
+  Rutger: 'Tank',
+  Pocket: 'Specialist',
+  Thumper: 'Tank',
+  Mirage: 'Specialist',
+  Fathom: 'Assassin',
+  Cadence: 'Support',
+  Bomber: 'Specialist',
   Vyper: 'Assassin',
-  Wrecker: 'Specialist',
-  Magician: 'Specialist',
-  Fathom: 'Specialist',
+  Vandal: 'Assassin',
+  Sinclair: 'Specialist',
+  Trapper: 'Support',
   Raven: 'Assassin',
-  Victor: 'Carry',
+  Mina: 'Support',
   Drifter: 'Specialist',
+  Venator: 'Assassin',
+  Victor: 'Carry',
+  Paige: 'Support',
+  Boho: 'Support',
+  'The Doorman': 'Support',
+  Skyrunner: 'Assassin',
+  Swan: 'Support',
   Billy: 'Specialist',
-  Frank: 'Tank',
-  Doorman: 'Support',
-  Trapper: 'Specialist',
-  Bookworm: 'Support',
-  Hornet: 'Assassin',
+  Druid: 'Support',
+  Graf: 'Specialist',
+  Fortuna: 'Support',
+  Graves: 'Specialist',
+  Apollo: 'Assassin',
+  Airheart: 'Carry',
+  Rem: 'Support',
+  Silver: 'Assassin',
+  Celeste: 'Support',
+  Opera: 'Support',
 };
 
 export const ROLE_STYLES = {

@@ -31,7 +31,7 @@ const HERO_BENCHMARKS = {
   13: { name: 'Haze',         winRate: 51.4, pickRate: 43.7, avgCsm: 5.6, avgDenies: 4.2, avgNwm: 1211.2, avgKda: 2.7 },
   4:  { name: 'Lady Geist',   winRate: 50.8, pickRate: 30.7, avgCsm: 5.3, avgDenies: 3.1, avgNwm: 1153.9, avgKda: 2.8 },
   77: { name: 'Apollo',       winRate: 50.7, pickRate: 32.0, avgCsm: 4.5, avgDenies: 2.2, avgNwm: 1106.4, avgKda: 3.3 },
-  69: { name: 'Doorman',      winRate: 50.7, pickRate: 33.0, avgCsm: 4.5, avgDenies: 2.7, avgNwm: 1102.8, avgKda: 3.7 },
+  69: { name: 'The Doorman',  winRate: 50.7, pickRate: 33.0, avgCsm: 4.5, avgDenies: 2.7, avgNwm: 1102.8, avgKda: 3.7 },
   64: { name: 'Drifter',      winRate: 50.7, pickRate: 39.9, avgCsm: 4.3, avgDenies: 2.7, avgNwm: 1127.0, avgKda: 2.7 },
   6:  { name: 'Abrams',       winRate: 50.6, pickRate: 29.6, avgCsm: 4.5, avgDenies: 3.5, avgNwm: 1095.7, avgKda: 2.7 },
   67: { name: 'Paige',        winRate: 50.1, pickRate: 34.9, avgCsm: 4.4, avgDenies: 2.4, avgNwm: 1062.6, avgKda: 3.3 },

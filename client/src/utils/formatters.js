@@ -91,7 +91,7 @@ export function formatDateTime(input) {
 }
 
 const HERO_SLUGS = {
-  // Verified against https://assets.deadlock-api.com/v2/heroes class_name field (Apr 2026)
+  // Verified against https://assets.deadlock-api.com/v2/heroes class_name field (May 2026)
   'Infernus': 'inferno',
   'Seven': 'gigawatt',
   'Vindicta': 'hornet',
