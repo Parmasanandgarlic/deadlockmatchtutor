@@ -83,11 +83,8 @@ function csrfProtection(req, res, next) {
     return next();
   }
 
-  // Skip CSRF for API routes — they use stateless JSON requests,
-  // not cookie-based auth, so CSRF attacks aren't applicable.
-  if (req.path.startsWith('/api/')) {
-    return next();
-  }
+  // CSRF validation enforced for all routes, including /api/, due to session auth.
+
 
   const headerToken = req.headers[CSRF_HEADER_NAME];
   const submittedToken = Array.isArray(headerToken) ? headerToken[0] : headerToken;
