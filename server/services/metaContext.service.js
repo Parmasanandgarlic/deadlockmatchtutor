@@ -85,7 +85,7 @@ function buildHeroTierList(allHeroStats) {
 
     heroMap[heroId] = {
       heroId,
-      heroName: getHeroName(heroId),
+      heroName: stat.hero_name || stat.name || getHeroName(heroId),
       role: HERO_ROLES[heroId]?.role || 'brawler',
       winRate: Math.round(winRate * 10) / 10,
       matches,
@@ -302,6 +302,7 @@ async function fetchGlobalTierList() {
   logger.info('Building tier list from static HERO_BENCHMARKS fallback');
   const benchmarkStats = Object.entries(HERO_BENCHMARKS).map(([heroId, bm]) => ({
     hero_id: Number(heroId),
+    hero_name: bm.name,
     wins: Math.round(bm.winRate * 10),
     matches: 1000,
     avg_kda: bm.avgKda,

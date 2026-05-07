@@ -101,7 +101,15 @@ function getHeroName(heroId) {
     return hero.name || hero; // Handle both full object and legacy string mapping
   }
   
-  // Fall back to static mapping
+  // Fall back to static mapping, and finally to the manually-maintained benchmarks
+  try {
+    const { HERO_BENCHMARKS } = require('../data/hero-benchmarks');
+    const benchName = HERO_BENCHMARKS?.[heroId]?.name || HERO_BENCHMARKS?.[String(heroId)]?.name;
+    if (benchName) return benchName;
+  } catch (e) {
+    // Ignore require loop/errors
+  }
+
   return HERO_NAMES[heroId] || HERO_NAMES[String(heroId)] || `Hero #${heroId}`;
 }
 
