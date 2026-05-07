@@ -93,7 +93,7 @@ function setApiHeroNames(heroes) {
  * @returns {string} Hero name
  */
 function getHeroName(heroId) {
-  if (heroId == null) return 'Unknown Hero';
+  if (heroId == null || Number(heroId) <= 0) return 'Unknown Hero';
   
   // First check API-provided names
   if (apiHeroNames && (apiHeroNames[heroId] || apiHeroNames[String(heroId)])) {

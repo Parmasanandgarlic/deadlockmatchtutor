@@ -60,7 +60,7 @@ function buildHeroTierList(allHeroStats) {
 
   for (const stat of allHeroStats) {
     const heroId = stat.hero_id ?? stat.heroId;
-    if (heroId == null) continue;
+    if (heroId == null || Number(heroId) <= 0) continue;
 
     const wins = Number(stat.wins ?? stat.matches_won ?? 0);
     const matches = Number(stat.matches ?? stat.matches_played ?? 0);

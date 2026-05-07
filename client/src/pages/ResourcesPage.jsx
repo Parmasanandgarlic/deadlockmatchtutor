@@ -35,7 +35,7 @@ function TierRow({ tier, heroes, label, description, heroesMap }) {
         </div>
       </div>
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4">
-        {heroes.map(hero => {
+        {heroes.filter(h => h.heroId > 0).map(hero => {
           const heroAsset = heroesMap?.[hero.heroId];
           const heroAvatar = heroAsset?.images?.icon_image_small_webp || 
                              heroAsset?.images?.icon_image_small || 
@@ -97,7 +97,7 @@ export default function ResourcesPage() {
         description: 'Global hero tier rankings for Deadlock based on win rate and pick rate data.',
         numberOfItems: Object.values(tierListData.tiers).reduce((sum, arr) => sum + (arr?.length || 0), 0),
         itemListElement: Object.entries(tierListData.tiers).flatMap(([tier, heroes], tierIdx) =>
-          (heroes || []).map((hero, heroIdx) => ({
+          (heroes || []).filter(h => h.heroId > 0).map((hero, heroIdx) => ({
             '@type': 'ListItem',
             position: tierIdx * 20 + heroIdx + 1,
             name: `${hero.heroName} (${tier}-Tier)`,
