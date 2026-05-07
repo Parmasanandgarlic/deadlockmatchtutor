@@ -134,6 +134,7 @@ async function ssrProxy(req, res, next) {
       <meta name="twitter:title" content="${title}" />
       <meta name="twitter:description" content="${description}" />
       <meta name="twitter:image" content="${imageUrl}" />
+      <meta name="google-site-verification" content="kciLfi-DuItDSDmoaYtlZfvJKQUAqShK6vw62U3tm68" />
       ${schema ? `<script type="application/ld+json">${JSON.stringify(schema)}</script>` : ''}
     `;
 
