@@ -31,19 +31,24 @@ export default function App() {
             <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="roughNoise" />
             <feDisplacementMap in="SourceGraphic" in2="roughNoise" scale="2" xChannelSelector="R" yChannelSelector="G" result="roughGraphic" />
             
-            {/* 2. Scratches — barely visible directional wear */}
-            <feTurbulence type="fractalNoise" baseFrequency="0.008 0.3" numOctaves="1" result="scratchNoise" />
-            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 6 -4.8" in="scratchNoise" result="scratchMask" />
+            {/* 2. Large irregular dots (varying circle sizes) */}
+            <feTurbulence type="turbulence" baseFrequency="0.15" numOctaves="2" seed="3" result="largeDots" />
+            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 8 -5.5" in="largeDots" result="largeDotMask" />
             
-            {/* 3. Fine speckle — subtle stamped ink texture */}
-            <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="2" result="speckleNoise" />
-            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 5 -3.8" in="speckleNoise" result="speckleMask" />
+            {/* 3. Medium dots — different seed for offset pattern */}
+            <feTurbulence type="turbulence" baseFrequency="0.35" numOctaves="2" seed="7" result="medDots" />
+            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 7 -5" in="medDots" result="medDotMask" />
             
-            {/* 4. Combine wear layers */}
-            <feComposite in="scratchMask" in2="speckleMask" operator="over" result="masterWear" />
+            {/* 4. Fine grain dots */}
+            <feTurbulence type="turbulence" baseFrequency="0.7" numOctaves="1" seed="13" result="fineDots" />
+            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 6 -4.5" in="fineDots" result="fineDotMask" />
             
-            {/* 5. Subtract from roughened text */}
-            <feComposite in="roughGraphic" in2="masterWear" operator="out" />
+            {/* 5. Layer all dot sizes together */}
+            <feComposite in="largeDotMask" in2="medDotMask" operator="over" result="dotLayer1" />
+            <feComposite in="dotLayer1" in2="fineDotMask" operator="over" result="allDots" />
+            
+            {/* 6. Punch dots out of the roughened text */}
+            <feComposite in="roughGraphic" in2="allDots" operator="out" />
           </filter>
         </svg>
         <a href="#main-content" className="skip-link">
