@@ -158,9 +158,9 @@ export default function LandingPage() {
           </div>
 
           <h1 className="flex flex-col items-center text-5xl sm:text-7xl md:text-8xl font-serif font-black tracking-tighter mb-6 leading-none">
-            <span className="text-white textured-text">Deadlock</span>
+            <span className="text-white textured-text -rotate-1 origin-bottom-right transform hover:rotate-0 transition-transform duration-700">Deadlock</span>
             <div className="sketchy-line w-full max-w-[0.9em] sm:max-w-full" />
-            <span className="text-deadlock-amber textured-text">
+            <span className="text-deadlock-amber textured-text rotate-1 origin-top-left transform hover:rotate-0 transition-transform duration-700">
               AfterMatch
             </span>
           </h1>

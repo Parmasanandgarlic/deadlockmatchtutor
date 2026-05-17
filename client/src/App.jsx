@@ -26,9 +26,25 @@ export default function App() {
     <AssetProvider>
       <div className="min-h-screen flex flex-col relative">
         <svg className="fixed top-0 left-0 w-0 h-0 pointer-events-none opacity-0">
-          <filter id="distress-filter">
-            <feTurbulence type="fractalNoise" baseFrequency="0.4" numOctaves="4" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" />
+          <filter id="distress-filter" x="-20%" y="-20%" width="140%" height="140%">
+            {/* 1. Edge roughness (macro wear) */}
+            <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="4" result="roughNoise" />
+            <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 4 -1.2" in="roughNoise" result="roughNoiseHighContrast" />
+            <feDisplacementMap in="SourceGraphic" in2="roughNoiseHighContrast" scale="3.5" xChannelSelector="R" yChannelSelector="G" result="roughGraphic" />
+            
+            {/* 2. Scratches / Directional Wear (horizontal) */}
+            <feTurbulence type="fractalNoise" baseFrequency="0.01 0.4" numOctaves="3" result="scratchNoise" />
+            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 6 -3.5" in="scratchNoise" result="scratchMask" />
+            
+            {/* 3. Fine speckle wear (like stamped ink) */}
+            <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="2" result="speckleNoise" />
+            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 5 -3" in="speckleNoise" result="speckleMask" />
+            
+            {/* 4. Combine scratches and speckles into one master wear mask */}
+            <feComposite in="scratchMask" in2="speckleMask" operator="over" result="masterWear" />
+            
+            {/* 5. Subtract wear mask from the roughened graphic */}
+            <feComposite in="roughGraphic" in2="masterWear" operator="out" />
           </filter>
         </svg>
         <a href="#main-content" className="skip-link">
