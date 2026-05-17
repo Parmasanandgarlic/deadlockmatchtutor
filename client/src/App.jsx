@@ -31,9 +31,9 @@ export default function App() {
             <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="roughNoise" />
             <feDisplacementMap in="SourceGraphic" in2="roughNoise" scale="2" xChannelSelector="R" yChannelSelector="G" result="roughGraphic" />
             
-            {/* 2. Scratches — very faint directional wear */}
-            <feTurbulence type="fractalNoise" baseFrequency="0.01 0.35" numOctaves="2" result="scratchNoise" />
-            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 6 -4.2" in="scratchNoise" result="scratchMask" />
+            {/* 2. Scratches — barely visible directional wear */}
+            <feTurbulence type="fractalNoise" baseFrequency="0.008 0.3" numOctaves="1" result="scratchNoise" />
+            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 6 -4.8" in="scratchNoise" result="scratchMask" />
             
             {/* 3. Fine speckle — subtle stamped ink texture */}
             <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="2" result="speckleNoise" />
