@@ -27,21 +27,21 @@ export default function App() {
       <div className="min-h-screen flex flex-col relative">
         <svg className="fixed top-0 left-0 w-0 h-0 pointer-events-none opacity-0">
           <filter id="distress-filter" x="-10%" y="-10%" width="120%" height="120%">
-            {/* 1. Edge roughness — gentle wobble */}
+            {/* 1. Edge roughness — wobble that breaks thin strokes */}
             <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="roughNoise" />
-            <feDisplacementMap in="SourceGraphic" in2="roughNoise" scale="2" xChannelSelector="R" yChannelSelector="G" result="roughGraphic" />
+            <feDisplacementMap in="SourceGraphic" in2="roughNoise" scale="2.4" xChannelSelector="R" yChannelSelector="G" result="roughGraphic" />
             
             {/* 2. Large irregular dots (varying circle sizes) */}
             <feTurbulence type="turbulence" baseFrequency="0.15" numOctaves="2" seed="3" result="largeDots" />
-            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 8 -5.5" in="largeDots" result="largeDotMask" />
+            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 8 -5.1" in="largeDots" result="largeDotMask" />
             
             {/* 3. Medium dots — different seed for offset pattern */}
             <feTurbulence type="turbulence" baseFrequency="0.35" numOctaves="2" seed="7" result="medDots" />
-            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 7 -5" in="medDots" result="medDotMask" />
+            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 7 -4.6" in="medDots" result="medDotMask" />
             
             {/* 4. Fine grain dots */}
             <feTurbulence type="turbulence" baseFrequency="0.7" numOctaves="1" seed="13" result="fineDots" />
-            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 6 -4.5" in="fineDots" result="fineDotMask" />
+            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 6 -4.1" in="fineDots" result="fineDotMask" />
             
             {/* 5. Layer all dot sizes together */}
             <feComposite in="largeDotMask" in2="medDotMask" operator="over" result="dotLayer1" />
