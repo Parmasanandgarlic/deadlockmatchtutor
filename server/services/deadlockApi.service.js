@@ -7,6 +7,7 @@ const { warnOnContractMismatch, MATCH_HISTORY_SCHEMA } = require('../utils/respo
 const { ApiUnavailableError } = require('../utils/apiAdapter');
 const { CircuitBreaker } = require('../utils/circuitBreaker');
 const { logAndFallback } = require('../utils/logging');
+const { SOURCE_PAYLOAD_VERSION } = require('../utils/analysisVersioning');
 
 const apiBreaker = new CircuitBreaker('DeadlockAPI', { failureThreshold: 3, resetTimeoutMs: 30000 });
 
@@ -29,6 +30,40 @@ function normalizeMatchHistory(data) {
   if (Array.isArray(data?.items)) return data.items;
   if (Array.isArray(data?.data)) return data.data;
   return [];
+}
+
+function hasNumber(value) {
+  return value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
+}
+
+function hasAnyArray(player, keys) {
+  return keys.some((key) => Array.isArray(player?.[key]) && player[key].length > 0);
+}
+
+function assertBulkMetadataPayload(match, matchId) {
+  const players = Array.isArray(match?.players) ? match.players : [];
+  if (players.length === 0) {
+    throw new Error('Malformed bulk metadata payload: missing players array');
+  }
+
+  const checks = {
+    players: true,
+    kda: players.some((p) => hasNumber(p.kills ?? p.player_kills) && hasNumber(p.deaths ?? p.player_deaths) && hasNumber(p.assists ?? p.player_assists)),
+    items: players.some((p) => hasAnyArray(p, ['items', 'item_ids', 'itemIds', 'match_items', 'matchItems', 'player_items', 'playerItems', 'inventory', 'final_build', 'finalBuild'])),
+    objectiveDamage: players.some((p) => hasNumber(p.obj_damage ?? p.objective_damage ?? p.hero_damage_to_objectives)),
+    stats: players.some((p) => hasNumber(p.net_worth ?? p.networth ?? p.souls) || hasNumber(p.net_damage_dealt ?? p.player_damage ?? p.damage ?? p.hero_damage)),
+  };
+
+  const missing = Object.entries(checks)
+    .filter(([, passed]) => !passed)
+    .map(([name]) => name);
+
+  match.sourcePayloadVersion = SOURCE_PAYLOAD_VERSION;
+  match.sourcePayloadAssertions = { checks, missing };
+
+  if (missing.length > 0) {
+    logger.warn(`[MatchInfo] Bulk metadata for ${matchId} missing requested scoring fields: ${missing.join(', ')}`);
+  }
 }
 
 async function fetchAssetList(label, path, redisKey) {
@@ -186,7 +221,10 @@ async function getMatchInfo(matchId) {
     const { data } = await apiBreaker.call(() => matchesApi.bulkMetadata({
       includeInfo: true,
       includeMoreInfo: true,
+      includeObjectives: true,
+      includeMidBoss: true,
       includePlayerInfo: true,
+      includePlayerKda: true,
       includePlayerItems: true,
       includePlayerStats: true,
       includePlayerDeathDetails: true,
@@ -197,9 +235,7 @@ async function getMatchInfo(matchId) {
     const match = Array.isArray(data) ? data[0] : data;
     if (match && typeof match === 'object' && Object.keys(match).length > 0) {
       logger.debug(`Fetched bulk match info for ${matchId}`);
-      if (!match.players || !Array.isArray(match.players)) {
-        throw new Error('Malformed bulk metadata payload: missing players array');
-      }
+      assertBulkMetadataPayload(match, matchId);
       if (cacheKey) {
         await redisClient
           .set(cacheKey, match, 2592000)

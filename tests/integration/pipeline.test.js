@@ -73,6 +73,11 @@ setApiItemNames([
     assert.ok(result.meta, 'meta missing');
     assert.ok(result.overall, 'overall missing');
     assert.ok(result.modules, 'modules missing');
+    assert.ok(result.dataQuality, 'dataQuality missing');
+    assert.ok(result.meta.dataQuality, 'meta.dataQuality missing');
+    assert.ok(result.meta.pipelineVersion, 'pipelineVersion missing');
+    assert.ok(result.meta.benchmarkVersion, 'benchmarkVersion missing');
+    assert.ok(result.meta.sourcePayloadVersion, 'sourcePayloadVersion missing');
     assert.ok(Array.isArray(result.recommendations), 'recommendations must be array');
     assert.ok(Array.isArray(result.insights), 'insights must be array');
   });
@@ -95,6 +100,20 @@ setApiItemNames([
     const data = { ...mockApiData, matchInHistory: null };
     const r = await runPipeline(data, '12345', mockApiData.matchInfo);
     assert.ok(r.modules.combat.note || typeof r.modules.combat.score === 'number');
+  });
+
+  await test('pipeline suppresses grades when required fields are missing', async () => {
+    const r = await runPipeline(
+      { matchInfo: {}, matchInHistory: null, heroStats: null, accountStats: {}, rankPredict: null, playerCard: {}, heroId: 0 },
+      '12345',
+      {}
+    );
+
+    assert.strictEqual(r.dataQuality.canGradeOverall, false);
+    assert.strictEqual(r.overall.available, false);
+    assert.strictEqual(r.overall.impactScore, null);
+    assert.strictEqual(r.overall.letterGrade, 'N/A');
+    assert.strictEqual(r.modules.combat.available, false);
   });
 
   await test('pipeline uses match metadata when history row is missing', async () => {

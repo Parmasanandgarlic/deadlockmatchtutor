@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import useMatchAnalysis from '../hooks/useMatchAnalysis';
 import SEOHead from '../components/seo/SEOHead';
@@ -11,7 +11,9 @@ import { absoluteUrl, breadcrumbSchema, organizationSchema, websiteSchema } from
 
 export default function SharedReportPage() {
   const { matchId, accountId } = useParams();
+  const [searchParams] = useSearchParams();
   const { analysis, loading, error, loadCached } = useMatchAnalysis();
+  const shareToken = searchParams.get('token');
 
   const dynamicTitle = analysis?.meta
     ? `Shared Deadlock Report ${analysis.meta.heroName} Grade ${analysis.overall?.letterGrade || ''}`.trim()
@@ -39,8 +41,8 @@ export default function SharedReportPage() {
     : null;
 
   useEffect(() => {
-    loadCached(matchId, accountId);
-  }, [matchId, accountId, loadCached]);
+    loadCached(matchId, accountId, shareToken).catch(() => {});
+  }, [matchId, accountId, shareToken, loadCached]);
 
   if (loading) {
     return (
@@ -56,7 +58,7 @@ export default function SharedReportPage() {
       <div className="max-w-3xl mx-auto px-4 py-20 text-center">
         <p className="text-deadlock-red text-lg mb-2">{toErrorMessage(error)}</p>
         <p className="text-deadlock-text-dim text-sm mb-4">
-          This report may not have been generated yet, or the server cache has been cleared.
+          This report may not have been generated yet, the share link may be missing its token, or the server cache has been cleared.
         </p>
         <Link to="/" className="text-deadlock-accent underline">
           Run a new analysis

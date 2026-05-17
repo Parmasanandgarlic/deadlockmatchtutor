@@ -17,6 +17,8 @@ const { setApiItemNames } = require('../utils/items');
 const { setApiRanks } = require('../utils/ranks');
 const redisClient = require('../services/redis.service');
 const { warnOnContractMismatch, ANALYSIS_RESPONSE_SCHEMA } = require('../utils/responseContracts');
+const { analysisCacheKey, isFreshAnalysisPayload } = require('../utils/analysisVersioning');
+const { createShareToken, verifyShareToken } = require('../utils/shareTokens');
 
 /**
  * In-memory cache fallback for analysis results.
@@ -150,12 +152,12 @@ async function runAnalysis(req, res, next) {
     return res.status(400).json({ error: 'Invalid matchId or accountId format.' });
   }
 
-  const cacheKey = `${matchId}_${accountId}`;
+  const cacheKey = analysisCacheKey(mId, aId);
   const lockKey = `lock:analysis:${cacheKey}`;
 
-  // 1. Check for active processing lock (Distributed Lock)
-  const isProcessing = await redisClient.get(lockKey);
-  if (isProcessing) {
+  // 1. Take an atomic processing lock before expensive upstream calls.
+  const lockAcquired = await redisClient.setIfNotExists(lockKey, 'true', 300);
+  if (!lockAcquired) {
     logger.info(`[Analysis] Analysis for ${cacheKey} is already in progress (Locked)`);
     return res.status(202).json({ 
       error: 'Analysis is currently in progress. Please check back in a few moments.',
@@ -172,19 +174,19 @@ async function runAnalysis(req, res, next) {
       .eq('account_id', aId)
       .maybeSingle();
 
-    if (existingRecord?.data) {
+    if (existingRecord?.data && isFreshAnalysisPayload(existingRecord.data)) {
       logger.info(`[Supabase] Cache hit for ${cacheKey}`);
       warnOnContractMismatch('analysis.cached', existingRecord.data, ANALYSIS_RESPONSE_SCHEMA);
       safeSetHeader(res, 'X-Cache', 'HIT (Supabase)');
       safeSetHeader(res, 'Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
+      await redisClient.del(lockKey);
       return res.json({ cached: true, ...existingRecord.data });
+    } else if (existingRecord?.data) {
+      logger.info(`[Supabase] Stale analysis ignored for ${cacheKey}`);
     }
   } catch (err) {
     logger.warn(`[Supabase] Check failed, falling back to identity: ${err.message}`);
   }
-
-  // Set processing lock
-  await redisClient.set(lockKey, 'true', 300); // 5-minute safety lock
 
   try {
     // 1b. Check local fallback cache (for Vercel local dev / temporary)
@@ -320,6 +322,14 @@ async function getCachedAnalysis(req, res, next) {
         !Number.isInteger(aId) || aId < 0 || aId > Number.MAX_SAFE_INTEGER) {
       return res.status(400).json({ error: 'Invalid matchId or accountId format.' });
     }
+
+    const shareToken = req.query?.token || req.headers['x-share-token'];
+    if (!verifyShareToken(Array.isArray(shareToken) ? shareToken[0] : shareToken, mId, aId)) {
+      return res.status(401).json({
+        error: 'A valid share token is required to view this report.',
+        code: 'SHARE_TOKEN_REQUIRED',
+      });
+    }
     
     // 1. Check Supabase
     try {
@@ -330,16 +340,18 @@ async function getCachedAnalysis(req, res, next) {
         .eq('account_id', Number(accountId))
         .maybeSingle();
 
-      if (existingRecord?.data) {
+      if (existingRecord?.data && isFreshAnalysisPayload(existingRecord.data)) {
         safeSetHeader(res, 'Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
         return res.json(existingRecord.data);
+      } else if (existingRecord?.data) {
+        logger.info(`[Supabase] Stale shared analysis ignored for ${matchId}_${accountId}`);
       }
     } catch (err) {
       logger.warn(`[Supabase] Fetch failed: ${err.message}`);
     }
 
     // 2. Check local fallback cache
-    const cacheKey = `${matchId}_${accountId}`;
+    const cacheKey = analysisCacheKey(mId, aId);
     if (fallbackCache.has(cacheKey)) {
       safeSetHeader(res, 'Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
       return res.json(fallbackCache.get(cacheKey));
@@ -353,4 +365,25 @@ async function getCachedAnalysis(req, res, next) {
   }
 }
 
-module.exports = { runAnalysis, getCachedAnalysis };
+async function createSharedAnalysisLink(req, res, next) {
+  try {
+    const { matchId, accountId } = req.body;
+    const mId = Number(matchId);
+    const aId = Number(accountId);
+
+    if (!Number.isInteger(mId) || mId < 0 || mId > Number.MAX_SAFE_INTEGER ||
+        !Number.isInteger(aId) || aId < 0 || aId > Number.MAX_SAFE_INTEGER) {
+      return res.status(400).json({ error: 'Invalid matchId or accountId format.' });
+    }
+
+    const token = createShareToken(mId, aId);
+    return res.json({
+      token,
+      path: `/report/${mId}/${aId}?token=${encodeURIComponent(token)}`,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { runAnalysis, getCachedAnalysis, createSharedAnalysisLink };

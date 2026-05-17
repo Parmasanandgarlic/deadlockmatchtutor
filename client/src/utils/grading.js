@@ -11,6 +11,7 @@ export function getGradeColor(grade) {
  * Get a qualitative label for a numeric score.
  */
 export function getScoreLabel(score) {
+  if (typeof score !== 'number' || !Number.isFinite(score)) return 'Data Limited';
   if (score >= 90) return 'Exceptional';
   if (score >= 80) return 'Strong';
   if (score >= 70) return 'Above Average';
@@ -24,6 +25,7 @@ export function getScoreLabel(score) {
  * Get Tailwind color class for a numeric score (0–100).
  */
 export function getScoreColor(score) {
+  if (typeof score !== 'number' || !Number.isFinite(score)) return 'text-deadlock-muted';
   if (score >= 80) return 'text-deadlock-green';
   if (score >= 60) return 'text-deadlock-blue';
   if (score >= 40) return 'text-deadlock-accent';

@@ -14,7 +14,7 @@ export default defineConfig({
       manifest: {
         name: 'Deadlock AfterMatch — Match Analyzer',
         short_name: 'AfterMatch',
-        description: 'Free Deadlock match analyzer. Instant post-match grades, hero performance reports, economy breakdowns, and personalized coaching.',
+        description: 'Free Deadlock match analyzer. Aggregate post-match grades, hero performance reports, economy breakdowns, and coaching notes.',
         theme_color: '#050506',
         background_color: '#050506',
         display: 'standalone',

@@ -15,13 +15,9 @@ CREATE POLICY "Service role full access" ON public.analyses
   USING (true)
   WITH CHECK (true);
 
--- Step 4: Create policy for public read access (anon key)
--- This allows anyone to read analyses by match_id and account_id
--- This is needed for the shared report feature
-CREATE POLICY "Public read access" ON public.analyses
-  FOR SELECT
-  TO anon
-  USING (true);
+-- Step 4: Ensure anonymous clients cannot enumerate cached analyses.
+-- Shared reports are now served through the Express API with signed share tokens.
+DROP POLICY IF EXISTS "Public read access" ON public.analyses;
 
 -- Step 5: Create policy for authenticated users (optional, for future use)
 -- If you want to restrict access to authenticated users in the future,
@@ -48,4 +44,4 @@ WHERE tablename = 'analyses';
 -- schemaname | tablename | policyname              | permissive | roles        | cmd | qual | with_check
 -- -----------+-----------+-------------------------+------------+--------------+-----+------+------------
 -- public     | analyses  | Service role full access | t          | {service_role} | *   | true | true
--- public     | analyses  | Public read access      | t          | {anon}        | r   | true | NULL
+-- No anon SELECT policy should be present.

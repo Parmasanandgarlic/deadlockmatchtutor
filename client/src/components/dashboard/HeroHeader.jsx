@@ -11,7 +11,8 @@ import { useAssets } from '../../contexts/AssetContext';
 export default function HeroHeader({ meta, overall }) {
   const { heroesMap } = useAssets();
   const [copiedMatchId, setCopiedMatchId] = useState(false);
-  const scoreColor = getScoreColor(overall?.impactScore ?? 0);
+  const hasOverallScore = overall?.available !== false && typeof overall?.impactScore === 'number' && Number.isFinite(overall.impactScore);
+  const scoreColor = getScoreColor(hasOverallScore ? overall.impactScore : null);
   
   const heroAsset = heroesMap?.[meta?.heroId || meta?.hero_id];
   const heroBg = heroAsset?.images?.background_image_webp || heroAsset?.images?.background_image || getHeroImage(heroAsset || meta?.heroName, 'card');
@@ -46,8 +47,8 @@ export default function HeroHeader({ meta, overall }) {
       <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-6">
         {/* Grade Circle */}
         <GradeIndicator
-          grade={overall?.letterGrade || 'F'}
-          score={overall?.impactScore}
+          grade={overall?.letterGrade || 'N/A'}
+          score={hasOverallScore ? overall.impactScore : null}
           size="lg"
         />
 
@@ -150,7 +151,13 @@ export default function HeroHeader({ meta, overall }) {
           </p>
 
           {/* Score Breakdown Bar */}
-          {overall?.breakdown && (
+          {overall?.note && (
+            <p className="text-xs text-deadlock-muted leading-relaxed mb-3 max-w-2xl">
+              {overall.note}
+            </p>
+          )}
+
+          {overall?.breakdown && Object.keys(overall.breakdown).length > 0 && (
             <div className="flex flex-wrap gap-2 text-sm">
               {Object.entries(overall.breakdown).map(([key, data]) => (
                 <Tooltip 
@@ -180,7 +187,7 @@ export default function HeroHeader({ meta, overall }) {
           <div>
             <p className="text-xs text-deadlock-muted uppercase tracking-wider mb-1">Impact</p>
             <p className={`text-xl font-bold ${scoreColor}`}>
-              {getScoreLabel(overall?.impactScore ?? 0)}
+              {getScoreLabel(hasOverallScore ? overall.impactScore : null)}
             </p>
           </div>
           {rank?.label && (

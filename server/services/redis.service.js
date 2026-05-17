@@ -184,6 +184,21 @@ class RedisClient {
     }
   }
 
+  async setIfNotExists(key, value, ttlSeconds = 3600) {
+    if (!this.isReady()) {
+      if (this._getFallbackEntry(key) !== null) return false;
+      return this._setFallback(key, value, ttlSeconds);
+    }
+    try {
+      const serialized = JSON.stringify(value);
+      const result = await this.client.set(key, serialized, 'EX', ttlSeconds, 'NX');
+      return result === 'OK';
+    } catch (error) {
+      logger.error(`Redis SET NX error for key ${key}:`, error.message);
+      return false;
+    }
+  }
+
   async del(key) {
     if (!this.isReady()) return this.fallbackCache.delete(key);
     try {

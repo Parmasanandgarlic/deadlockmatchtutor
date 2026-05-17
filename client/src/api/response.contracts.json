@@ -3,7 +3,7 @@
   "version": 1,
   "analysis": {
     "type": "object",
-    "required": ["meta", "overall", "modules", "recommendations", "insights"],
+    "required": ["meta", "overall", "modules", "recommendations", "insights", "dataQuality"],
     "properties": {
       "cached": { "type": "boolean" },
       "meta": {
@@ -27,11 +27,24 @@
         },
         "additionalProperties": true
       },
+      "dataQuality": {
+        "type": "object",
+        "required": ["confidence", "confidenceScore", "canGradeOverall", "modules", "suppressedModules"],
+        "properties": {
+          "confidence": { "type": "string" },
+          "confidenceScore": { "type": "number" },
+          "canGradeOverall": { "type": "boolean" },
+          "modules": { "type": "object" },
+          "suppressedModules": { "type": "array", "items": { "type": "object" } }
+        },
+        "additionalProperties": true
+      },
       "overall": {
         "type": "object",
         "required": ["impactScore", "letterGrade", "breakdown"],
         "properties": {
-          "impactScore": { "type": "number" },
+          "available": { "type": "boolean" },
+          "impactScore": { "type": ["number", "null"] },
           "letterGrade": { "type": "string" },
           "breakdown": { "type": "object" }
         },
@@ -66,9 +79,10 @@
   "moduleSchemas": {
     "heroPerformance": {
       "type": "object",
-      "required": ["score", "grade", "kills", "deaths", "assists", "matchKda", "soulsPerMin", "damagePerMin", "objectiveDamage", "positioningScore", "metrics", "winrate", "avgKda", "matchesPlayed", "avgSouls", "roleContext"],
-      "properties": {
-        "score": { "type": "number" },
+        "required": ["available", "score"],
+        "properties": {
+        "available": { "type": "boolean" },
+        "score": { "type": ["number", "null"] },
         "grade": { "type": "string" },
         "kills": { "type": "number" },
         "deaths": { "type": "number" },
@@ -108,9 +122,10 @@
     },
     "benchmarks": {
       "type": "object",
-      "required": ["score", "userWinrate", "benchmarkWinrate", "winrateDiff", "userKda", "benchmarkKda", "kdaDiff", "userSoulsPerMin", "benchmarkSoulsPerMin", "percentile"],
-      "properties": {
-        "score": { "type": "number" },
+        "required": ["available", "score"],
+        "properties": {
+        "available": { "type": "boolean" },
+        "score": { "type": ["number", "null"] },
         "userWinrate": { "type": "number" },
         "benchmarkWinrate": { "type": "number" },
         "winrateDiff": { "type": "number" },

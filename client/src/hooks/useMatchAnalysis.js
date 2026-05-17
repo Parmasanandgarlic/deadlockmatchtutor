@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { runAnalysis, getCachedAnalysis } from '../api/client';
+import { runAnalysis, getSharedAnalysis } from '../api/client';
 
 const PROGRESS_STAGES = [
   'Fetching match data...',
@@ -50,8 +50,8 @@ export default function useMatchAnalysis() {
     },
   });
 
-  const loadCached = useCallback(async (matchId, accountId) => {
-    const queryKey = ['analysis', matchId, accountId];
+  const loadCached = useCallback(async (matchId, accountId, token) => {
+    const queryKey = ['analysis', matchId, accountId, token || 'private'];
     const cached = queryClient.getQueryData(queryKey);
     if (cached) {
       setAnalysis(cached);
@@ -62,7 +62,7 @@ export default function useMatchAnalysis() {
     setCachedLoading(true);
     setCachedError(null);
     try {
-      const data = await getCachedAnalysis(matchId, accountId);
+      const data = await getSharedAnalysis(matchId, accountId, token);
       queryClient.setQueryData(queryKey, data);
       setAnalysis(data);
       return data;

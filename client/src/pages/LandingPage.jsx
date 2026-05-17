@@ -17,9 +17,9 @@ import {
 
 const features = [
   { icon: Flame, label: 'Economy Grading', desc: 'Net worth efficiency & farm scores' },
-  { icon: Hourglass, label: 'Power Spike Tracking', desc: 'Timing analysis for item & level spikes' },
-  { icon: Skull, label: 'Combat & KDA', desc: 'Fight-by-fight performance grading' },
-  { icon: Compass, label: 'Objective Control', desc: 'Lane & objective impact scoring' },
+  { icon: Hourglass, label: 'Build Review', desc: 'Item sequence signals when available' },
+  { icon: Skull, label: 'Combat & KDA', desc: 'Aggregate combat performance grading' },
+  { icon: Compass, label: 'Objective Pressure', desc: 'Objective damage signals when available' },
 ];
 
 export default function LandingPage() {
@@ -103,7 +103,7 @@ export default function LandingPage() {
     {
       question: 'What is Deadlock AfterMatch?',
       answer:
-        'Deadlock AfterMatch is a free, open-source post-match analytics engine for the game Deadlock. It analyzes match data to grade economy, combat, itemization, and objective control so players can improve macro decision-making.',
+        'Deadlock AfterMatch is a free, open-source aggregate post-match analytics engine for the game Deadlock. It analyzes available match data to grade economy, combat, itemization, and objective pressure so players can improve macro decision-making.',
     },
     {
       question: 'How does Deadlock AfterMatch grade my performance?',
@@ -139,7 +139,7 @@ export default function LandingPage() {
     <div className="relative min-h-[90vh] flex flex-col items-center justify-center pt-10 pb-20 overflow-hidden">
       <SEOHead 
         title="Deadlock Match Analyzer and Player Reports | AfterMatch"
-        description="Free Deadlock match analyzer. Get instant post-match grades, hero performance reports, economy breakdowns, item timing analysis, and personalized coaching — no login required."
+        description="Free Deadlock match analyzer. Get aggregate post-match grades, hero performance reports, economy breakdowns, item build review, and coaching notes - no login required."
         canonical={absoluteUrl('/')}
         imageUrl="/images/og-share.webp"
         schema={landingSchema} 
@@ -166,8 +166,8 @@ export default function LandingPage() {
           </h1>
 
           <p className="max-w-xl mx-auto text-deadlock-text-dim text-lg leading-relaxed mb-10">
-            The high-precision analytics engine for Deadlock. 
-            Identify macro-mistakes, optimize your economy, and dominate every skirmish with data-driven insights.
+            Aggregate post-match coaching for Deadlock.
+            Identify macro mistakes, review economy and KDA signals, and focus your next improvement target with data-grounded notes.
           </p>
 
         {/* Search Engine — Primary CTA */}
@@ -304,7 +304,7 @@ export default function LandingPage() {
           </h2>
           <p className="text-sm text-deadlock-text-dim leading-relaxed max-w-3xl mx-auto text-center">
             Deadlock AfterMatch is a free, open-source post-match analytics dashboard for Deadlock that turns match data into
-            clear grades and actionable mistakes. Paste a Steam profile URL or Steam ID to generate match reports and player
+            aggregate grades and actionable mistakes. Paste a Steam profile URL or Steam ID to generate match reports and player
             dossiers instantly.
           </p>
           <div className="mt-8 card overflow-x-auto">
@@ -324,18 +324,18 @@ export default function LandingPage() {
                 </tr>
                 <tr className="border-t border-deadlock-border">
                   <td className="py-2 pr-4 text-deadlock-text">Combat</td>
-                  <td className="py-2 pr-4">KDA density and fight impact</td>
+                  <td className="py-2 pr-4">KDA density and aggregate combat impact</td>
                   <td className="py-2">Spot overextensions and low-value deaths</td>
                 </tr>
                 <tr className="border-t border-deadlock-border">
                   <td className="py-2 pr-4 text-deadlock-text">Itemization</td>
-                  <td className="py-2 pr-4">Power spike timing</td>
-                  <td className="py-2">Convert timings into win probability pressure</td>
+                  <td className="py-2 pr-4">Item build reconstruction when metadata includes it</td>
+                  <td className="py-2">Find missing or inefficient build decisions</td>
                 </tr>
                 <tr className="border-t border-deadlock-border">
                   <td className="py-2 pr-4 text-deadlock-text">Objectives</td>
-                  <td className="py-2 pr-4">Lane and objective impact scoring</td>
-                  <td className="py-2">Catch macro rotations that lose games</td>
+                  <td className="py-2 pr-4">Objective damage and pressure signals when present</td>
+                  <td className="py-2">Catch low-pressure games without inventing event timelines</td>
                 </tr>
               </tbody>
             </table>
@@ -348,7 +348,7 @@ export default function LandingPage() {
             <Flame className="w-8 h-8 text-deadlock-blue mb-4 group-hover:scale-110 transition-transform" />
             <h3 className="text-sm font-serif mb-2 tracking-widest">Economy Flow</h3>
             <p className="text-xs text-deadlock-text-dim leading-relaxed">
-              Track net worth efficiency and soul collection timings across the match duration.
+              Review net worth efficiency and soul collection rates from the match summary payload.
             </p>
           </div>
 
@@ -356,7 +356,7 @@ export default function LandingPage() {
             <Skull className="w-8 h-8 text-deadlock-amber mb-4 group-hover:scale-110 transition-transform" />
             <h3 className="text-sm font-serif mb-2 tracking-widest">Combat Reach</h3>
             <p className="text-xs text-deadlock-text-dim leading-relaxed">
-              Advanced KDA metrics and fight-by-fight impact scoring for every skirmish.
+              Aggregate KDA and damage metrics without pretending to reconstruct every fight.
             </p>
           </div>
 
@@ -364,7 +364,7 @@ export default function LandingPage() {
             <Hourglass className="w-8 h-8 text-deadlock-amber mb-4 group-hover:scale-110 transition-transform" />
             <h3 className="text-sm font-serif mb-2 tracking-widest">Power Peaks</h3>
             <p className="text-xs text-deadlock-text-dim leading-relaxed">
-              Identify key item and level spikes and evaluate how effectively you utilized them.
+              Reconstruct your item build when metadata includes it and flag obvious efficiency gaps.
             </p>
           </div>
 
@@ -372,7 +372,7 @@ export default function LandingPage() {
             <Compass className="w-8 h-8 text-deadlock-blue mb-4 group-hover:scale-110 transition-transform" />
             <h3 className="text-sm font-serif mb-2 tracking-widest">Macro Intent</h3>
             <p className="text-xs text-deadlock-text-dim leading-relaxed">
-              Objective control scoring and map impact analysis to uncover rotation mistakes.
+              Objective pressure and map impact signals when the API payload supports them.
             </p>
           </div>
         </div>
@@ -389,8 +389,8 @@ export default function LandingPage() {
               </h3>
               <p className="text-sm text-deadlock-text-dim leading-relaxed">
                 Deadlock AfterMatch is a free, open-source post-match analytics engine for the game Deadlock. 
-                It provides high-precision data on your economy, combat performance, itemization efficiency, 
-                and objective control to help players improve their macro-decisions.
+                It provides aggregate post-match review of your economy, combat performance, itemization efficiency,
+                and objective pressure to help players improve their macro decisions.
               </p>
             </article>
 

@@ -29,9 +29,26 @@ const MODULE_DESCRIPTIONS = {
   benchmarks: 'How your performance compares to career averages and hero-specific benchmarks.',
   rankBenchmarks: 'How this match compares to a typical player at your predicted rank.',
   matchupDifficulty: 'Difficulty rating of the enemy composition: rank delta, counters, and net-worth gap.',
-  buildPath: 'Optimization of your item build: slot balance, power-spike timing, and missing items.',
+  buildPath: 'Optimization of your item build: slot balance, item sequencing, and missing items.',
   decisionQuality: 'Synthesis of engagement, farm, death discipline, objectives, build, and adaptation.',
 };
+
+function hasModuleScore(module) {
+  return module?.available !== false && typeof module?.score === 'number' && Number.isFinite(module.score);
+}
+
+function UnavailableModule({ moduleData }) {
+  return (
+    <div className="py-10 text-center max-w-xl mx-auto">
+      <p className="text-xs font-bold uppercase tracking-[0.24em] text-deadlock-muted mb-3">
+        Data Unavailable
+      </p>
+      <p className="text-sm text-deadlock-text-dim leading-relaxed">
+        {moduleData?.note || 'This module was suppressed because the match payload did not include the required fields.'}
+      </p>
+    </div>
+  );
+}
 
 export default function ModuleTabs({ modules, meta }) {
   const [active, setActive] = useState('heroPerformance');
@@ -52,7 +69,9 @@ export default function ModuleTabs({ modules, meta }) {
       >
         {MODULE_KEYS.map((key, idx) => {
           const isActive = key === active;
-          const score = modules[key]?.score ?? 0;
+          const module = modules[key];
+          const scored = hasModuleScore(module);
+          const score = scored ? Math.round(module.score) : null;
           const label = MODULE_LABELS[key] || key;
           const fileTag = `§${String(idx + 1).padStart(2, '0')}`;
           return (
@@ -77,9 +96,11 @@ export default function ModuleTabs({ modules, meta }) {
                   <span className="module-chip-sub">{fileTag}</span>
                   <span className="module-chip-title">{label}</span>
                 </span>
-                <span className="module-score-plate" aria-label={`Score ${score} of 100`}>
-                  <span className={`module-score-plate-value ${getScoreColor(score)}`}>{score}</span>
-                  <span className="module-score-plate-label">/100</span>
+                <span className="module-score-plate" aria-label={scored ? `Score ${score} of 100` : 'Data unavailable'}>
+                  <span className={`module-score-plate-value ${getScoreColor(score)}`}>
+                    {scored ? score : 'N/A'}
+                  </span>
+                  {scored && <span className="module-score-plate-label">/100</span>}
                 </span>
               </button>
             </Tooltip>
@@ -89,7 +110,9 @@ export default function ModuleTabs({ modules, meta }) {
 
       {/* Active Module Content */}
       <div className="card">
-        {ActiveComponent && activeData ? (
+        {activeData?.available === false ? (
+          <UnavailableModule moduleData={activeData} />
+        ) : ActiveComponent && activeData ? (
           <ActiveComponent data={activeData} playerStats={playerStats} meta={meta} />
         ) : (
           <p className="text-deadlock-text-dim text-center py-8">No data available.</p>

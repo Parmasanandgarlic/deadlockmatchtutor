@@ -3,7 +3,7 @@ import { DEFAULT_IMAGE_PATH, SITE_NAME, SITE_URL } from '../../utils/seo';
 
 const DEFAULT_TITLE = 'Deadlock AfterMatch Match Analyzer';
 const DEFAULT_DESC =
-  'Free Deadlock match analyzer. Get instant post-match grades, hero performance reports, economy breakdowns, item timing analysis, and personalized coaching \u2014 no login required.';
+  'Free Deadlock match analyzer. Get aggregate post-match grades, hero performance reports, economy breakdowns, item build review, and coaching notes - no login required.';
 const DEFAULT_KEYWORDS =
   'Deadlock, Deadlock analytics, Deadlock tracker, post-match report, player dossier, ranked profile, KDA, item build, hero stats, benchmark comparison, Valve';
 

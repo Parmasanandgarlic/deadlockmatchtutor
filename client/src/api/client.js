@@ -260,6 +260,18 @@ export async function getCachedAnalysis(matchId, accountId) {
   return data;
 }
 
+export async function getSharedAnalysis(matchId, accountId, token) {
+  const { data } = await fetchWithDedup(`/analysis/${matchId}/${accountId}`, {
+    params: token ? { token } : {},
+  });
+  return data;
+}
+
+export async function createShareLink(matchId, accountId) {
+  const { data } = await api.post('/analysis/share', { matchId, accountId });
+  return data;
+}
+
 // ---- Trends ----
 
 export async function getPlayerTrends(accountId, limit = 10) {

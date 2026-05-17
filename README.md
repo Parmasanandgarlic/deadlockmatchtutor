@@ -1,6 +1,6 @@
 # Deadlock AfterMatch
 
-A comprehensive post-match analytics dashboard for **Deadlock**. Fetches match data directly from the Deadlock API, runs an analysis pipeline evaluating Economy, Itemization, Combat, and Objectives, and surfaces the most critical "Game Losing Mistakes" in plain English.
+A comprehensive aggregate post-match analytics dashboard for **Deadlock**. Fetches match data directly from the Deadlock API, runs an analysis pipeline evaluating Economy, Itemization, Combat, and available Objective signals, and surfaces the most critical "Game Losing Mistakes" in plain English.
 
 **Live Site**: https://www.aftermatch.xyz
 
@@ -104,6 +104,7 @@ vercel
 # - SUPABASE_ANON_KEY
 # - SUPABASE_SERVICE_ROLE_KEY
 # - SESSION_SECRET (also signs CSRF tokens unless CSRF_SECRET is set)
+# - SHARE_TOKEN_SECRET (recommended; signs shared report links)
 # - REDIS_URL (required when NODE_ENV=production)
 # - DEADLOCK_API_BASE_URL (default: https://api.deadlock-api.com)
 # - RATE_LIMIT_WINDOW_MS (default: 900000)
@@ -185,6 +186,7 @@ deadlock-match-tutor/
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service role key (bypasses RLS) | - |
 | `SESSION_SECRET` | Yes in production | Session signing secret; also signs CSRF tokens unless `CSRF_SECRET` is set | - |
 | `CSRF_SECRET` | No | Optional separate secret for CSRF token signing | `SESSION_SECRET` |
+| `SHARE_TOKEN_SECRET` | No | Optional separate secret for signed shared report links | `CSRF_SECRET` / `SESSION_SECRET` |
 | `REDIS_URL` | Yes in production | Redis connection URL for shared cache, sessions, and auth rate limits | - |
 | `CORS_ORIGIN` | No | Comma-separated allowed CORS origins | `http://localhost:5173` (dev) / `true` (prod) |
 | `RATE_LIMIT_WINDOW_MS` | No | Rate limit window in milliseconds | `900000` (15 min) |
@@ -273,7 +275,7 @@ npm run test:failover    # Disaster Recovery & Failover tests
 
 ### Performance
 
-- **Supabase Caching**: Analysis results cached for fast retrieval
+- **Supabase Caching**: Analysis results cached for fast retrieval through server-mediated, signed shared report access
 - **Efficient API Calls**: Batch API calls where possible
 - **Graceful Degradation**: Development fallback mechanisms preserve local availability; production requires Redis for shared cache and throttling
 

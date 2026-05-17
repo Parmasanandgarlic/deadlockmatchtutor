@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { runAnalysis, getCachedAnalysis } = require('../controllers/analysis.controller');
+const { runAnalysis, getCachedAnalysis, createSharedAnalysisLink } = require('../controllers/analysis.controller');
 
 const router = Router();
 
@@ -30,6 +30,26 @@ const router = Router();
  *         $ref: '#/components/responses/ServerError'
  */
 router.post('/run', runAnalysis);
+
+/**
+ * @swagger
+ * /api/analysis/share:
+ *   post:
+ *     summary: Create a signed shared-report token
+ *     tags: [Analysis]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/AnalysisRequest'
+ *     responses:
+ *       200:
+ *         description: Signed share path and token
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ */
+router.post('/share', createSharedAnalysisLink);
 
 /**
  * @swagger

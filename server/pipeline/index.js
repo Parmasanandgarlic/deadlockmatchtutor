@@ -1,5 +1,5 @@
 const { generateInsights } = require('./insights.engine');
-const { computeOverallScore } = require('./scoring.engine');
+const { scoreToGrade, getWeightsForRole } = require('./scoring.engine');
 const { getHeroName, getHeroData } = require('../utils/heroes');
 const { getRankInfo } = require('../utils/ranks');
 const { getItemName, getItemData, getItemByClassName } = require('../utils/items');
@@ -19,6 +19,8 @@ const { analyzeBuildPath } = require('./analyzers/buildPath.analyzer');
 const { analyzeDecisionQuality } = require('./analyzers/decisionQuality.analyzer');
 const { buildMmrHistory } = require('../services/mmrHistory.service');
 const { getMetaContext } = require('../services/metaContext.service');
+const { PIPELINE_VERSION, BENCHMARK_VERSION, SOURCE_PAYLOAD_VERSION } = require('../utils/analysisVersioning');
+const { buildDataQuality, withModuleAvailability } = require('./dataQuality');
 
 /**
  * Master ETL Pipeline (API-based)
@@ -74,6 +76,13 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
 
   // Extract granular player stats from matchInfo (requires include_player_stats=true)
   const playerStats = extractGranularPlayerStats(matchInfo, accountId, durationMinutes);
+  const dataQuality = buildDataQuality({
+    matchInfo,
+    matchInHistory,
+    heroStats,
+    rankPredict,
+    accountId,
+  });
 
   // ---- Context Building ----
   const heroRole = HERO_ROLES[heroId] || { role: 'brawler', sub_role: 'flex', lane: 'solo' };
@@ -90,57 +99,65 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
   };
 
   // ---- Module 1: Match Performance (Context-Aware) ----
-  const heroPerformance = analyzeMatchPerformance({
+  const heroPerformanceRaw = analyzeMatchPerformance({
     playerStats,
     matchInHistory, // for fallback
     normalizedHeroStats,
   }, analysisContext);
+  const heroPerformance = withModuleAvailability('heroPerformance', heroPerformanceRaw, dataQuality);
 
   // ---- Module 2: Itemization Analysis (hero-aware SPM benchmarks) ----
-  const itemization = analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durationMinutes, playerStats, heroId);
+  const itemizationRaw = analyzeItemizationFromMatch(matchInHistory, matchInfo, accountId, durationMinutes, playerStats, heroId);
+  const itemization = withModuleAvailability('itemization', itemizationRaw, dataQuality);
 
   // ---- Module 3: Combat & KDA Analysis (game-length normalized, death severity) ----
-  const combat = analyzeCombatFromStats(matchInHistory, durationMinutes, playerStats, heroId, durationSeconds);
+  const combatRaw = analyzeCombatFromStats(matchInHistory, durationMinutes, playerStats, heroId, durationSeconds);
+  const combat = withModuleAvailability('combat', combatRaw, dataQuality);
 
   // ---- Module 4: Benchmark Comparison (hero-specific percentile benchmarks) ----
-  const benchmarks = compareAgainstBenchmarks(matchInHistory, normalizedHeroStats, durationMinutes, playerStats, heroId);
+  const benchmarksRaw = compareAgainstBenchmarks(matchInHistory, normalizedHeroStats, durationMinutes, playerStats, heroId);
+  const benchmarks = withModuleAvailability('benchmarks', benchmarksRaw, dataQuality);
 
   // ---- Advanced Modules ----
   const rankPredictSummary = summarizeRankPrediction(rankPredict);
 
   // Module 5: Dynamic Rank Benchmarks (match vs same-tier peers)
-  const rankBenchmarks = analyzeRankBenchmarks({
-    combat,
-    itemization,
+  const rankBenchmarksRaw = analyzeRankBenchmarks({
+    combat: combatRaw,
+    itemization: itemizationRaw,
     rankPredict: rankPredictSummary,
     playerStats,
   });
+  const rankBenchmarks = withModuleAvailability('rankBenchmarks', rankBenchmarksRaw, dataQuality);
 
   // Module 6: Matchup Difficulty (enemy comp, rank delta, counters)
-  const matchupDifficulty = analyzeMatchupDifficulty({
+  const matchupDifficultyRaw = analyzeMatchupDifficulty({
     matchInfo,
     accountId,
     heroId,
     rankPredict: rankPredictSummary,
   });
+  const matchupDifficulty = withModuleAvailability('matchupDifficulty', matchupDifficultyRaw, dataQuality);
 
   // Module 7: Build Path Optimization
-  const buildPath = analyzeBuildPath({
-    items: itemization.items || [],
+  const buildPathRaw = analyzeBuildPath({
+    items: itemizationRaw.items || [],
     role: heroRole.role,
     durationSeconds,
   });
+  const buildPath = withModuleAvailability('buildPath', buildPathRaw, dataQuality);
 
   // Module 8: Decision Quality Scoring (synthesizes the other modules)
-  const decisionQuality = analyzeDecisionQuality({
-    combat,
-    itemization,
-    heroPerformance,
-    rankBenchmarks,
-    matchupDifficulty,
-    buildPath,
+  const decisionQualityRaw = analyzeDecisionQuality({
+    combat: combatRaw,
+    itemization: itemizationRaw,
+    heroPerformance: heroPerformanceRaw,
+    rankBenchmarks: rankBenchmarksRaw,
+    matchupDifficulty: matchupDifficultyRaw,
+    buildPath: buildPathRaw,
     playerStats,
   });
+  const decisionQuality = withModuleAvailability('decisionQuality', decisionQualityRaw, dataQuality);
 
   // Temporal Tracking (trend across recent matches) — embedded in meta
   const temporal = analyzeTemporal({ matchHistory, matchInHistory });
@@ -150,10 +167,10 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
 
   // ---- Recommendations ----
   const recommendations = generateRecommendations(
-    heroPerformance,
-    itemization,
-    combat,
-    benchmarks,
+    heroPerformance.available ? heroPerformance : null,
+    itemization.available ? itemization : null,
+    combat.available ? combat : null,
+    benchmarks.available ? benchmarks : null,
     { rankBenchmarks, matchupDifficulty, buildPath, decisionQuality, temporal }
   );
 
@@ -172,10 +189,10 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
 
   // ---- Insights v3 (event-grounded coaching with full module context) ----
   const insights = generateInsights(
-    heroPerformance,
-    itemization,
-    combat,
-    benchmarks,
+    heroPerformance.available ? heroPerformance : null,
+    itemization.available ? itemization : null,
+    combat.available ? combat : null,
+    benchmarks.available ? benchmarks : null,
     {
       duration: durationSeconds,
       won,
@@ -189,13 +206,13 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
   );
 
   // ---- Overall Score (weighted: core modules + decision quality) ----
-  const overall = computeOverallScore({
-    heroPerformance: heroPerformance.score,
-    itemization: itemization.score,
-    combat: combat.score,
-    benchmarks: benchmarks.score,
-    decisionQuality: decisionQuality.score,
-  }, analysisContext.heroRole?.role);
+  const overall = computeOverallScoreWithQuality({
+    heroPerformance,
+    itemization,
+    combat,
+    benchmarks,
+    decisionQuality,
+  }, analysisContext.heroRole?.role, dataQuality);
 
   const elapsed = Date.now() - startTime;
   logger.info(`Pipeline complete in ${elapsed}ms`);
@@ -212,6 +229,9 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
       startTime: matchStartTime,
       analyzedAt: new Date().toISOString(),
       processedAt: new Date().toISOString(),
+      pipelineVersion: PIPELINE_VERSION,
+      benchmarkVersion: BENCHMARK_VERSION,
+      sourcePayloadVersion: SOURCE_PAYLOAD_VERSION,
       patchVersion: matchInfo?.game_mode_version || matchInfo?.patch_version || matchInfo?.match_version || null,
       pipelineMs: elapsed,
       rankPredict: rankPredictSummary,
@@ -219,7 +239,9 @@ async function runPipeline(apiData, accountId, matchInfo = {}) {
       mmrHistory,
       temporal,
       metaContext,
+      dataQuality,
     },
+    dataQuality,
     overall,
     modules: {
       heroPerformance,
@@ -394,6 +416,46 @@ function extractGranularPlayerStats(matchInfo, accountId, durationMinutes) {
 function roundTo(value, decimals = 1) {
   const mult = Math.pow(10, decimals);
   return Math.round(value * mult) / mult;
+}
+
+function computeOverallScoreWithQuality(modules, role, dataQuality) {
+  const availableEntries = Object.entries(modules)
+    .filter(([, module]) => module?.available && typeof module.score === 'number' && Number.isFinite(module.score));
+
+  if (!dataQuality?.canGradeOverall || availableEntries.length < 2) {
+    return {
+      available: false,
+      impactScore: null,
+      letterGrade: 'N/A',
+      breakdown: {},
+      note: 'Overall grade suppressed because required source data is incomplete.',
+      suppressedModules: dataQuality?.suppressedModules || [],
+    };
+  }
+
+  const weights = getWeightsForRole(role || 'brawler', Boolean(modules.decisionQuality?.available));
+  const includedWeight = availableEntries.reduce((sum, [key]) => sum + (weights[key] || 0), 0) || 1;
+  let impactScore = 0;
+  const breakdown = {};
+
+  for (const [key, module] of availableEntries) {
+    const normalizedWeight = (weights[key] || 0) / includedWeight;
+    impactScore += module.score * normalizedWeight;
+    breakdown[key] = {
+      score: module.score,
+      weight: Number(normalizedWeight.toFixed(3)),
+      weighted: Math.round(module.score * normalizedWeight),
+    };
+  }
+
+  const rounded = Math.round(clamp(impactScore, 0, 100));
+  return {
+    available: true,
+    impactScore: rounded,
+    letterGrade: scoreToGrade(rounded),
+    breakdown,
+    normalizedFromPartialData: availableEntries.length < Object.keys(weights).length,
+  };
 }
 
 // ----------------------------------------------------------------
@@ -760,7 +822,7 @@ function generateRecommendations(heroPerformance, itemization, combat, benchmark
   const recommendations = [];
   const { rankBenchmarks, matchupDifficulty, buildPath, decisionQuality, temporal } = advanced;
 
-  if (combat.deaths >= 8 && combat.kills < combat.deaths) {
+  if (combat && combat.deaths >= 8 && combat.kills < combat.deaths) {
     recommendations.push({
       type: 'combat',
       priority: 'high',
@@ -769,7 +831,7 @@ function generateRecommendations(heroPerformance, itemization, combat, benchmark
     });
   }
 
-  if (combat.damagePerMin < 500 && combat.kda < 2) {
+  if (combat && combat.damagePerMin < 500 && combat.kda < 2) {
     recommendations.push({
       type: 'combat',
       priority: 'medium',
@@ -778,7 +840,7 @@ function generateRecommendations(heroPerformance, itemization, combat, benchmark
     });
   }
 
-  if (itemization.soulsPerMin > 0 && itemization.soulsPerMin < 450) {
+  if (itemization && itemization.soulsPerMin > 0 && itemization.soulsPerMin < 450) {
     recommendations.push({
       type: 'economy',
       priority: 'high',
@@ -787,7 +849,7 @@ function generateRecommendations(heroPerformance, itemization, combat, benchmark
     });
   }
 
-  if (benchmarks.kdaDiff < -1 && benchmarks.userKda !== 0) {
+  if (benchmarks && benchmarks.kdaDiff < -1 && benchmarks.userKda !== 0) {
     recommendations.push({
       type: 'benchmark',
       priority: 'medium',
@@ -797,7 +859,7 @@ function generateRecommendations(heroPerformance, itemization, combat, benchmark
   }
 
   // Advanced module-driven recommendations
-  if (buildPath?.underutilizedSlots?.length) {
+  if (buildPath?.available && buildPath?.underutilizedSlots?.length) {
     const slots = buildPath.underutilizedSlots.slice(0, 2).join(' + ');
     recommendations.push({
       type: 'build',
@@ -806,7 +868,7 @@ function generateRecommendations(heroPerformance, itemization, combat, benchmark
       description: `Your build was light on ${slots}. For your role, consider adding at least one item in each of those categories before late-game teamfights.`,
     });
   }
-  if (buildPath?.firstT3Item?.timeSeconds && buildPath.firstT3Item.timeSeconds / 60 > 25) {
+  if (buildPath?.available && buildPath?.firstT3Item?.timeSeconds && buildPath.firstT3Item.timeSeconds / 60 > 25) {
     recommendations.push({
       type: 'build',
       priority: 'medium',
@@ -814,7 +876,7 @@ function generateRecommendations(heroPerformance, itemization, combat, benchmark
       description: `Your first Tier-3 item came at ${Math.round(buildPath.firstT3Item.timeSeconds / 60)} min. Aim for sub-22 min to stay relevant in mid-game fights.`,
     });
   }
-  if (matchupDifficulty?.counters?.length) {
+  if (matchupDifficulty?.available && matchupDifficulty?.counters?.length) {
     const hardCounters = matchupDifficulty.counters.filter((c) => c.strength !== 'soft');
     if (hardCounters.length > 0) {
       recommendations.push({
@@ -825,7 +887,7 @@ function generateRecommendations(heroPerformance, itemization, combat, benchmark
       });
     }
   }
-  if (rankBenchmarks?.score != null && rankBenchmarks.score < 40) {
+  if (rankBenchmarks?.available && rankBenchmarks?.score != null && rankBenchmarks.score < 40) {
     recommendations.push({
       type: 'rank',
       priority: 'high',
@@ -848,7 +910,7 @@ function generateRecommendations(heroPerformance, itemization, combat, benchmark
       description: `Your KDA has been trending up across your last ${temporal.sampleSize} matches. Keep the momentum going.`,
     });
   }
-  if (decisionQuality?.findings?.length) {
+  if (decisionQuality?.available && decisionQuality?.findings?.length) {
     const weakness = decisionQuality.findings.find((f) => f.type === 'weakness');
     if (weakness) {
       recommendations.push({
