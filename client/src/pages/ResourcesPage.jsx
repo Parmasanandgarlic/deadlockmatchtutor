@@ -16,22 +16,22 @@ function TierRow({ tier, heroes, label, description, heroesMap }) {
   if (!heroes || heroes.length === 0) return null;
   
   const tierColors = {
-    S: 'border-brand-primary text-brand-primary',
-    A: 'border-green-400 text-green-400',
-    B: 'border-blue-400 text-blue-400',
-    C: 'border-yellow-400 text-yellow-400',
-    D: 'border-red-400 text-red-400',
+    S: 'border-deadlock-amber text-deadlock-amber',
+    A: 'border-deadlock-green text-deadlock-green',
+    B: 'border-deadlock-blue text-deadlock-blue',
+    C: 'border-yellow-500 text-yellow-500',
+    D: 'border-deadlock-red text-deadlock-red',
   };
   
   return (
     <div className="mb-8">
       <div className="flex items-center gap-4 mb-4">
-        <div className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center text-xl font-bold ${tierColors[tier] || 'border-gray-400 text-gray-400'}`}>
+        <div className={`w-12 h-12 rounded-none border-2 flex items-center justify-center text-xl font-bold font-serif ${tierColors[tier] || 'border-deadlock-border text-deadlock-text-dim'}`}>
           {tier}
         </div>
         <div>
-          <h2 className="text-xl font-bold text-gray-100">{label}</h2>
-          <p className="text-sm text-gray-400">{description}</p>
+          <h2 className="text-xl font-bold text-white">{label}</h2>
+          <p className="text-sm text-deadlock-text-dim">{description}</p>
         </div>
       </div>
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4">
@@ -42,8 +42,8 @@ function TierRow({ tier, heroes, label, description, heroesMap }) {
                              getHeroImage(heroAsset || hero.heroName, 'small');
           
           return (
-            <div key={hero.heroId} className="bg-dark-600 rounded-lg p-3 border border-dark-500 hover:border-brand-primary transition-colors flex flex-col items-center">
-               <div className="w-14 h-14 rounded-full bg-dark-700 overflow-hidden mb-2 relative group flex items-center justify-center">
+            <div key={hero.heroId} className="panel-inset p-3 hover:border-deadlock-amber/50 transition-colors flex flex-col items-center">
+               <div className="w-14 h-14 rounded-none bg-black/40 overflow-hidden mb-2 relative group flex items-center justify-center border border-deadlock-border/30">
                  {heroAvatar ? (
                    <img 
                      src={heroAvatar} 
@@ -55,22 +55,22 @@ function TierRow({ tier, heroes, label, description, heroesMap }) {
                      }}
                    />
                  ) : (
-                   <span className="text-lg font-bold text-gray-300">
+                   <span className="text-lg font-bold text-deadlock-text-dim">
                      {hero.heroName?.substring(0, 2)}
                    </span>
                  )}
                </div>
                <div className="text-center w-full">
-                 <h3 className="font-bold text-gray-100 truncate w-full text-sm">{hero.heroName}</h3>
+                 <h3 className="font-bold text-white truncate w-full text-sm">{hero.heroName}</h3>
                  <div className="flex justify-between items-center text-xs mt-1 w-full px-1">
-                   <span className="text-gray-400">WR:</span>
-                   <span className={hero.winRate >= 50 ? 'text-green-400 font-bold' : 'text-red-400 font-bold'}>
+                   <span className="text-deadlock-muted">WR:</span>
+                   <span className={hero.winRate >= 50 ? 'text-deadlock-green font-bold' : 'text-deadlock-red font-bold'}>
                      {hero.winRate?.toFixed(1)}%
                    </span>
                  </div>
                  <div className="flex justify-between items-center text-xs w-full px-1">
-                   <span className="text-gray-400">PR:</span>
-                   <span className="text-gray-300">{hero.pickRate?.toFixed(1)}%</span>
+                   <span className="text-deadlock-muted">PR:</span>
+                   <span className="text-deadlock-text-dim">{hero.pickRate?.toFixed(1)}%</span>
                  </div>
                </div>
             </div>
@@ -129,10 +129,10 @@ export default function ResourcesPage() {
       />
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-100 font-display uppercase tracking-wider mb-2">
+        <h1 className="text-3xl font-bold text-white font-serif uppercase tracking-wider mb-2">
           Deadlock Meta Tier List — Cursed Apple Threat Assessment
         </h1>
-        <p className="text-gray-400">
+        <p className="text-deadlock-text-dim">
           OSIC field intelligence on active Ritual combatants, ranked by win rate across all engagements in the Cursed Apple.
           {tierListData?.updatedAt && ` Last filed: ${new Date(tierListData.updatedAt).toLocaleString()}`}
         </p>
@@ -149,10 +149,10 @@ export default function ResourcesPage() {
       </section>
 
       <section aria-label="Deadlock Community Benchmarks" className="mb-12">
-        <h2 className="text-2xl font-bold text-gray-100 mb-4">OSIC Operative Performance Standards</h2>
+        <h2 className="text-2xl font-bold text-white mb-4">OSIC Operative Performance Standards</h2>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm text-left text-gray-400 bg-dark-600 rounded-lg overflow-hidden">
-            <thead className="text-xs text-gray-300 uppercase bg-dark-700">
+          <table className="min-w-full text-sm text-left text-deadlock-text-dim bg-deadlock-surface border border-deadlock-border overflow-hidden">
+            <thead className="text-xs text-deadlock-text uppercase bg-black/40 border-b border-deadlock-border">
               <tr>
                 <th scope="col" className="px-6 py-3">Role / Position</th>
                 <th scope="col" className="px-6 py-3">Target SPM (15 min)</th>
@@ -161,20 +161,20 @@ export default function ResourcesPage() {
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-dark-500 hover:bg-dark-500">
-                <td className="px-6 py-4 font-bold text-gray-100">Carry / Core</td>
+              <tr className="border-b border-deadlock-border hover:bg-white/[0.02]">
+                <td className="px-6 py-4 font-bold text-white">Carry / Core</td>
                 <td className="px-6 py-4">1200 - 1500+</td>
                 <td className="px-6 py-4">3.5+</td>
                 <td className="px-6 py-4">&gt; 52%</td>
               </tr>
-              <tr className="border-b border-dark-500 hover:bg-dark-500">
-                <td className="px-6 py-4 font-bold text-gray-100">Flex / Roamer</td>
+              <tr className="border-b border-deadlock-border hover:bg-white/[0.02]">
+                <td className="px-6 py-4 font-bold text-white">Flex / Roamer</td>
                 <td className="px-6 py-4">1000 - 1200</td>
                 <td className="px-6 py-4">2.5+</td>
                 <td className="px-6 py-4">&gt; 50%</td>
               </tr>
-              <tr className="hover:bg-dark-500">
-                <td className="px-6 py-4 font-bold text-gray-100">Support / Utility</td>
+              <tr className="hover:bg-white/[0.02]">
+                <td className="px-6 py-4 font-bold text-white">Support / Utility</td>
                 <td className="px-6 py-4">800 - 1000</td>
                 <td className="px-6 py-4">1.5+ (High Assists)</td>
                 <td className="px-6 py-4">&gt; 50%</td>

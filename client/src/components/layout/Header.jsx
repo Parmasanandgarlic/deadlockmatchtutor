@@ -13,7 +13,6 @@ export default function Header() {
           {/* Compass medallion emblem */}
           <div className="relative">
             <CompassMedallion className="w-8 h-8 text-deadlock-amber group-hover:rotate-[360deg] transition-transform duration-1000 ease-in-out" />
-            <div className="absolute inset-0 bg-deadlock-amber/15 blur-lg rounded-full animate-pulse-slow" />
           </div>
           <span className="font-serif text-xl tracking-[0.2em] uppercase">
             <span className="text-deadlock-amber">Deadlock</span>{' '}

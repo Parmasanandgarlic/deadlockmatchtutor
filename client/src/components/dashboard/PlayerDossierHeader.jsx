@@ -91,7 +91,7 @@ function RankBadge({ current, peak }) {
             height="80"
             loading="eager"
             decoding="async"
-            className="relative w-20 h-20 object-contain drop-shadow-[0_0_8px_rgba(255,173,28,0.35)]"
+            className="relative w-20 h-20 object-contain"
           />
         ) : (
           <Shield className="relative w-14 h-14 text-deadlock-amber/70" />

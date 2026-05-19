@@ -11,6 +11,19 @@
     background-attachment: fixed;
   }
 
+  /* Subtle grain/noise overlay — classified-document texture */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 256px 256px;
+  }
+
 
 
   h1, h2, h3, h4, h5, h6 {
@@ -152,8 +165,8 @@
     @apply text-deadlock-amber bg-deadlock-amber/[0.08] border-deadlock-amber/70;
     box-shadow:
       inset 0 1px 0 0 rgba(255, 173, 28, 0.15),
-      0 0 0 1px rgba(255, 173, 28, 0.25),
-      0 6px 18px -6px rgba(255, 173, 28, 0.35);
+      0 0 0 1px rgba(255, 173, 28, 0.2),
+      0 4px 12px -4px rgba(0, 0, 0, 0.5);
   }
   .module-chip-active::before,
   .module-chip-active::after {
@@ -163,7 +176,6 @@
   /* Top amber rule bar — renders only on active chip */
   .module-chip-active > .module-chip-rail {
     @apply absolute left-0 right-0 -top-px h-[2px] bg-deadlock-amber;
-    box-shadow: 0 0 8px rgba(255, 173, 28, 0.6);
   }
 
   .module-chip-label {
@@ -304,5 +316,26 @@
     @apply bg-deadlock-surface/95 border border-deadlock-border/40 relative shadow-2xl;
     box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.8), 0 20px 40px -10px rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(10px);
+  }
+
+  /* ── Classified Stamp (use on headings for dossier authenticity) ── */
+  .stamp {
+    @apply inline-block px-3 py-1 border-2 border-deadlock-amber/40
+           text-deadlock-amber/60 text-[10px] font-bold uppercase tracking-[0.35em]
+           rotate-[-2deg];
+  }
+
+  /* ── Ruled Line (subtle ink-drawn horizontal rule) ── */
+  .ruled-line {
+    @apply w-full my-4;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 173, 28, 0.15) 15%,
+      rgba(255, 173, 28, 0.25) 50%,
+      rgba(255, 173, 28, 0.15) 85%,
+      transparent 100%
+    );
   }
 }

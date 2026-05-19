@@ -238,8 +238,7 @@ export default function PlayerProfilePage() {
         </div>
 
         {/* Main Chart Area */}
-        <div className="lg:col-span-3 bg-[#151921] border border-[#1a2130] rounded-sm p-6 shadow-xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#ffad1c] opacity-5 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="lg:col-span-3 bg-deadlock-surface border border-deadlock-border rounded-none p-6 shadow-xl relative overflow-hidden">
           
           <h3 className="font-serif text-xl text-white mb-6 uppercase tracking-widest border-b border-[#20293b] pb-2 inline-block">
             Ritual Impact Trajectory

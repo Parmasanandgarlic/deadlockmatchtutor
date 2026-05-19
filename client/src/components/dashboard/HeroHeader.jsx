@@ -142,7 +142,7 @@ export default function HeroHeader({ meta, overall }) {
                   category: 'General'
                 }}>
                   <span className="inline-flex items-center gap-1 text-[10px] text-deadlock-muted hover:text-deadlock-accent transition-colors cursor-help">
-                    <span className="w-1.5 h-1.5 rounded-full bg-deadlock-green animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-deadlock-green" />
                     {formatRelativeTime(meta.processedAt)}
                   </span>
                 </Tooltip>

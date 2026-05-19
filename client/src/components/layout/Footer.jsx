@@ -46,8 +46,7 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Decorative Brand Accent */}
-      <div className="absolute bottom-0 right-0 w-64 h-64 bg-deadlock-amber/5 rounded-full blur-[80px] -z-10" />
+      {/* Decorative Brand Accent — static hex pattern only, no blur orbs */}
       {/* Subtle hexagonal grid pattern overlay */}
       <div className="absolute inset-0 opacity-[0.02] pointer-events-none"
         style={{
