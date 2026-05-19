@@ -24,7 +24,7 @@ export default function Header() {
         {/* Desktop nav */}
         <nav role="navigation" aria-label="Primary navigation" className="hidden sm:flex items-center gap-3 text-sm text-deadlock-text-dim">
           <Link to="/resources" className="inline-flex items-center gap-1.5 hover:text-deadlock-accent transition-colors duration-300 relative group/nav font-semibold text-deadlock-amber">
-            Cursed Apple Intel
+            Meta Tier List
             <span className="absolute -bottom-1 left-0 w-full h-px bg-deadlock-amber/50 group-hover/nav:bg-deadlock-amber transition-colors duration-300" />
           </Link>
           <Link to="/about" className="inline-flex items-center gap-1.5 hover:text-deadlock-accent transition-colors duration-300 relative group/nav">
@@ -75,7 +75,7 @@ export default function Header() {
               onClick={() => setMobileOpen(false)}
               className="flex items-center gap-3 py-3 text-sm font-semibold text-deadlock-amber border-b border-deadlock-border/30"
             >
-              Cursed Apple Intel
+              Meta Tier List
             </Link>
             <Link
               to="/about"

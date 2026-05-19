@@ -94,7 +94,7 @@ export default function ResourcesPage() {
     ? {
         '@type': 'ItemList',
         name: 'Deadlock Hero Meta Tier List',
-        description: 'Global hero tier rankings for Deadlock based on win rate and pick rate data.',
+        description: 'Cursed Apple threat assessment — global hero tier rankings for Deadlock based on win rate and pick rate data.',
         numberOfItems: Object.values(tierListData.tiers).reduce((sum, arr) => sum + (arr?.length || 0), 0),
         itemListElement: Object.entries(tierListData.tiers).flatMap(([tier, heroes], tierIdx) =>
           (heroes || []).filter(h => h.heroId > 0).map((hero, heroIdx) => ({
@@ -112,7 +112,7 @@ export default function ResourcesPage() {
     websiteSchema(),
     breadcrumbSchema([
       { name: 'Home', path: '/' },
-      { name: 'Cursed Apple Intel', path: '/resources' },
+      { name: 'Meta Tier List', path: '/resources' },
     ]),
     speakableSchema('/resources'),
     ...(tierListSchema ? [tierListSchema] : []),
@@ -121,8 +121,8 @@ export default function ResourcesPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <SEOHead
-        title="Deadlock Hero Tier List — Cursed Apple Threat Assessment | AfterMatch"
-        description="OSIC threat assessment of Ritual combatants in the Cursed Apple — live hero rankings by win rate and engagement data. Find who dominates the streets from S-tier to D-tier."
+        title="Deadlock Meta Tier List — Cursed Apple Threat Assessment | AfterMatch"
+        description="Deadlock meta tier list and hero rankings — OSIC threat assessment of Ritual combatants in the Cursed Apple. Live S through D tier rankings by win rate and pick rate."
         canonical={absoluteUrl('/resources')}
         imageUrl="/images/og-share.png"
         schema={resourcesSchema}
@@ -130,21 +130,21 @@ export default function ResourcesPage() {
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-100 font-display uppercase tracking-wider mb-2">
-          Cursed Apple — Operative Threat Assessment
+          Deadlock Meta Tier List — Cursed Apple Threat Assessment
         </h1>
         <p className="text-gray-400">
-          OSIC field intelligence on active Ritual combatants, ranked by win rate across all engagements.
+          OSIC field intelligence on active Ritual combatants, ranked by win rate across all engagements in the Cursed Apple.
           {tierListData?.updatedAt && ` Last filed: ${new Date(tierListData.updatedAt).toLocaleString()}`}
         </p>
       </div>
 
       {/* AEO answer block — provides entity-rich context for AI crawlers and voice assistants */}
-      <section aria-label="Deadlock tier list explanation" className="mb-10">
+      <section aria-label="Deadlock meta tier list explanation" className="mb-10">
         <p className="answer-block text-sm text-deadlock-text-dim leading-relaxed max-w-3xl">
-          The OSIC threat assessment ranks every Ritual combatant from S-tier (apex threat) to D-tier (neutralized) using 
-          live win rate and engagement data from the Cursed Apple. S-tier operatives dominate the streets — the Hidden King 
-          and the Archmother both covet their service. D-tier combatants are struggling to survive the Ritual and may 
-          need specific team compositions to contribute. Rankings update automatically as new Ritual telemetry is intercepted.
+          The Deadlock meta tier list ranks every Ritual combatant from S-tier (apex threat) to D-tier (neutralized) using 
+          live win rate and engagement data from the Cursed Apple. S-tier heroes dominate the meta — the Hidden King 
+          and the Archmother both covet their service. D-tier heroes are struggling in the current meta and may 
+          need specific team compositions to contribute. Tier rankings update as new meta data is curated.
         </p>
       </section>
 

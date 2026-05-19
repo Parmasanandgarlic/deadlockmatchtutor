@@ -281,13 +281,42 @@ async function cacheTierList(allHeroStats) {
 }
 
 /**
- * Fetch the global tier list (cache-first, fallback to API).
+ * Fetch the global tier list (cache-first, benchmarks-primary).
  * Used by the /resources page.
+ *
+ * Priority: Redis cache → HERO_BENCHMARKS (curated) → API fallback.
+ * The HERO_BENCHMARKS file is the source of truth for tier list rankings,
+ * manually updated from community analytics data.
  */
 async function fetchGlobalTierList() {
   const cached = await redisClient.get(CACHE_KEYS.heroTierList());
   if (cached) return cached;
 
+  // Primary: build tier list from the manually-curated HERO_BENCHMARKS data
+  if (HERO_BENCHMARKS && Object.keys(HERO_BENCHMARKS).length > 0) {
+    logger.info('Building tier list from curated HERO_BENCHMARKS (primary source)');
+    const benchmarkStats = Object.entries(HERO_BENCHMARKS).map(([heroId, bm]) => ({
+      hero_id: Number(heroId),
+      hero_name: bm.name,
+      wins: Math.round(bm.winRate * 10),
+      matches: 1000,
+      avg_kda: bm.avgKda,
+      avg_net_worth: bm.avgNwm,
+      pick_rate: bm.pickRate,
+    }));
+    const tierList = buildHeroTierList(benchmarkStats);
+
+    // Cache it so subsequent requests are fast
+    try {
+      await redisClient.set(CACHE_KEYS.heroTierList(), tierList, { ex: CACHE_TTL });
+    } catch (e) {
+      logger.warn(`Failed to cache benchmark tier list: ${e.message}`);
+    }
+
+    return tierList;
+  }
+
+  // Fallback: try the API if benchmarks are somehow empty
   try {
     const allHeroStats = await getGlobalHeroStats();
     if (allHeroStats && allHeroStats.length > 0) {
@@ -295,21 +324,10 @@ async function fetchGlobalTierList() {
       return tierList;
     }
   } catch (err) {
-    logger.warn(`Global hero stats API failed, falling back to community benchmarks: ${err.message}`);
+    logger.warn(`Global hero stats API fallback also failed: ${err.message}`);
   }
 
-  // Fallback: build tier list from the manually-verified HERO_BENCHMARKS data
-  logger.info('Building tier list from static HERO_BENCHMARKS fallback');
-  const benchmarkStats = Object.entries(HERO_BENCHMARKS).map(([heroId, bm]) => ({
-    hero_id: Number(heroId),
-    hero_name: bm.name,
-    wins: Math.round(bm.winRate * 10),
-    matches: 1000,
-    avg_kda: bm.avgKda,
-    avg_net_worth: bm.avgNwm,
-    pick_rate: bm.pickRate,
-  }));
-  return buildHeroTierList(benchmarkStats);
+  return { tiers: {}, heroes: {}, updatedAt: new Date().toISOString() };
 }
 
 /**
