@@ -52,9 +52,14 @@ test('csrfProtection: safe requests receive a token cookie', () => {
   const res = mockRes();
   let nextCalled = false;
 
+  const originalNodeEnv = process.env.NODE_ENV;
+  process.env.NODE_ENV = 'development';
+
   csrfProtection({ method: 'GET', cookies: {}, path: '/api/health', headers: {} }, res, () => {
     nextCalled = true;
   });
+
+  process.env.NODE_ENV = originalNodeEnv;
 
   assert.strictEqual(nextCalled, true);
   assert.ok(res.cookies._csrf.value);
@@ -66,6 +71,9 @@ test('csrfProtection: unsafe requests require matching token', () => {
   const res = mockRes();
   let nextCalled = false;
 
+  const originalNodeEnv = process.env.NODE_ENV;
+  process.env.NODE_ENV = 'development';
+
   csrfProtection(
     { method: 'POST', cookies: { _csrf: 'known-token' }, path: '/api/players/resolve', headers: {} },
     res,
@@ -73,6 +81,8 @@ test('csrfProtection: unsafe requests require matching token', () => {
       nextCalled = true;
     }
   );
+
+  process.env.NODE_ENV = originalNodeEnv;
 
   assert.strictEqual(nextCalled, false);
   assert.strictEqual(res.statusCode, 403);
@@ -83,6 +93,9 @@ test('csrfProtection: unsafe requests accept matching token', () => {
   const token = generateToken();
   const res = mockRes();
   let nextCalled = false;
+
+  const originalNodeEnv = process.env.NODE_ENV;
+  process.env.NODE_ENV = 'development';
 
   csrfProtection(
     {
@@ -97,6 +110,8 @@ test('csrfProtection: unsafe requests accept matching token', () => {
     }
   );
 
+  process.env.NODE_ENV = originalNodeEnv;
+
   assert.strictEqual(nextCalled, true);
   assert.strictEqual(res.statusCode, 200);
 });
@@ -109,7 +124,13 @@ test('csrfProtection: unsafe requests accept matching tokens (unsigned double-su
     headers: { 'x-csrf-token': 'known-token-string' },
   };
   let nextCalled = false;
+  const originalNodeEnv = process.env.NODE_ENV;
+  process.env.NODE_ENV = 'development';
+
   csrfProtection(req, { cookie: () => {}, locals: {} }, () => { nextCalled = true; });
+
+  process.env.NODE_ENV = originalNodeEnv;
+
   assert.strictEqual(nextCalled, true, 'Matching header and cookie should be accepted');
 });
 

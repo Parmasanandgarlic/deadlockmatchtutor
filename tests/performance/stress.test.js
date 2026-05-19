@@ -13,9 +13,11 @@
  * Exits with code 2 (SKIP) if the server is not reachable.
  */
 const http = require('http');
+const app = require('../../server/index');
 
-const HOST = 'localhost';
-const PORT = 3001;
+const HOST = '127.0.0.1';
+let PORT = 0;
+let server;
 
 function raw(method, path, body, timeoutMs = 10000) {
   return new Promise((resolve) => {
@@ -47,13 +49,15 @@ test.passed = 0; test.failed = 0;
 (async () => {
   console.log('\n[Stress]');
 
-  // Connectivity check — skip the entire suite if server is not running
-  const probe = await raw('GET', '/health');
-  if (probe.status === 0) {
-    console.log('  SKIP  Server not reachable on :3001 — skipping stress suite.');
-    process.exitCode = 2;
-    return;
-  }
+  // Start Server
+  await new Promise((resolve) => {
+    server = app.listen(0, HOST, () => {
+      PORT = server.address().port;
+      resolve();
+    });
+  });
+
+  try {
 
   await test('Burst: 200 concurrent GETs do not crash the server', async () => {
     const results = await Promise.all(Array.from({ length: 200 }, () => raw('GET', '/health')));
@@ -97,6 +101,9 @@ test.passed = 0; test.failed = 0;
     return r.status === 200;
   });
 
-  console.log(`\n  ${test.passed} passed / ${test.failed} failed`);
-  if (test.failed > 0) process.exitCode = 1;
+    console.log(`\n  ${test.passed} passed / ${test.failed} failed`);
+    if (test.failed > 0) process.exitCode = 1;
+  } finally {
+    server.close();
+  }
 })();

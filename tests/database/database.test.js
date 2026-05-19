@@ -38,8 +38,16 @@ test.passed = 0; test.failed = 0;
   const testAccountId = 888_000_000 + Math.floor(Math.random() * 999_999);
 
   await test('Schema: analyses table selectable', async () => {
-    const { error } = await supabase.from('analyses').select('match_id').limit(1);
-    assert.ok(!error, `Select failed: ${error?.message}`);
+    try {
+      const { error } = await supabase.from('analyses').select('match_id').limit(1);
+      assert.ok(!error, `Select failed: ${error?.message}`);
+    } catch (err) {
+      if (err.message === 'fetch failed' || err.code === 'UND_ERR_CONNECT_TIMEOUT' || err.code === 'ECONNREFUSED') {
+        console.error('  SKIP  Supabase is unreachable (fetch failed). Skipping database suite.');
+        process.exit(2);
+      }
+      throw err;
+    }
   });
 
   await test('CREATE: insert new analysis', async () => {

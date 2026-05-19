@@ -13,9 +13,11 @@
  */
 const http = require('http');
 const os = require('os');
+const app = require('../../server/index');
 
-const HOST = 'localhost';
-const PORT = 3001;
+const HOST = '127.0.0.1';
+let PORT = 0;
+let server;
 
 function request(method, path, body) {
   return new Promise((resolve, reject) => {
@@ -103,12 +105,14 @@ async function runLoad(label, { method, path, body, concurrency, total, maxP95 }
   console.log('\n[Performance & Load]');
   console.log(`  host=${HOST}:${PORT}  cpus=${os.cpus().length}  node=${process.version}`);
 
-  try { await request('GET', '/health'); }
-  catch {
-    console.error('  SKIP  Server not reachable on :3001.');
-    process.exitCode = 2;
-    return;
-  }
+  await new Promise((resolve) => {
+    server = app.listen(0, HOST, () => {
+      PORT = server.address().port;
+      resolve();
+    });
+  });
+
+  try {
 
   const results = [];
 
@@ -132,7 +136,10 @@ async function runLoad(label, { method, path, body, concurrency, total, maxP95 }
     concurrency: 10, total: 50, maxP95: 200,
   }));
 
-  const failed = results.filter(r => r === false).length;
-  console.log(`\n  ${results.length - failed} passed / ${failed} failed`);
-  if (failed > 0) process.exitCode = 1;
+    const failed = results.filter(r => r === false).length;
+    console.log(`\n  ${results.length - failed} passed / ${failed} failed`);
+    if (failed > 0) process.exitCode = 1;
+  } finally {
+    server.close();
+  }
 })();
