@@ -124,7 +124,7 @@ export default function ResourcesPage() {
         title="Deadlock Meta Tier List — Cursed Apple Threat Assessment | AfterMatch"
         description="Deadlock meta tier list and hero rankings — OSIC threat assessment of Ritual combatants in the Cursed Apple. Live S through D tier rankings by win rate and pick rate."
         canonical={absoluteUrl('/resources')}
-        imageUrl="/images/og-share.png"
+        imageUrl="/images/og-share.webp"
         schema={resourcesSchema}
       />
 

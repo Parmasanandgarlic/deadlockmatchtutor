@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import SEOHead from '../components/seo/SEOHead';
+import { resolvePlayer } from '../api/client';
 import {
   absoluteUrl,
   breadcrumbSchema,
@@ -8,20 +10,24 @@ import {
   websiteSchema,
 } from '../utils/seo';
 
-const faqs = [
+const defaultFaqs = [
   {
+    id: 'what_is_aftermatch',
     question: 'What is Deadlock AfterMatch?',
     answer: 'Deadlock AfterMatch is a free post-match analytics dashboard for Deadlock players. It turns match data into grades, trends, and concise coaching notes.',
   },
   {
+    id: 'mmr',
     question: 'How is MMR calculated in Deadlock?',
     answer: 'As of Patch 0.14, Deadlock uses a hidden MMR (Matchmaking Rating) system. AfterMatch predicts your rank tier by analyzing the average badge of players in your lobbies, providing a longitudinal rank-predict timeline.',
   },
   {
+    id: 'spm_benchmark',
     question: 'What is a good souls per minute (SPM) in Deadlock?',
     answer: 'A strong SPM in Deadlock typically exceeds 1200 by the 15-minute mark, though it varies heavily by hero role. AfterMatch compares your SPM against community benchmarks to grade your economy efficiency.<br/><br/><strong>Target Benchmarks:</strong><ul><li>Support/Utility: 800-1000 SPM</li><li>Flex/Roamer: 1000-1200 SPM</li><li>Carry/Core: 1200-1500+ SPM</li></ul>',
   },
   {
+    id: 'item_build',
     question: 'How do I analyze my item build?',
     answer: 'The Itemization Module in AfterMatch breaks down your power spikes. It shows exactly when you purchased Tier 1 (500s), Tier 2 (1250s), Tier 3 (3000s), and Tier 4 (6300s) items, and highlights if your build was too delayed compared to the lobby.',
   },
@@ -118,6 +124,38 @@ const queryTargets = [
 ];
 
 export default function FaqPage() {
+  const [faqs, setFaqs] = useState(defaultFaqs);
+
+  useEffect(() => {
+    const fetchBenchmarks = async () => {
+      try {
+        const res = await fetch('/api/stats/benchmarks?hero=Seven&patch=0.9.2');
+        if (!res.ok) throw new Error('Failed to fetch benchmarks');
+        const data = await res.json();
+        
+        // Update the specific SPM benchmark FAQ with dynamic data
+        setFaqs(prevFaqs => prevFaqs.map(faq => {
+          if (faq.id === 'spm_benchmark') {
+            return {
+              ...faq,
+              answer: `As of Patch ${data.patch}, a strong Souls Per Minute (SPM) for Mid Laners is ${data.midLaneSpmTarget.toLocaleString()}+. Based on our analysis of ${data.analysisScope.toLocaleString()} matches this month, players hitting 1,200 SPM have a ${data.winRateTarget}% win rate. Heroes like ${data.hero} require higher SPM (${data.highScalingSpmTarget.toLocaleString()}+) due to scaling needs, while tanks like Warden can succeed with ${data.tankSpmTarget.toLocaleString()} SPM if objective score is high.<br/><br/>
+              <strong>Data-Backed Target Benchmarks:</strong>
+              <ul>
+                <li>High-Scaling Core (${data.hero}): ${data.highScalingSpmTarget.toLocaleString()}+ SPM</li>
+                <li>Standard Core: ${data.midLaneSpmTarget.toLocaleString()}+ SPM</li>
+                <li>Utility/Tank (Warden): ${data.tankSpmTarget.toLocaleString()}+ SPM</li>
+              </ul>`
+            };
+          }
+          return faq;
+        }));
+      } catch (err) {
+        console.error('Error fetching dynamic FAQ stats:', err);
+      }
+    };
+    fetchBenchmarks();
+  }, []);
+
   const schema = [
     organizationSchema(),
     websiteSchema(),
@@ -137,7 +175,7 @@ export default function FaqPage() {
         title="OSIC Field Manual FAQ | Deadlock AfterMatch Help Center"
         description="Answers from the OSIC about Ritual analysis, operative identification, data clearance, dossier sharing, and access to the declassified Deadlock analytics system."
         canonical={absoluteUrl('/faq')}
-        imageUrl="/images/og-share.png"
+        imageUrl="/images/og-share.webp"
         schema={schema}
       />
 

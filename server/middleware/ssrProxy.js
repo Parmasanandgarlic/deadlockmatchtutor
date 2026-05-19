@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const cheerio = require('cheerio');
 const logger = require('../utils/logger');
 const { supabase } = require('../utils/supabase');
 
@@ -46,7 +47,8 @@ async function ssrProxy(req, res, next) {
       return next();
     }
 
-    let html = fs.readFileSync(indexPath, 'utf8');
+    const html = fs.readFileSync(indexPath, 'utf8');
+    const $ = cheerio.load(html);
 
     // Default SEO tags
     let title = 'Deadlock AfterMatch Match Analyzer';
@@ -84,7 +86,7 @@ async function ssrProxy(req, res, next) {
     const reportMatch = req.path.match(/^\/report\/([^\/]+)\/([^\/]+)$/);
     if (reportMatch) {
       const matchId = reportMatch[1];
-      const accountId = reportMatch[2];
+      const accountId = reportMatch[2]; // accountId may be unused for basic meta but exists in path
       
       const { data } = await supabase
         .from('match_metadata')
@@ -119,32 +121,42 @@ async function ssrProxy(req, res, next) {
       description = 'Answers about Deadlock AfterMatch match analysis, Steam ID lookup, and grading.';
     }
 
-    // Inject Meta Tags into HTML
-    const metaTags = `
-      <title>${title}</title>
-      <meta name="description" content="${description}" />
-      <link rel="canonical" href="${url}" />
-      <meta property="og:title" content="${title}" />
-      <meta property="og:description" content="${description}" />
-      <meta property="og:type" content="website" />
-      <meta property="og:url" content="${url}" />
-      <meta property="og:image" content="${imageUrl}" />
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:site" content="@AfterMatchApp" />
-      <meta name="twitter:title" content="${title}" />
-      <meta name="twitter:description" content="${description}" />
-      <meta name="twitter:image" content="${imageUrl}" />
-      <meta name="google-site-verification" content="kciLfi-DuItDSDmoaYtlZfvJKQUAqShK6vw62U3tm68" />
-      ${schema ? `<script type="application/ld+json">${JSON.stringify(schema)}</script>` : ''}
-    `;
+    // Update <title>
+    if ($('title').length > 0) {
+      $('title').text(title);
+    } else {
+      $('head').append(`<title>${title}</title>`);
+    }
 
-    // Replace the first <title>...</title> block, or just insert before </head>
-    html = html.replace(/<title>.*?<\/title>/, '');
-    html = html.replace('</head>', `${metaTags}\n</head>`);
+    // Clean up old dynamic meta tags injected statically, if any exist
+    $('meta[name="description"], meta[property^="og:"], meta[name^="twitter:"]').remove();
+
+    // Inject Meta Tags into HTML
+    const metaTags = [
+      `<meta name="description" content="${description}">`,
+      `<link rel="canonical" href="${url}">`,
+      `<meta property="og:title" content="${title}">`,
+      `<meta property="og:description" content="${description}">`,
+      `<meta property="og:type" content="website">`,
+      `<meta property="og:url" content="${url}">`,
+      `<meta property="og:image" content="${imageUrl}">`,
+      `<meta name="twitter:card" content="summary_large_image">`,
+      `<meta name="twitter:site" content="@AfterMatchApp">`,
+      `<meta name="twitter:title" content="${title}">`,
+      `<meta name="twitter:description" content="${description}">`,
+      `<meta name="twitter:image" content="${imageUrl}">`,
+      `<meta name="google-site-verification" content="kciLfi-DuItDSDmoaYtlZfvJKQUAqShK6vw62U3tm68">`,
+    ];
+
+    if (schema) {
+       metaTags.push(`<script type="application/ld+json">${JSON.stringify(schema)}</script>`);
+    }
+
+    $('head').append(metaTags.join('\n      '));
 
     // Set cache headers so Vercel caches this bot response
     res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400');
-    return res.send(html);
+    return res.send($.html());
   } catch (error) {
     logger.error('SSR Proxy Error:', error);
     return next(); // Fallback to normal serving if error occurs

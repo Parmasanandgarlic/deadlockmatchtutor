@@ -98,7 +98,7 @@ export default function PrivacyPage() {
         title="OSIC Clearance Protocol | Deadlock AfterMatch Data Policy"
         description="The OSIC's data clearance protocol: operative identification, Ritual telemetry caching, dossier archival, purge procedures, and third-party intelligence channels."
         canonical={absoluteUrl('/privacy')}
-        imageUrl="/images/og-share.png"
+        imageUrl="/images/og-share.webp"
         schema={privacySchema}
       />
 

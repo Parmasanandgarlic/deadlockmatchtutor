@@ -243,6 +243,27 @@
     text-shadow: 1px 1px 0px rgba(0,0,0,0.2);
   }
 
+  /* Floating animation — applied only to "Deadlock" in the hero */
+  .hero-float {
+    animation: heroFloat 6s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  @keyframes heroFloat {
+    0%, 100% {
+      transform: translateY(0px) rotate(-1deg);
+    }
+    25% {
+      transform: translateY(-6px) rotate(-0.3deg);
+    }
+    50% {
+      transform: translateY(-2px) rotate(-1.5deg);
+    }
+    75% {
+      transform: translateY(-8px) rotate(-0.6deg);
+    }
+  }
+
   /* ── Art-Deco Divider ── */
   .deadlock-divider {
     @apply relative w-full h-6 flex items-center justify-center;

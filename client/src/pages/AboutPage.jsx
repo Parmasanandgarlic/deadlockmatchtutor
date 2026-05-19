@@ -84,7 +84,7 @@ export default function AboutPage() {
         title="About the OSIC Dossier System | Deadlock AfterMatch"
         description="Learn about the Occult Security and Investigation Commission's declassified post-Ritual analytics engine — who built it, how it works, and how to contribute to the Commission Archives."
         canonical={absoluteUrl('/about')}
-        imageUrl="/images/og-share.png"
+        imageUrl="/images/og-share.webp"
         schema={aboutSchema}
       />
 

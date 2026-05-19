@@ -8,6 +8,7 @@ const trendsRoutes = require('./trends.routes');
 const metaRoutes = require('./meta.routes');
 const feedbackRoutes = require('./feedback.routes');
 const seoRoutes = require('./seo');
+const statsRoutes = require('./stats.routes');
 const { getCsrfToken } = require('../middleware/csrf.middleware');
 
 const router = Router();
@@ -58,5 +59,6 @@ router.use('/cron', cronRoutes);
 router.use('/trends', trendsRoutes);
 router.use('/meta', metaRoutes);
 router.use('/feedback', feedbackRoutes);
+router.use('/stats', statsRoutes);
 
 module.exports = router;

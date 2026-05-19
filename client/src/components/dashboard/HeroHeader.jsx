@@ -152,7 +152,7 @@ export default function HeroHeader({ meta, overall }) {
 
           {/* Score Breakdown Bar */}
           {overall?.note && (
-            <p className="text-xs text-deadlock-muted leading-relaxed mb-3 max-w-2xl">
+            <p className="speakable-summary text-xs text-deadlock-muted leading-relaxed mb-3 max-w-2xl">
               {overall.note}
             </p>
           )}

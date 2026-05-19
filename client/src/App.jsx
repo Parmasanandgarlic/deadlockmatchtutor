@@ -20,6 +20,8 @@ const FaqPage = lazy(() => import('./pages/FaqPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const ResourcesPage = lazy(() => import('./pages/ResourcesPage'));
 const HeroGuidePage = lazy(() => import('./pages/HeroGuidePage'));
+const EntityHeroPage = lazy(() => import('./pages/EntityHeroPage'));
+const EntityStatPage = lazy(() => import('./pages/EntityStatPage'));
 
 export default function App() {
   return (
@@ -68,6 +70,8 @@ export default function App() {
               <Route path="/faq" element={<FaqPage />} />
               <Route path="/resources" element={<ResourcesPage />} />
               <Route path="/guide/:heroId" element={<HeroGuidePage />} />
+              <Route path="/entity/hero/:id" element={<EntityHeroPage />} />
+              <Route path="/entity/stat/:id" element={<EntityStatPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>

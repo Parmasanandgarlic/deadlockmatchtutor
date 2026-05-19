@@ -16,17 +16,28 @@ function stripContext(value) {
 
 function normalizeSchema(schema) {
   if (!schema) return null;
+
+  let base;
   if (Array.isArray(schema)) {
-    return {
+    base = {
       '@context': 'https://schema.org',
       '@graph': schema.map(stripContext),
     };
+  } else if (typeof schema === 'object') {
+    base = schema['@context'] ? { ...schema } : { '@context': 'https://schema.org', ...schema };
+  } else {
+    return null;
   }
-  if (typeof schema === 'object') {
-    if (schema['@context']) return schema;
-    return { '@context': 'https://schema.org', ...schema };
+
+  // Inject SpeakableSpecification globally if not already present
+  if (!base.speakable) {
+    base.speakable = {
+      '@type': 'SpeakableSpecification',
+      cssSelector: ['.speakable-summary']
+    };
   }
-  return null;
+
+  return base;
 }
 
 export default function SEOHead({

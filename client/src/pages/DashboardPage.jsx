@@ -5,16 +5,19 @@ import { Link } from 'react-router-dom';
 import useMatchAnalysis from '../hooks/useMatchAnalysis';
 import SEOHead from '../components/seo/SEOHead';
 import LoadingState from '../components/ui/LoadingState';
+import { lazy, Suspense } from 'react';
 import HeroHeader from '../components/dashboard/HeroHeader';
 import InsightDeck from '../components/dashboard/InsightDeck';
-import PerformanceRadar from '../components/dashboard/PerformanceRadar';
 import ModuleTabs from '../components/dashboard/ModuleTabs';
 import ShareButton from '../components/dashboard/ShareButton';
 import DashboardActions from '../components/dashboard/DashboardActions';
-import TemporalTrendCard from '../components/dashboard/TemporalTrendCard';
-import MmrHistoryCard from '../components/dashboard/MmrHistoryCard';
 import GuideModal from '../components/ui/GuideModal';
+import RelatedContentWidget from '../components/widgets/RelatedContentWidget';
 import { PRIORITY_CONFIG } from '../utils/constants';
+
+const PerformanceRadar = lazy(() => import('../components/dashboard/PerformanceRadar'));
+const TemporalTrendCard = lazy(() => import('../components/dashboard/TemporalTrendCard'));
+const MmrHistoryCard = lazy(() => import('../components/dashboard/MmrHistoryCard'));
 import { toErrorMessage } from '../utils/errorMessage';
 import { absoluteUrl, breadcrumbSchema, organizationSchema, websiteSchema } from '../utils/seo';
 
@@ -126,7 +129,9 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-1 h-full">
-            <PerformanceRadar modules={analysis.modules} />
+            <Suspense fallback={<div className="h-full flex items-center justify-center text-deadlock-muted bg-black/20 rounded">Loading radar...</div>}>
+              <PerformanceRadar modules={analysis.modules} />
+            </Suspense>
           </div>
           <div className="lg:col-span-2 h-full">
             <InsightDeck insights={analysis.insights} />
@@ -167,17 +172,25 @@ export default function DashboardPage() {
         {(hasTemporal || hasMmrHistory) && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {hasTemporal && (
-              <TemporalTrendCard
-                temporal={temporal}
-                expanded={!hasMmrHistory}
-                className={!hasMmrHistory ? 'lg:col-span-2' : ''}
-              />
+              <Suspense fallback={<div className="h-48 flex items-center justify-center text-deadlock-muted bg-black/20 rounded">Loading trends...</div>}>
+                <TemporalTrendCard
+                  temporal={temporal}
+                  expanded={!hasMmrHistory}
+                  className={!hasMmrHistory ? 'lg:col-span-2' : ''}
+                />
+              </Suspense>
             )}
-            {hasMmrHistory && <MmrHistoryCard mmr={mmrHistory} />}
+            {hasMmrHistory && (
+              <Suspense fallback={<div className="h-48 flex items-center justify-center text-deadlock-muted bg-black/20 rounded">Loading MMR history...</div>}>
+                <MmrHistoryCard mmr={mmrHistory} />
+              </Suspense>
+            )}
           </div>
         )}
 
         <ModuleTabs modules={analysis.modules} meta={analysis.meta} />
+
+        <RelatedContentWidget heroName={analysis.meta?.heroName} matchId={matchId} />
 
         <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
       </div>
