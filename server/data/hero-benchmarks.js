@@ -1,7 +1,7 @@
 /**
  * Deadlock Hero Benchmarks — Community Tier Data (May 2026)
  *
- * Source: Mobalytics community analytics (all-rank aggregate).
+ * Source: Mobalytics community analytics (all-rank aggregate, 7-day window).
  * Used for:
  *   - Tier list generation when API data is unavailable
  *   - Benchmark comparisons in the insights engine
@@ -15,47 +15,49 @@
  *   avgDenies — average deaths per game
  *   avgNwm  — average net worth (souls)
  *   avgKda  — average KDA ratio
+ *
+ * Last updated: 2026-05-18
  */
 
 const HERO_BENCHMARKS = {
-  66 : { name: 'Victor        ', winRate: 55.9, pickRate: 41.7, avgCsm: 5.5, avgDenies: 3.2, avgNwm: 1214.2, avgKda: 2.9 },
-  8  : { name: 'McGinnis      ', winRate: 55.7, pickRate: 21.7, avgCsm: 4.9, avgDenies: 8.2, avgNwm: 1137.0, avgKda: 3.2 },
-  2  : { name: 'Seven         ', winRate: 55.6, pickRate: 43.3, avgCsm: 6.6, avgDenies: 3.4, avgNwm: 1263.1, avgKda: 2.8 },
-  12 : { name: 'Kelvin        ', winRate: 54.0, pickRate: 24.1, avgCsm: 4.2, avgDenies: 3.3, avgNwm: 1140.4, avgKda: 3.6 },
-  69 : { name: 'The Doorman   ', winRate: 53.3, pickRate: 29.1, avgCsm: 4.6, avgDenies: 2.7, avgNwm: 1134.3, avgKda: 3.8 },
-  11 : { name: 'Dynamo        ', winRate: 53.3, pickRate: 33.3, avgCsm: 4.6, avgDenies: 3.4, avgNwm: 1129.3, avgKda: 3.5 },
-  20 : { name: 'Ivy           ', winRate: 52.3, pickRate: 27.3, avgCsm: 4.7, avgDenies: 4.7, avgNwm: 1123.6, avgKda: 3.5 },
-  13 : { name: 'Haze          ', winRate: 52.0, pickRate: 48.3, avgCsm: 5.4, avgDenies: 4.1, avgNwm: 1216.2, avgKda: 2.7 },
-  27 : { name: 'Yamato        ', winRate: 51.7, pickRate: 32.1, avgCsm: 4.3, avgDenies: 2.3, avgNwm: 1150.8, avgKda: 2.8 },
-  25 : { name: 'Warden        ', winRate: 51.6, pickRate: 39.2, avgCsm: 5.4, avgDenies: 3.2, avgNwm: 1195.9, avgKda: 2.9 },
-  76 : { name: 'Graves        ', winRate: 51.6, pickRate: 25.7, avgCsm: 5.4, avgDenies: 5.6, avgNwm: 1161.3, avgKda: 2.3 },
-  18 : { name: 'Mo & Krill    ', winRate: 51.2, pickRate: 27.3, avgCsm: 4.3, avgDenies: 3.0, avgNwm: 1149.1, avgKda: 3.1 },
-  16 : { name: 'Calico        ', winRate: 50.8, pickRate: 21.0, avgCsm: 3.8, avgDenies: 3.1, avgNwm: 1182.6, avgKda: 3.4 },
-  31 : { name: 'Lash          ', winRate: 50.8, pickRate: 48.5, avgCsm: 4.1, avgDenies: 3.2, avgNwm: 1123.2, avgKda: 3.4 },
-  64 : { name: 'Drifter       ', winRate: 50.7, pickRate: 40.7, avgCsm: 4.2, avgDenies: 2.6, avgNwm: 1158.6, avgKda: 2.7 },
-  58 : { name: 'Vyper         ', winRate: 50.7, pickRate: 17.8, avgCsm: 5.0, avgDenies: 4.0, avgNwm: 1189.5, avgKda: 2.5 },
-  63 : { name: 'Mina          ', winRate: 50.4, pickRate: 50.4, avgCsm: 5.2, avgDenies: 2.9, avgNwm: 1165.2, avgKda: 3.2 },
-  4  : { name: 'Lady Geist    ', winRate: 50.3, pickRate: 30.4, avgCsm: 5.3, avgDenies: 3.1, avgNwm: 1171.3, avgKda: 2.8 },
-  6  : { name: 'Abrams        ', winRate: 50.2, pickRate: 26.8, avgCsm: 4.4, avgDenies: 3.6, avgNwm: 1107.5, avgKda: 2.7 },
-  77 : { name: 'Apollo        ', winRate: 50.1, pickRate: 31.8, avgCsm: 4.4, avgDenies: 2.2, avgNwm: 1129.7, avgKda: 3.1 },
-  67 : { name: 'Paige         ', winRate: 49.5, pickRate: 23.9, avgCsm: 4.4, avgDenies: 2.5, avgNwm: 1105.6, avgKda: 3.4 },
-  50 : { name: 'Pocket        ', winRate: 49.2, pickRate: 30.4, avgCsm: 5.2, avgDenies: 3.1, avgNwm: 1186.3, avgKda: 3.0 },
-  3  : { name: 'Vindicta      ', winRate: 49.1, pickRate: 23.9, avgCsm: 4.2, avgDenies: 3.8, avgNwm: 1120.5, avgKda: 3.2 },
-  7  : { name: 'Wraith        ', winRate: 49.0, pickRate: 35.9, avgCsm: 6.0, avgDenies: 4.9, avgNwm: 1259.8, avgKda: 2.9 },
-  10 : { name: 'Paradox       ', winRate: 49.0, pickRate: 30.7, avgCsm: 4.6, avgDenies: 3.8, avgNwm: 1154.0, avgKda: 2.9 },
-  81 : { name: 'Celeste       ', winRate: 48.9, pickRate: 31.6, avgCsm: 4.6, avgDenies: 2.9, avgNwm: 1140.1, avgKda: 2.9 },
-  80 : { name: 'Silver        ', winRate: 48.8, pickRate: 35.2, avgCsm: 4.2, avgDenies: 2.8, avgNwm: 1103.6, avgKda: 2.9 },
-  52 : { name: 'Mirage        ', winRate: 48.5, pickRate: 24.6, avgCsm: 4.7, avgDenies: 3.9, avgNwm: 1155.5, avgKda: 3.3 },
-  14 : { name: 'Holliday      ', winRate: 48.5, pickRate: 19.6, avgCsm: 4.4, avgDenies: 2.5, avgNwm: 1140.3, avgKda: 3.4 },
-  17 : { name: 'Grey Talon    ', winRate: 48.2, pickRate: 27.6, avgCsm: 4.4, avgDenies: 3.2, avgNwm: 1121.1, avgKda: 3.7 },
-  72 : { name: 'Billy         ', winRate: 48.1, pickRate: 26.4, avgCsm: 4.4, avgDenies: 3.4, avgNwm: 1116.6, avgKda: 2.4 },
-  35 : { name: 'Viscous       ', winRate: 47.0, pickRate: 19.5, avgCsm: 4.8, avgDenies: 3.6, avgNwm: 1106.2, avgKda: 3.3 },
-  19 : { name: 'Shiv          ', winRate: 47.0, pickRate: 43.0, avgCsm: 4.0, avgDenies: 3.4, avgNwm: 1102.0, avgKda: 2.8 },
-  1  : { name: 'Infernus      ', winRate: 46.5, pickRate: 34.8, avgCsm: 5.5, avgDenies: 3.8, avgNwm: 1172.8, avgKda: 2.5 },
-  60 : { name: 'Sinclair      ', winRate: 46.1, pickRate: 20.0, avgCsm: 4.1, avgDenies: 2.7, avgNwm: 1104.9, avgKda: 2.8 },
-  15 : { name: 'Bebop         ', winRate: 45.9, pickRate: 49.6, avgCsm: 4.1, avgDenies: 4.1, avgNwm: 1094.8, avgKda: 2.6 },
-  79 : { name: 'Rem           ', winRate: 45.2, pickRate: 24.7, avgCsm: 4.1, avgDenies: 2.7, avgNwm: 1138.5, avgKda: 3.3 },
-  65 : { name: 'Venator       ', winRate: 42.5, pickRate: 38.1, avgCsm: 5.4, avgDenies: 3.7, avgNwm: 1161.6, avgKda: 2.4 },
+  66 : { name: 'Victor        ', winRate: 55.8, pickRate: 42.6, avgCsm: 5.5, avgDenies: 3.2, avgNwm: 1213.1, avgKda: 2.8 },
+  8  : { name: 'McGinnis      ', winRate: 55.7, pickRate: 21.9, avgCsm: 4.9, avgDenies: 8.2, avgNwm: 1136.9, avgKda: 3.2 },
+  2  : { name: 'Seven         ', winRate: 55.6, pickRate: 43.3, avgCsm: 6.6, avgDenies: 3.4, avgNwm: 1262.9, avgKda: 2.8 },
+  12 : { name: 'Kelvin        ', winRate: 53.9, pickRate: 24.3, avgCsm: 4.2, avgDenies: 3.3, avgNwm: 1140.0, avgKda: 3.6 },
+  69 : { name: 'The Doorman   ', winRate: 53.4, pickRate: 28.9, avgCsm: 4.6, avgDenies: 2.7, avgNwm: 1134.9, avgKda: 3.8 },
+  11 : { name: 'Dynamo        ', winRate: 53.2, pickRate: 33.5, avgCsm: 4.6, avgDenies: 3.4, avgNwm: 1129.1, avgKda: 3.5 },
+  20 : { name: 'Ivy           ', winRate: 52.3, pickRate: 27.3, avgCsm: 4.7, avgDenies: 4.7, avgNwm: 1123.9, avgKda: 3.5 },
+  13 : { name: 'Haze          ', winRate: 52.0, pickRate: 48.4, avgCsm: 5.3, avgDenies: 4.1, avgNwm: 1215.3, avgKda: 2.7 },
+  27 : { name: 'Yamato        ', winRate: 51.7, pickRate: 32.2, avgCsm: 4.2, avgDenies: 2.3, avgNwm: 1151.0, avgKda: 2.8 },
+  76 : { name: 'Graves        ', winRate: 51.7, pickRate: 25.6, avgCsm: 5.4, avgDenies: 5.6, avgNwm: 1161.3, avgKda: 2.3 },
+  25 : { name: 'Warden        ', winRate: 51.6, pickRate: 39.2, avgCsm: 5.4, avgDenies: 3.2, avgNwm: 1194.6, avgKda: 2.9 },
+  18 : { name: 'Mo & Krill    ', winRate: 51.2, pickRate: 27.6, avgCsm: 4.3, avgDenies: 3.0, avgNwm: 1149.4, avgKda: 3.2 },
+  31 : { name: 'Lash          ', winRate: 50.8, pickRate: 48.9, avgCsm: 4.1, avgDenies: 3.2, avgNwm: 1122.8, avgKda: 3.4 },
+  58 : { name: 'Vyper         ', winRate: 50.7, pickRate: 17.8, avgCsm: 5.0, avgDenies: 4.0, avgNwm: 1190.2, avgKda: 2.5 },
+  16 : { name: 'Calico        ', winRate: 50.7, pickRate: 20.7, avgCsm: 3.8, avgDenies: 3.1, avgNwm: 1182.9, avgKda: 3.4 },
+  64 : { name: 'Drifter       ', winRate: 50.6, pickRate: 40.6, avgCsm: 4.2, avgDenies: 2.6, avgNwm: 1158.4, avgKda: 2.7 },
+  63 : { name: 'Mina          ', winRate: 50.4, pickRate: 50.1, avgCsm: 5.2, avgDenies: 2.9, avgNwm: 1164.9, avgKda: 3.2 },
+  4  : { name: 'Lady Geist    ', winRate: 50.3, pickRate: 30.3, avgCsm: 5.3, avgDenies: 3.1, avgNwm: 1171.2, avgKda: 2.8 },
+  77 : { name: 'Apollo        ', winRate: 50.2, pickRate: 31.9, avgCsm: 4.4, avgDenies: 2.2, avgNwm: 1130.4, avgKda: 3.1 },
+  6  : { name: 'Abrams        ', winRate: 50.1, pickRate: 26.7, avgCsm: 4.4, avgDenies: 3.6, avgNwm: 1107.2, avgKda: 2.7 },
+  67 : { name: 'Paige         ', winRate: 49.5, pickRate: 23.8, avgCsm: 4.4, avgDenies: 2.5, avgNwm: 1105.7, avgKda: 3.4 },
+  3  : { name: 'Vindicta      ', winRate: 49.1, pickRate: 23.8, avgCsm: 4.2, avgDenies: 3.8, avgNwm: 1120.2, avgKda: 3.2 },
+  50 : { name: 'Pocket        ', winRate: 49.1, pickRate: 30.4, avgCsm: 5.2, avgDenies: 3.1, avgNwm: 1186.7, avgKda: 2.9 },
+  7  : { name: 'Wraith        ', winRate: 48.9, pickRate: 35.7, avgCsm: 6.0, avgDenies: 4.9, avgNwm: 1258.9, avgKda: 2.9 },
+  10 : { name: 'Paradox       ', winRate: 48.9, pickRate: 30.6, avgCsm: 4.6, avgDenies: 3.8, avgNwm: 1153.7, avgKda: 2.9 },
+  80 : { name: 'Silver        ', winRate: 48.9, pickRate: 35.1, avgCsm: 4.1, avgDenies: 2.8, avgNwm: 1103.4, avgKda: 2.9 },
+  81 : { name: 'Celeste       ', winRate: 48.8, pickRate: 31.5, avgCsm: 4.6, avgDenies: 2.9, avgNwm: 1139.5, avgKda: 2.9 },
+  52 : { name: 'Mirage        ', winRate: 48.6, pickRate: 24.8, avgCsm: 4.7, avgDenies: 3.9, avgNwm: 1155.9, avgKda: 3.3 },
+  14 : { name: 'Holliday      ', winRate: 48.5, pickRate: 19.6, avgCsm: 4.4, avgDenies: 2.5, avgNwm: 1140.7, avgKda: 3.4 },
+  17 : { name: 'Grey Talon    ', winRate: 48.2, pickRate: 27.7, avgCsm: 4.4, avgDenies: 3.2, avgNwm: 1121.0, avgKda: 3.7 },
+  72 : { name: 'Billy         ', winRate: 48.2, pickRate: 26.3, avgCsm: 4.4, avgDenies: 3.4, avgNwm: 1116.6, avgKda: 2.4 },
+  35 : { name: 'Viscous       ', winRate: 47.1, pickRate: 19.5, avgCsm: 4.8, avgDenies: 3.6, avgNwm: 1105.7, avgKda: 3.3 },
+  19 : { name: 'Shiv          ', winRate: 47.0, pickRate: 43.3, avgCsm: 4.0, avgDenies: 3.4, avgNwm: 1101.9, avgKda: 2.8 },
+  1  : { name: 'Infernus      ', winRate: 46.5, pickRate: 34.5, avgCsm: 5.5, avgDenies: 3.8, avgNwm: 1172.5, avgKda: 2.5 },
+  60 : { name: 'Sinclair      ', winRate: 46.1, pickRate: 20.0, avgCsm: 4.1, avgDenies: 2.7, avgNwm: 1104.7, avgKda: 2.8 },
+  15 : { name: 'Bebop         ', winRate: 46.0, pickRate: 49.4, avgCsm: 4.1, avgDenies: 4.1, avgNwm: 1094.8, avgKda: 2.6 },
+  79 : { name: 'Rem           ', winRate: 45.1, pickRate: 24.7, avgCsm: 4.1, avgDenies: 2.7, avgNwm: 1138.5, avgKda: 3.3 },
+  65 : { name: 'Venator       ', winRate: 42.5, pickRate: 37.5, avgCsm: 5.4, avgDenies: 3.7, avgNwm: 1161.4, avgKda: 2.4 },
 };
 
 /**
