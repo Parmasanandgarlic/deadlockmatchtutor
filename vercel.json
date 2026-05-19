@@ -14,8 +14,11 @@
   "rewrites": [
     { "source": "/api/og/:matchId/:accountId", "destination": "/api/og/[matchId]/[accountId]" },
     { "source": "/api/(.*)", "destination": "/api/index" },
-    { "source": "/sitemap.xml", "destination": "/api/index" },
-    { "source": "/robots.txt", "destination": "/api/index" },
+    { "source": "/sitemap.xml", "destination": "/api/index?vercel_path=/sitemap.xml" },
+    { "source": "/sitemap-static.xml", "destination": "/api/index?vercel_path=/sitemap-static.xml" },
+    { "source": "/sitemap-players.xml", "destination": "/api/index?vercel_path=/sitemap-players.xml" },
+    { "source": "/sitemap-matches.xml", "destination": "/api/index?vercel_path=/sitemap-matches.xml" },
+    { "source": "/robots.txt", "destination": "/api/index?vercel_path=/robots.txt" },
     { "source": "/", "destination": "/api/index" },
     { "source": "/about", "destination": "/api/index" },
     { "source": "/faq", "destination": "/api/index" },

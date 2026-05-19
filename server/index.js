@@ -127,6 +127,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// Restore original path from Vercel rewrite query parameter (e.g. /sitemap.xml)
+app.use((req, res, next) => {
+  if (req.query && req.query.vercel_path) {
+    req.url = req.query.vercel_path;
+  }
+  next();
+});
+
 // Security headers with hardened CSP
 // SECURITY FIX: removed inline-script and eval allowances from scriptSrc.
 // Those directives completely negate CSP's XSS protection.
