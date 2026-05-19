@@ -101,19 +101,19 @@ const faqs = [
 
 const queryTargets = [
   {
-    title: 'What does Deadlock AfterMatch do?',
+    title: 'What does the OSIC Dossier System do?',
     text:
-      'Deadlock AfterMatch analyzes Deadlock match data and converts it into a clear post-match report. The report grades economy, combat, itemization, objective pressure, and benchmark performance so players can quickly identify the decisions that most affected a match.',
+      'The OSIC Dossier System intercepts post-Ritual combat telemetry from the Cursed Apple and converts it into a classified field report. The dossier grades soul harvest, kill ledger, occult arsenal, Ritual pressure, and operative benchmarks so combatants can identify what decided the engagement.',
   },
   {
-    title: 'How do you start a Deadlock match review?',
+    title: 'How do you initiate a Ritual debrief?',
     text:
-      'Start a Deadlock match review by entering a Steam profile URL, vanity name, Steam64 ID, or Steam32 account ID. AfterMatch resolves the player, loads recent matches, and opens a report with grades, recommendations, and performance trends.',
+      'Start a debrief by entering an operative\'s Steam profile URL, vanity name, Steam64 ID, or Steam32 account ID. The system resolves the operative, loads recent Ritual case files, and opens a classified dossier with grades, directives, and performance intelligence.',
   },
   {
-    title: 'Is Deadlock AfterMatch safe to use?',
+    title: 'Is the dossier system secure?',
     text:
-      'Deadlock AfterMatch does not ask for Steam passwords or payment information. It only uses public Steam identifiers and match data needed to produce analytics, and cached analysis results can be removed by request.',
+      'The OSIC does not request Steam credentials or payment information. Only the public operative identifier and Ritual data needed to compile the dossier are requisitioned. Cached analyses can be purged by request.',
   },
 ];
 
@@ -134,8 +134,8 @@ export default function FaqPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <SEOHead
-        title="Deadlock AfterMatch FAQ and Match Analysis Help Center"
-        description="Answers about Deadlock AfterMatch match analysis, Steam ID lookup, data privacy, report sharing, grading, and open-source access."
+        title="OSIC Field Manual FAQ | Deadlock AfterMatch Help Center"
+        description="Answers from the OSIC about Ritual analysis, operative identification, data clearance, dossier sharing, and access to the declassified Deadlock analytics system."
         canonical={absoluteUrl('/faq')}
         imageUrl="/images/og-share.png"
         schema={schema}
@@ -143,12 +143,12 @@ export default function FaqPage() {
 
       <header className="mb-8">
         <p className="text-xs font-bold uppercase tracking-[0.28em] text-deadlock-amber mb-3">
-          Player Help
+          Operative Briefing Notes
         </p>
-        <h1 className="text-3xl font-extrabold mb-4">Deadlock AfterMatch FAQ</h1>
+        <h1 className="text-3xl font-extrabold mb-4">OSIC Field Manual — Frequently Asked Questions</h1>
         <p className="answer-block text-deadlock-text-dim text-base leading-relaxed max-w-3xl">
-          Deadlock AfterMatch is a free post-match analytics dashboard for Deadlock players. It helps players review
-          economy, combat, itemization, objective decisions, and performance trends without requiring a login.
+          The Occult Security and Investigation Commission maintains this briefing document for operatives and civilians 
+          accessing the declassified Ritual dossier system. Answers cover combat analysis, data clearance, and system access.
         </p>
       </header>
 
@@ -175,10 +175,10 @@ export default function FaqPage() {
 
       <div className="mt-10 flex flex-wrap gap-3">
         <Link to="/" className="btn-primary">
-          Analyze a Match
+          Begin Investigation
         </Link>
         <Link to="/privacy" className="btn-secondary">
-          Review Privacy
+          Review Clearance Protocol
         </Link>
       </div>
     </div>

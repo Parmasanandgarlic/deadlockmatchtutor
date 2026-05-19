@@ -12,10 +12,10 @@ export default function LoadingState({ progressText, progressStage = 0, totalSta
       </div>
       <div className="text-center">
         <p className="text-white font-serif text-xl tracking-[0.2em] uppercase mb-2">
-          {progressText || 'Preparing analysis...'}
+          {progressText || 'Compiling dossier...'}
         </p>
         <p className="text-deadlock-text-dim text-[10px] font-bold uppercase tracking-widest">
-          Consulting the occult replay stream...
+          Sandman Division intercepting Ritual telemetry from the Cursed Apple...
         </p>
       </div>
       <div className="w-64 h-1 bg-deadlock-border/50 overflow-hidden">

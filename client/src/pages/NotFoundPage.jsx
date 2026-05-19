@@ -14,21 +14,21 @@ export default function NotFoundPage() {
         schema={{
           '@context': 'https://schema.org',
           '@type': 'WebPage',
-          name: 'Deadlock AfterMatch 404 page',
-          description: 'Navigation page for unknown Deadlock AfterMatch routes.',
+          name: 'OSIC Dossier System — Signal Lost',
+          description: 'Astral Gate disruption has corrupted this dossier route. Return to the OSIC terminal.',
         }}
       />
       <SearchX className="w-12 h-12 text-deadlock-accent mx-auto mb-4" aria-hidden="true" />
-      <h1 className="text-3xl font-extrabold mb-4">Page Not Found</h1>
+      <h1 className="text-3xl font-extrabold mb-4">Signal Lost — Astral Gate Disruption</h1>
       <p className="text-deadlock-text-dim mb-8">
-        This AfterMatch route does not exist or the report link is incomplete.
+        This dossier route has been redacted or Astral interference has corrupted the link. Return to the OSIC terminal.
       </p>
       <div className="flex flex-wrap justify-center gap-3">
         <Link to="/" className="btn-primary">
-          Analyze a Match
+          Return to Terminal
         </Link>
         <Link to="/faq" className="btn-secondary">
-          Read FAQ
+          Briefing Notes
         </Link>
         <a href="/sitemap.xml" className="btn-secondary">
           View Sitemap

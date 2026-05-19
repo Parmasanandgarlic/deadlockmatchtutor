@@ -16,10 +16,10 @@ import {
 } from '../utils/seo';
 
 const features = [
-  { icon: Flame, label: 'Economy Grading', desc: 'Net worth efficiency & farm scores' },
-  { icon: Hourglass, label: 'Build Review', desc: 'Item sequence signals when available' },
-  { icon: Skull, label: 'Combat & KDA', desc: 'Aggregate combat performance grading' },
-  { icon: Compass, label: 'Objective Pressure', desc: 'Objective damage signals when available' },
+  { icon: Flame, label: 'Soul Harvest', desc: 'Soul acquisition rates & economy yield from the Ritual' },
+  { icon: Hourglass, label: 'Occult Arsenal', desc: 'Spirit weapon deployment timing & loadout assessment' },
+  { icon: Skull, label: 'Kill Ledger', desc: 'OSIC-filed combat record & elimination accounting' },
+  { icon: Compass, label: 'Ritual Pressure', desc: 'Objective damage toward Guardians, Walkers & the Patron' },
 ];
 
 export default function LandingPage() {
@@ -101,18 +101,18 @@ export default function LandingPage() {
 
   const homeFaqs = [
     {
-      question: 'What is Deadlock AfterMatch?',
+      question: 'What is the OSIC Dossier System?',
       answer:
-        'Deadlock AfterMatch is a free, open-source aggregate post-match analytics engine for the game Deadlock. It analyzes available match data to grade economy, combat, itemization, and objective pressure so players can improve macro decision-making.',
+        'The OSIC Dossier System is the Occult Security and Investigation Commission\'s declassified post-Ritual analytics engine. It intercepts match telemetry from the Cursed Apple and compiles classified field reports grading soul harvest, combat effectiveness, occult arsenal deployment, and Ritual pressure.',
     },
     {
-      question: 'How does Deadlock AfterMatch grade my performance?',
+      question: 'How does the OSIC grade Ritual performance?',
       answer:
-        'AfterMatch analyzes match data from the Deadlock API and scores key dimensions such as net worth trajectory, KDA density, Souls/Min, and objective impact. It compares your results to personal baselines and community signals to assign a grade from F to A+.',
+        'The Sandman Division analyzes Ritual telemetry and scores key dimensions — soul acquisition trajectory, kill ledger density, spirit weapon timing, and objective pressure against Guardians and Walkers. Your performance is compared against Cursed Apple field benchmarks to assign a grade from F to A+.',
     },
     {
-      question: 'Is Deadlock AfterMatch free to use?',
-      answer: 'Yes. Deadlock AfterMatch is free to use and the code is open source on GitHub.',
+      question: 'Is the dossier system free to access?',
+      answer: 'Yes. The OSIC\'s civilian transparency initiative makes this intelligence fully declassified and open source.',
     },
   ];
 
@@ -128,7 +128,7 @@ export default function LandingPage() {
       applicationCategory: 'GameApplication',
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
       description:
-        'Deadlock AfterMatch is a post-match analytics dashboard for Deadlock players who want economy, itemization, combat, objective, and benchmark review.',
+        'The OSIC Dossier System provides post-Ritual intelligence from the Cursed Apple — soul harvest, occult arsenal, combat ledger, and Ritual pressure assessment for every operative.',
     },
     faqSchema(homeFaqs),
     howToSchema(),
@@ -139,7 +139,7 @@ export default function LandingPage() {
     <div className="relative min-h-[90vh] flex flex-col items-center justify-center pt-10 pb-20 overflow-hidden">
       <SEOHead 
         title="Deadlock Match Analyzer and Player Reports | AfterMatch"
-        description="Free Deadlock match analyzer. Get aggregate post-match grades, hero performance reports, economy breakdowns, item build review, and coaching notes - no login required."
+        description="Free Deadlock match analyzer — OSIC-grade post-Ritual intelligence from the Cursed Apple. Get combat dossiers, soul harvest grades, and classified field reports. No login required."
         canonical={absoluteUrl('/')}
         imageUrl="/images/og-share.webp"
         schema={landingSchema} 
@@ -153,7 +153,7 @@ export default function LandingPage() {
           <div className="inline-flex items-center gap-3 px-4 py-1.5 border border-deadlock-blue/30 bg-deadlock-blue/5 mb-8">
             <CompassMedallion className="w-4 h-4 text-deadlock-blue" />
             <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-deadlock-blue">
-              Post-Match Combat Intelligence
+              OSIC Sandman Division — Field Dossier Terminal
             </span>
           </div>
 
@@ -166,8 +166,8 @@ export default function LandingPage() {
           </h1>
 
           <p className="max-w-xl mx-auto text-deadlock-text-dim text-lg leading-relaxed mb-10">
-            Aggregate post-match coaching for Deadlock.
-            Identify macro mistakes, review economy and KDA signals, and focus your next improvement target with data-grounded notes.
+            Classified post-Ritual intelligence from the streets of the Cursed Apple.
+            Review your combat record, soul acquisition, and tactical decisions filed after each Ritual engagement.
           </p>
 
         {/* Search Engine — Primary CTA */}
@@ -183,7 +183,7 @@ export default function LandingPage() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onFocus={() => history.length > 0 && setShowHistory(true)}
-                  placeholder="Enter Steam profile URL or Steam ID..."
+                  placeholder="Enter operative Steam ID or profile link..."
                   className="w-full bg-deadlock-surface border border-deadlock-border text-deadlock-text placeholder-deadlock-muted h-14 pl-12 pr-4 text-sm font-bold tracking-widest focus:outline-none focus:border-deadlock-amber transition-colors"
                   disabled={loading}
                 />
@@ -249,7 +249,7 @@ export default function LandingPage() {
                   <div className="animate-spin w-4 h-4 border-2 border-deadlock-amber/30 border-t-deadlock-amber rounded-full" />
                 ) : (
                   <div className="flex items-center gap-2.5 whitespace-nowrap">
-                    <span className="text-[11px]">Analyze</span>
+                    <span className="text-[11px]">Investigate</span>
                     <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" />
                   </div>
                 )}
@@ -259,7 +259,7 @@ export default function LandingPage() {
 
           {/* Example inputs hint */}
           <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[10px] text-deadlock-text-dim/40 tracking-widest uppercase">
-            <span>Try:</span>
+            <span>Known operatives:</span>
             <button type="button" onClick={() => setInput('76561198072944445')} className="hover:text-deadlock-amber transition-colors cursor-pointer">76561198072944445</button>
             <span className="text-deadlock-border">|</span>
             <button type="button" onClick={() => setInput('steamcommunity.com/id/yourname')} className="hover:text-deadlock-amber transition-colors cursor-pointer">steamcommunity.com/id/yourname</button>
@@ -288,10 +288,10 @@ export default function LandingPage() {
           <div className="flex flex-wrap items-center justify-center gap-6">
             <div className="flex items-center gap-3 text-sm font-bold uppercase tracking-widest text-deadlock-blue">
               <span className="w-8 h-px bg-deadlock-blue" />
-              Analyze
+              Investigate
             </div>
             <div className="flex items-center gap-3 text-sm font-bold uppercase tracking-widest text-deadlock-amber">
-              Improve
+              Neutralize
               <span className="w-8 h-px bg-deadlock-amber" />
             </div>
           </div>
@@ -300,42 +300,43 @@ export default function LandingPage() {
         {/* AEO Quick Answer */}
         <section className="w-full max-w-4xl mt-20">
           <h2 className="text-2xl font-serif tracking-widest text-white mb-4 text-center uppercase">
-            What is Deadlock AfterMatch?
+            What is the OSIC Dossier System?
           </h2>
           <p className="text-sm text-deadlock-text-dim leading-relaxed max-w-3xl mx-auto text-center">
-            Deadlock AfterMatch is a free, open-source post-match analytics dashboard for Deadlock that turns match data into
-            aggregate grades and actionable mistakes. Paste a Steam profile URL or Steam ID to generate match reports and player
-            dossiers instantly.
+            When the Maelstrom tore open Astral Gates across the Earth, the Occult Security and Investigation Commission
+            deployed the Sandman Division to monitor every Ritual engagement in the Cursed Apple. This dossier system
+            intercepts post-Ritual telemetry and compiles classified field reports — grading soul harvest, combat effectiveness,
+            and occult arsenal deployment so operatives can identify what cost them the fight.
           </p>
           <div className="mt-8 card overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="text-deadlock-text-dim">
                 <tr>
-                  <th className="py-2 pr-4">Dimension</th>
-                  <th className="py-2 pr-4">What you get</th>
-                  <th className="py-2">Why it matters</th>
+                  <th className="py-2 pr-4">Intelligence Module</th>
+                  <th className="py-2 pr-4">Field Data</th>
+                  <th className="py-2">Tactical Significance</th>
                 </tr>
               </thead>
               <tbody className="text-deadlock-text-dim">
                 <tr className="border-t border-deadlock-border">
-                  <td className="py-2 pr-4 text-deadlock-text">Economy</td>
-                  <td className="py-2 pr-4">Net worth efficiency, Souls/Min signals</td>
-                  <td className="py-2">Detect farming vs fighting timing leaks</td>
+                  <td className="py-2 pr-4 text-deadlock-text">Soul Harvest</td>
+                  <td className="py-2 pr-4">Soul acquisition rate, net worth trajectory</td>
+                  <td className="py-2">Detect harvest failures that starved your Patron summoning</td>
                 </tr>
                 <tr className="border-t border-deadlock-border">
-                  <td className="py-2 pr-4 text-deadlock-text">Combat</td>
-                  <td className="py-2 pr-4">KDA density and aggregate combat impact</td>
-                  <td className="py-2">Spot overextensions and low-value deaths</td>
+                  <td className="py-2 pr-4 text-deadlock-text">Kill Ledger</td>
+                  <td className="py-2 pr-4">Elimination density and combat impact in the Ritual</td>
+                  <td className="py-2">Expose overextensions and deaths that fed the enemy</td>
                 </tr>
                 <tr className="border-t border-deadlock-border">
-                  <td className="py-2 pr-4 text-deadlock-text">Itemization</td>
-                  <td className="py-2 pr-4">Item build reconstruction when metadata includes it</td>
-                  <td className="py-2">Find missing or inefficient build decisions</td>
+                  <td className="py-2 pr-4 text-deadlock-text">Occult Arsenal</td>
+                  <td className="py-2 pr-4">Spirit weapon deployment timeline and loadout analysis</td>
+                  <td className="py-2">Flag delayed power spikes and inefficient armament choices</td>
                 </tr>
                 <tr className="border-t border-deadlock-border">
-                  <td className="py-2 pr-4 text-deadlock-text">Objectives</td>
-                  <td className="py-2 pr-4">Objective damage and pressure signals when present</td>
-                  <td className="py-2">Catch low-pressure games without inventing event timelines</td>
+                  <td className="py-2 pr-4 text-deadlock-text">Ritual Pressure</td>
+                  <td className="py-2 pr-4">Damage to Guardians, Walkers, and Patron approach vectors</td>
+                  <td className="py-2">Identify Rituals where combat wins weren't converted into map control</td>
                 </tr>
               </tbody>
             </table>
@@ -346,33 +347,33 @@ export default function LandingPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-4xl">
           <div className="card card-blue group hover:bg-deadlock-blue/5 transition-colors">
             <Flame className="w-8 h-8 text-deadlock-blue mb-4 group-hover:scale-110 transition-transform" />
-            <h3 className="text-sm font-serif mb-2 tracking-widest">Economy Flow</h3>
+            <h3 className="text-sm font-serif mb-2 tracking-widest">Soul Harvest</h3>
             <p className="text-xs text-deadlock-text-dim leading-relaxed">
-              Review net worth efficiency and soul collection rates from the match summary payload.
+              Track soul acquisition across the Ritual. Did you harvest enough to outpace the enemy's Patron summoning?
             </p>
           </div>
 
           <div className="card card-amber group hover:bg-deadlock-amber/5 transition-colors">
             <Skull className="w-8 h-8 text-deadlock-amber mb-4 group-hover:scale-110 transition-transform" />
-            <h3 className="text-sm font-serif mb-2 tracking-widest">Combat Reach</h3>
+            <h3 className="text-sm font-serif mb-2 tracking-widest">Kill Ledger</h3>
             <p className="text-xs text-deadlock-text-dim leading-relaxed">
-              Aggregate KDA and damage metrics without pretending to reconstruct every fight.
+              Your combat record as filed by OSIC field observers. Every death, every elimination, accounted for.
             </p>
           </div>
 
           <div className="card card-amber group hover:bg-deadlock-amber/5 transition-colors">
             <Hourglass className="w-8 h-8 text-deadlock-amber mb-4 group-hover:scale-110 transition-transform" />
-            <h3 className="text-sm font-serif mb-2 tracking-widest">Power Peaks</h3>
+            <h3 className="text-sm font-serif mb-2 tracking-widest">Occult Arsenal</h3>
             <p className="text-xs text-deadlock-text-dim leading-relaxed">
-              Reconstruct your item build when metadata includes it and flag obvious efficiency gaps.
+              Review your spirit weapon loadout and power spike timing against Cursed Apple field benchmarks.
             </p>
           </div>
 
           <div className="card card-blue group hover:bg-deadlock-blue/5 transition-colors">
             <Compass className="w-8 h-8 text-deadlock-blue mb-4 group-hover:scale-110 transition-transform" />
-            <h3 className="text-sm font-serif mb-2 tracking-widest">Macro Intent</h3>
+            <h3 className="text-sm font-serif mb-2 tracking-widest">Ritual Pressure</h3>
             <p className="text-xs text-deadlock-text-dim leading-relaxed">
-              Objective pressure and map impact signals when the API payload supports them.
+              Objective damage toward Guardians, Walkers, and the enemy Patron. Did you push the Ritual forward?
             </p>
           </div>
         </div>
@@ -380,29 +381,30 @@ export default function LandingPage() {
         {/* SEO / AEO Generative FAQ Section */}
         <section className="w-full max-w-4xl mt-32 border-t border-deadlock-border pt-16">
           <h2 className="text-2xl font-serif tracking-widest text-white mb-8 text-center uppercase">
-            What questions do players ask about Deadlock AfterMatch?
+            Operative Briefing — Frequently Asked
           </h2>
           <div className="grid grid-cols-1 gap-6">
             <article className="bg-deadlock-bg border border-deadlock-border p-6 hover:border-deadlock-blue/30 transition-colors">
               <h3 className="text-sm font-bold text-deadlock-blue uppercase tracking-widest mb-3">
-                What is Deadlock AfterMatch?
+                What is the OSIC Dossier System?
               </h3>
               <p className="text-sm text-deadlock-text-dim leading-relaxed">
-                Deadlock AfterMatch is a free, open-source post-match analytics engine for the game Deadlock. 
-                It provides aggregate post-match review of your economy, combat performance, itemization efficiency,
-                and objective pressure to help players improve their macro decisions.
+                The OSIC Dossier System is the Occult Security and Investigation Commission's declassified 
+                post-Ritual analytics engine. Born from the Maelstrom's aftermath, it intercepts combat telemetry 
+                from the Cursed Apple and compiles classified field reports grading soul harvest, combat effectiveness, 
+                and spirit weapon deployment.
               </p>
             </article>
 
             <article className="bg-deadlock-bg border border-deadlock-border p-6 hover:border-deadlock-amber/30 transition-colors">
               <h3 className="text-sm font-bold text-deadlock-amber uppercase tracking-widest mb-3">
-                How does the grading system work?
+                How does the OSIC grade Ritual performance?
               </h3>
               <p className="text-sm text-deadlock-text-dim leading-relaxed">
-                The platform securely analyzes your match performance via the Deadlock API. It calculates 
-                your Net Worth trajectory, KDA density, and Souls per Minute, comparing them directly against 
-                both your personal career averages and broad community baselines to assign an objective 
-                post-match grade ranging from F to A+.
+                The Sandman Division intercepts Ritual telemetry and scores your soul acquisition trajectory, 
+                kill ledger density, spirit weapon timing, and objective pressure against Guardians and Walkers. 
+                Your results are compared against Cursed Apple field benchmarks to assign a classification 
+                grade from F to A+.
               </p>
             </article>
           </div>
@@ -412,26 +414,27 @@ export default function LandingPage() {
         <section aria-label="Deadlock match analyzer quick answers" className="w-full max-w-4xl mt-24 pt-12 border-t border-deadlock-border/30">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-deadlock-border/20">
             <div className="bg-deadlock-bg p-6">
-              <div className="text-[9px] font-bold text-deadlock-blue uppercase tracking-[0.2em] mb-3">What It Does</div>
+              <div className="text-[9px] font-bold text-deadlock-blue uppercase tracking-[0.2em] mb-3">Mission Brief</div>
               <p className="text-xs text-deadlock-text-dim/70 leading-relaxed">
-                Deadlock AfterMatch is a free match analyzer for Deadlock players. Enter a Steam profile or Steam ID to
-                review recent matches, generate performance grades, and see concise coaching notes for economy, combat,
-                itemization, objectives, and benchmarks.
+                The OSIC Dossier System intercepts post-Ritual telemetry from the Cursed Apple's Astral resonance. 
+                Enter an operative's Steam identifier to access their case files — classified field reports grading 
+                soul harvest, combat effectiveness, and spirit weapon deployment.
               </p>
             </div>
             <div className="bg-deadlock-bg p-6">
-              <div className="text-[9px] font-bold text-deadlock-amber uppercase tracking-[0.2em] mb-3">How It Works</div>
+              <div className="text-[9px] font-bold text-deadlock-amber uppercase tracking-[0.2em] mb-3">Assessment Protocol</div>
               <p className="text-xs text-deadlock-text-dim/70 leading-relaxed">
-                AfterMatch grades a Deadlock match by comparing core performance signals against useful baselines. The
-                report highlights farming pace, fight impact, item timing, objective pressure, and benchmark gaps so the
-                next improvement target is easy to find.
+                The Sandman Division grades each Ritual engagement by comparing operative performance against 
+                Cursed Apple field benchmarks. The dossier exposes soul harvest failures, combat overextensions, 
+                arsenal timing gaps, and missed objective conversions.
               </p>
             </div>
             <div className="bg-deadlock-bg p-6">
-              <div className="text-[9px] font-bold text-deadlock-blue uppercase tracking-[0.2em] mb-3">Getting Started</div>
+              <div className="text-[9px] font-bold text-deadlock-blue uppercase tracking-[0.2em] mb-3">Operative Access</div>
               <p className="text-xs text-deadlock-text-dim/70 leading-relaxed">
-                Players use AfterMatch by searching a public Steam identifier, choosing a recent match, and opening a
-                report. The tool does not require a site login, and shared reports can be copied from the dashboard.
+                No OSIC clearance required. Enter a public Steam identifier, select a Ritual engagement from 
+                the case file archive, and receive your classified dossier. Shared reports can be forwarded 
+                directly from the debrief dashboard.
               </p>
             </div>
           </div>

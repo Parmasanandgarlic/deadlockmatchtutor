@@ -24,19 +24,19 @@ export default function Header() {
         {/* Desktop nav */}
         <nav role="navigation" aria-label="Primary navigation" className="hidden sm:flex items-center gap-3 text-sm text-deadlock-text-dim">
           <Link to="/resources" className="inline-flex items-center gap-1.5 hover:text-deadlock-accent transition-colors duration-300 relative group/nav font-semibold text-deadlock-amber">
-            Meta Tier List
+            Cursed Apple Intel
             <span className="absolute -bottom-1 left-0 w-full h-px bg-deadlock-amber/50 group-hover/nav:bg-deadlock-amber transition-colors duration-300" />
           </Link>
           <Link to="/about" className="inline-flex items-center gap-1.5 hover:text-deadlock-accent transition-colors duration-300 relative group/nav">
-            <Code2 className="w-4 h-4" /> Open Source
+            <Code2 className="w-4 h-4" /> Commission Archives
             <span className="absolute -bottom-1 left-0 w-0 h-px bg-deadlock-amber group-hover/nav:w-full transition-all duration-300" />
           </Link>
           <Link to="/faq" className="hidden md:inline-flex items-center gap-1.5 hover:text-deadlock-accent transition-colors duration-300 relative group/nav">
-            FAQ
+            Briefing Notes
             <span className="absolute -bottom-1 left-0 w-0 h-px bg-deadlock-amber group-hover/nav:w-full transition-all duration-300" />
           </Link>
           <Link to="/privacy" className="inline-flex items-center gap-1.5 hover:text-deadlock-accent transition-colors duration-300 relative group/nav">
-            <Shield className="w-4 h-4" /> Privacy
+            <Shield className="w-4 h-4" /> Clearance Protocol
             <span className="absolute -bottom-1 left-0 w-0 h-px bg-deadlock-amber group-hover/nav:w-full transition-all duration-300" />
           </Link>
           <a
@@ -75,28 +75,28 @@ export default function Header() {
               onClick={() => setMobileOpen(false)}
               className="flex items-center gap-3 py-3 text-sm font-semibold text-deadlock-amber border-b border-deadlock-border/30"
             >
-              Meta Tier List
+              Cursed Apple Intel
             </Link>
             <Link
               to="/about"
               onClick={() => setMobileOpen(false)}
               className="flex items-center gap-3 py-3 text-sm text-deadlock-text-dim hover:text-white transition-colors border-b border-deadlock-border/30"
             >
-              <Code2 className="w-4 h-4" /> Open Source
+              <Code2 className="w-4 h-4" /> Commission Archives
             </Link>
             <Link
               to="/faq"
               onClick={() => setMobileOpen(false)}
               className="flex items-center gap-3 py-3 text-sm text-deadlock-text-dim hover:text-white transition-colors border-b border-deadlock-border/30"
             >
-              FAQ
+              Briefing Notes
             </Link>
             <Link
               to="/privacy"
               onClick={() => setMobileOpen(false)}
               className="flex items-center gap-3 py-3 text-sm text-deadlock-text-dim hover:text-white transition-colors border-b border-deadlock-border/30"
             >
-              <Shield className="w-4 h-4" /> Privacy
+              <Shield className="w-4 h-4" /> Clearance Protocol
             </Link>
             <a
               href="https://github.com/Parmasanandgarlic/deadlockmatchtutor"

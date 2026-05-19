@@ -242,7 +242,7 @@ export default function PlayerProfilePage() {
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#ffad1c] opacity-5 rounded-full blur-3xl pointer-events-none"></div>
           
           <h3 className="font-serif text-xl text-white mb-6 uppercase tracking-widest border-b border-[#20293b] pb-2 inline-block">
-            Impact Progression
+            Ritual Impact Trajectory
           </h3>
 
           <div className="h-80 w-full">
@@ -276,12 +276,12 @@ export default function PlayerProfilePage() {
           </div>
           
           <div className="mt-4 flex justify-between items-center text-xs font-sans text-gray-500">
-            <span>&larr; Older Matches</span>
+            <span>&larr; Earlier Rituals</span>
             <div className="flex items-center">
               <div className="w-4 h-0 border-t-2 border-[#3b7db2] mr-2"></div>
               <span>Trend Average</span>
             </div>
-            <span>Newer Matches &rarr;</span>
+            <span>Recent Rituals &rarr;</span>
           </div>
         </div>
       </div>

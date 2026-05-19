@@ -13,63 +13,63 @@ import {
 const sections = [
   {
     icon: Eye,
-    title: 'What data do you collect?',
+    title: 'What intelligence does the Commission collect?',
     items: [
-      'Steam ID, vanity name, or profile URL you enter to look up a player',
-      'Match IDs and account IDs associated with analyses you request',
-      'Cached analysis results stored in Supabase',
+      'The Steam ID, vanity name, or profile URL you provide to identify an operative',
+      'Ritual IDs and operative IDs associated with dossier compilations you request',
+      'Cached dossier results stored in the Commission\'s secure archives',
     ],
   },
   {
     icon: Database,
-    title: 'How do you use the data?',
+    title: 'How is requisitioned data deployed?',
     items: [
-      'To resolve your Steam identity and fetch match history from the Deadlock API',
-      'To compute post-match analytics for economy, combat, and itemization',
-      'To cache analysis results so reports can load without re-computing',
+      'To resolve your operative identity and intercept Ritual telemetry from the Cursed Apple',
+      'To compile post-Ritual dossiers grading soul harvest, combat, and occult arsenal deployment',
+      'To cache compiled dossiers so field reports load without recompilation',
     ],
   },
   {
     icon: Lock,
-    title: 'How is data stored and protected?',
+    title: 'How are dossier archives secured?',
     items: [
-      'Analysis caches are stored in Supabase PostgreSQL with row-level security',
+      'Dossier caches are stored with row-level security in the Commission\'s classified archives',
       'No passwords, payment information, or private Steam credentials are stored',
-      'All API traffic is encrypted via HTTPS',
-      'We do not sell, share, or transfer your data to third parties',
+      'All intelligence traffic is encrypted via HTTPS',
+      'We do not sell, share, or transfer operative data to third parties',
     ],
   },
   {
     icon: Trash2,
-    title: 'How long is data kept, and how can it be deleted?',
+    title: 'Data retention and purge procedures',
     items: [
-      'Cached analyses are retained for performance and contain match statistics tied to an account ID',
-      'You may request deletion of cached analyses by emailing contact@aftermatch.xyz or opening a GitHub issue',
-      'Steam IDs are used only to resolve and fetch the data needed for analysis',
+      'Cached dossiers are retained for operational efficiency and contain Ritual statistics tied to an operative ID',
+      'You may request purging of cached dossiers by contacting the dead drop at contact@aftermatch.xyz or filing a GitHub issue',
+      'Steam IDs are used only to resolve and intercept the data needed for dossier compilation',
     ],
   },
   {
     icon: Shield,
-    title: 'Which third-party services are involved?',
+    title: 'Third-party intelligence channels',
     items: [
-      'Match data is sourced from the community-run Deadlock API',
-      "Steam vanity resolution uses Steam's public profile endpoints",
-      'Site analytics may be provided by Vercel Analytics as part of hosting telemetry',
-      'Deadlock AfterMatch is not affiliated with Valve Corporation or the Deadlock API project',
+      'Ritual data is sourced from the community-run Deadlock API',
+      'Steam vanity resolution uses Steam\'s public profile endpoints',
+      'Site telemetry may be provided by Vercel Analytics as part of hosting infrastructure',
+      'The OSIC Dossier System is not affiliated with Valve Corporation or the Deadlock API project',
     ],
   },
 ];
 
 const privacyFaqs = [
   {
-    question: 'What data does Deadlock AfterMatch collect?',
+    question: 'What intelligence does the OSIC Dossier System collect?',
     answer:
-      'AfterMatch collects the Steam profile identifier you enter, match/account IDs required for analysis, and cached analysis results so pages load faster. It does not require passwords or payment information.',
+      'The system requisitions the Steam profile identifier you provide, Ritual and operative IDs required for dossier compilation, and cached analysis results for rapid report generation. No passwords or payment information are collected.',
   },
   {
-    question: 'How can I request deletion of cached analyses?',
+    question: 'How can I request purging of cached dossiers?',
     answer:
-      'Email contact@aftermatch.xyz or open a GitHub issue with your account ID and the match IDs you want removed.',
+      'Contact the dead drop at contact@aftermatch.xyz or open a GitHub issue with your operative ID and the Ritual IDs you want purged from the archives.',
   },
 ];
 
@@ -95,8 +95,8 @@ export default function PrivacyPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
       <SEOHead
-        title="Deadlock AfterMatch Privacy Policy and Data Use Guide"
-        description="Privacy policy for Deadlock AfterMatch: Steam ID lookup, match analysis caching, third-party services, deletion requests, and data use."
+        title="OSIC Clearance Protocol | Deadlock AfterMatch Data Policy"
+        description="The OSIC's data clearance protocol: operative identification, Ritual telemetry caching, dossier archival, purge procedures, and third-party intelligence channels."
         canonical={absoluteUrl('/privacy')}
         imageUrl="/images/og-share.png"
         schema={privacySchema}
@@ -104,13 +104,13 @@ export default function PrivacyPage() {
 
       <header className="mb-8">
         <h1 className="text-3xl font-extrabold mb-2">
-          <span className="text-deadlock-accent">Privacy</span> Policy
+          <span className="text-deadlock-accent">OSIC</span> Clearance Protocol
         </h1>
         <p className="text-deadlock-text-dim">Last updated: April 24, 2026</p>
         <section aria-label="Privacy summary" className="answer-block mt-4 text-sm text-deadlock-muted leading-relaxed space-y-2">
-          <p>Deadlock AfterMatch uses your Steam profile identifier to fetch match data and generate analytics.</p>
-          <p>Deadlock AfterMatch does not ask for Steam passwords, payment information, or private Steam credentials.</p>
-          <p>Deadlock AfterMatch caches analysis results for performance, and you can request deletion via email or GitHub.</p>
+          <p>The OSIC Dossier System requisitions your Steam profile identifier to intercept Ritual data and compile field reports.</p>
+          <p>The Commission does not request Steam passwords, payment information, or private credentials.</p>
+          <p>Compiled dossiers are cached for operational efficiency and can be purged by request via the dead drop or GitHub.</p>
         </section>
       </header>
 
@@ -152,10 +152,10 @@ export default function PrivacyPage() {
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link to="/faq" className="btn-secondary text-xs">
-            Read FAQ
+            Read Briefing Notes
           </Link>
           <Link to="/about" className="btn-secondary text-xs">
-            About AfterMatch
+            Commission Archives
           </Link>
         </div>
       </aside>

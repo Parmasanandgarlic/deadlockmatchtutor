@@ -3,16 +3,16 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { runAnalysis, getSharedAnalysis } from '../api/client';
 
 const PROGRESS_STAGES = [
-  'Fetching match data...',
-  'Loading player profile...',
-  'Refreshing hero and item metadata...',
-  'Analyzing hero performance...',
-  'Analyzing itemization...',
-  'Analyzing combat impact...',
-  'Calibrating rank benchmarks...',
-  'Evaluating matchup difficulty...',
-  'Generating insights...',
-  'Finalizing report...',
+  'Intercepting Ritual telemetry...',
+  'Cross-referencing operative identity...',
+  'Decoding spirit weapon manifests...',
+  'Assessing combat effectiveness...',
+  'Analyzing occult arsenal deployment...',
+  'Measuring soul harvest yield...',
+  'Calibrating rank against Cursed Apple field data...',
+  'Evaluating matchup threat vectors...',
+  'Sandman Division compiling findings...',
+  'Sealing dossier \u2014 classification: AMBER...',
 ];
 
 const PROCESSING_RETRY_MS = 3000;

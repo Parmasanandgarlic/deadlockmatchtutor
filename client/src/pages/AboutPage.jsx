@@ -14,23 +14,23 @@ import {
 const values = [
   {
     icon: Code2,
-    title: 'Open Source',
-    description: 'Every line of code is public on GitHub. Fork it, audit it, learn from it, and improve it.',
+    title: 'Declassified',
+    description: 'Every line of code is public on GitHub. The OSIC\'s civilian transparency initiative — fork it, audit it, improve it.',
   },
   {
     icon: GitPullRequest,
-    title: 'Community Driven',
-    description: 'Bug reports, feature requests, and pull requests are welcome. This tool is built by players.',
+    title: 'Multi-Division',
+    description: 'Sandmen care about people. Curators care about things. This system cares about both. Contributions welcome.',
   },
   {
     icon: Users,
-    title: 'Privacy-Minded',
-    description: 'No paywalls and no ads. The only input you provide is a Steam profile URL or ID to fetch match data.',
+    title: 'Clearance-Minimal',
+    description: 'No credentials harvested. Your Steam profile is the only artifact we requisition to compile a dossier.',
   },
   {
     icon: Heart,
-    title: 'Free Forever',
-    description: 'Post-match analytics should be accessible to every Deadlock player.',
+    title: 'Commission-Funded',
+    description: 'Ritual intelligence should be accessible to every operative in the Cursed Apple. Free forever.',
   },
 ];
 
@@ -45,13 +45,13 @@ const techStack = [
 
 const aboutFaqs = [
   {
-    question: 'What is Deadlock AfterMatch?',
+    question: 'What is the OSIC Dossier System?',
     answer:
-      'Deadlock AfterMatch is a free, open-source Deadlock post-match analytics dashboard. It turns match data into clear grades, player dossiers, and actionable mistakes to help players improve.',
+      'The OSIC Dossier System is the Occult Security and Investigation Commission\'s declassified post-Ritual analytics engine. It intercepts Ritual telemetry from the Cursed Apple and compiles classified field reports to help operatives improve.',
   },
   {
-    question: 'Where is the source code?',
-    answer: 'The source code is hosted publicly on GitHub at Parmasanandgarlic/deadlockmatchtutor.',
+    question: 'Where are the Commission Archives?',
+    answer: 'The full source code is declassified and hosted publicly on GitHub at Parmasanandgarlic/deadlockmatchtutor.',
   },
 ];
 
@@ -71,7 +71,7 @@ export default function AboutPage() {
       url: absoluteUrl('/'),
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
       description:
-        'Deadlock AfterMatch is a free post-match analytics dashboard for Deadlock players who want match grades, reports, and performance trends.',
+        'The OSIC Dossier System is a declassified post-Ritual analytics engine for Deadlock operatives — field reports, combat dossiers, and performance intelligence from the Cursed Apple.',
     },
     faqSchema(aboutFaqs),
     howToSchema(),
@@ -81,8 +81,8 @@ export default function AboutPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
       <SEOHead
-        title="About Deadlock AfterMatch Open Source Analytics Tool"
-        description="Learn what Deadlock AfterMatch is, who it serves, when it started, what problem it solves, how data works, and how to contribute."
+        title="About the OSIC Dossier System | Deadlock AfterMatch"
+        description="Learn about the Occult Security and Investigation Commission's declassified post-Ritual analytics engine — who built it, how it works, and how to contribute to the Commission Archives."
         canonical={absoluteUrl('/about')}
         imageUrl="/images/og-share.png"
         schema={aboutSchema}
@@ -90,41 +90,41 @@ export default function AboutPage() {
 
       <header className="mb-8">
         <h1 className="text-3xl font-extrabold mb-2">
-          About <span className="text-deadlock-accent">Deadlock AfterMatch</span>
+          About the <span className="text-deadlock-accent">OSIC Dossier System</span>
         </h1>
         <p className="text-deadlock-text-dim text-lg">
-          Deadlock AfterMatch is a community-built, open-source analytics tool for Deadlock players.
+          The Occult Security and Investigation Commission's declassified post-Ritual analytics division.
         </p>
         <div className="mt-2 text-sm text-deadlock-accent font-medium">
-          Written and Maintained by: The AfterMatch Analytics Team
+          Compiled by: Sandman Division, Curator Division, & civilian analysts
         </div>
         <section
           aria-label="Deadlock AfterMatch product definition"
           className="answer-block mt-4 text-sm text-deadlock-muted leading-relaxed space-y-2"
         >
-          <p>Deadlock AfterMatch was founded as a public open-source project in 2026.</p>
-          <p>Deadlock AfterMatch serves Deadlock players who want clearer post-match review without manual stat digging.</p>
-          <p>Deadlock AfterMatch solves the problem of scattered match data by converting it into grades, dossiers, and concise coaching notes.</p>
+          <p>Established in the wake of the first Maelstrom, when Astral Gates tore open across the Earth and the supernatural could no longer be denied.</p>
+          <p>The OSIC Dossier System serves operatives fighting in the Ritual — the supernatural battle in the streets of the Cursed Apple where two Patrons vie for summoning.</p>
+          <p>It solves the problem of scattered Ritual telemetry by converting raw combat data into classified grades, operative dossiers, and tactical directives.</p>
         </section>
       </header>
 
       <section aria-label="Methodology Documentation" className="card mb-8">
-        <h2 className="font-bold text-deadlock-text mb-4 text-xl">Methodology Documentation</h2>
+        <h2 className="font-bold text-deadlock-text mb-4 text-xl">Assessment Methodology — OSIC Standard Protocol</h2>
         <p className="text-sm text-deadlock-text-dim leading-relaxed mb-4">
-          At AfterMatch, we believe in transparent, data-driven coaching. Our grading algorithms evaluate match performance across four core dimensions, dynamically adjusting for patch changes and hero roles:
+          The Sandman Division employs a four-axis assessment protocol, dynamically calibrated for Ritual conditions and operative specialization:
         </p>
         <ul className="space-y-3 text-sm text-deadlock-text-dim list-disc pl-5">
           <li>
-            <strong className="text-deadlock-text">Economy (Farming & Souls):</strong> We calculate Souls Per Minute (SPM) at the 10, 15, and 20-minute marks, penalizing extreme drops in farming efficiency during the mid-game.
+            <strong className="text-deadlock-text">Soul Harvest (Economy):</strong> We measure Souls Per Minute at the 10, 15, and 20-minute marks of each Ritual engagement, flagging operatives whose harvest rate collapsed during mid-Ritual combat phases.
           </li>
           <li>
-            <strong className="text-deadlock-text">Combat (KDA & Density):</strong> Instead of pure KDA, we measure KDA Density (fight participation relative to match length) and track isolated deaths to determine feeding vs. space creation.
+            <strong className="text-deadlock-text">Kill Ledger (Combat):</strong> Beyond raw KDA, we measure elimination density — fight participation relative to Ritual duration — and isolate deaths that fed the enemy's Patron summoning progress.
           </li>
           <li>
-            <strong className="text-deadlock-text">Itemization (Power Spikes):</strong> We analyze the exact timestamp of Tier 1-4 purchases. If your Tier 3 purchase is delayed by more than 4 minutes compared to the lobby average, your grade is impacted.
+            <strong className="text-deadlock-text">Occult Arsenal (Itemization):</strong> We analyze spirit weapon acquisition timestamps. If your Tier 3 armament is delayed by more than 4 minutes compared to the Ritual average, your classification is impacted.
           </li>
           <li>
-            <strong className="text-deadlock-text">Objectives (Map Control):</strong> Objective damage is weighted heavily. Winning teamfights without translating it into walker or guardian damage is treated as a missed opportunity.
+            <strong className="text-deadlock-text">Ritual Pressure (Objectives):</strong> Damage to Guardians, Walkers, and Patron approach vectors is weighted heavily. Winning fights without converting them into objective pressure is treated as a missed opportunity.
           </li>
         </ul>
       </section>
@@ -160,7 +160,7 @@ export default function AboutPage() {
       </section>
 
       <section aria-label="Technology stack" className="card mb-8">
-        <h2 className="font-bold text-deadlock-text mb-4">What is Deadlock AfterMatch built with?</h2>
+        <h2 className="font-bold text-deadlock-text mb-4">What occult technologies power the Dossier System?</h2>
         <div className="flex flex-wrap gap-2">
           {techStack.map(({ name, category }) => (
             <span
@@ -175,7 +175,7 @@ export default function AboutPage() {
       </section>
 
       <section aria-label="How to contribute" className="card">
-        <h2 className="font-bold text-deadlock-text mb-4">How can you contribute to Deadlock AfterMatch?</h2>
+        <h2 className="font-bold text-deadlock-text mb-4">How can you contribute to the Commission Archives?</h2>
         <ol className="space-y-3 text-sm text-deadlock-text-dim">
           <li className="flex items-start gap-3">
             <span className="w-6 h-6 rounded-full bg-deadlock-accent/15 text-deadlock-accent text-xs font-bold flex items-center justify-center shrink-0">
@@ -217,7 +217,7 @@ export default function AboutPage() {
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link to="/faq" className="btn-secondary text-xs">
-            Read FAQ
+            Read Briefing Notes
           </Link>
 
         </div>

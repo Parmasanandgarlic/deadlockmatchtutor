@@ -107,14 +107,14 @@ export default function DashboardPage() {
             to={`/matches/${accountId}`}
             className="inline-flex items-center gap-2 text-deadlock-text-dim hover:text-deadlock-accent transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to matches
+            <ArrowLeft className="w-4 h-4" /> Return to case files
           </Link>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsGuideOpen(true)}
               className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-deadlock-amber hover:text-white transition-colors border border-deadlock-amber/20 px-3 py-1.5 bg-deadlock-amber/5"
             >
-              <Info className="w-4 h-4" /> How to Read
+              <Info className="w-4 h-4" /> Dossier Legend
             </button>
             <ShareButton matchId={matchId} accountId={accountId} />
           </div>
@@ -138,7 +138,7 @@ export default function DashboardPage() {
           <div className="mb-6">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <Lightbulb className="w-5 h-5 text-deadlock-accent" />
-              Strategic Directives
+              OSIC Tactical Directives
             </h2>
             <div className="space-y-3">
               {analysis.recommendations.map((rec, idx) => {

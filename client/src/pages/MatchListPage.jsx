@@ -49,7 +49,7 @@ export default function MatchListPage() {
     websiteSchema(),
     breadcrumbSchema([
       { name: 'Home', path: '/' },
-      { name: 'Match History', path: `/matches/${accountId}` },
+      { name: 'Case File Archive', path: `/matches/${accountId}` },
     ]),
     {
       '@type': 'WebPage',
@@ -62,7 +62,7 @@ export default function MatchListPage() {
   if (!accountId) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-20 text-center">
-        <p className="text-deadlock-red mb-4">No account ID provided.</p>
+        <p className="text-deadlock-red mb-4">No operative ID provided.</p>
         <Link to="/" className="text-deadlock-accent underline">
           Return to search
         </Link>
@@ -90,7 +90,7 @@ export default function MatchListPage() {
       />
       <div className="relative z-10 max-w-5xl mx-auto px-4 py-8">
         <SEOHead
-          title={`Deadlock Match History for Player ${accountId}`}
+          title={`OSIC Case File Archive — Operative ${accountId}`}
           description="Browse recent Deadlock matches for this player account, then open a match report with grades, insights, item timing, and trends."
           canonical={absoluteUrl(`/matches/${accountId}`)}
           schema={matchListSchema}
@@ -105,9 +105,9 @@ export default function MatchListPage() {
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold mb-1">Deadlock Match History</h1>
+            <h1 className="text-2xl font-bold mb-1">OSIC Case File Archive</h1>
             <p className="text-deadlock-text-dim">
-              Account ID: <span className="font-mono text-deadlock-accent">{accountId}</span>
+              Operative ID: <span className="font-mono text-deadlock-accent">{accountId}</span>
             </p>
           </div>
 
@@ -124,7 +124,7 @@ export default function MatchListPage() {
                   d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
                 />
               </svg>
-              View Trends
+              View Combat Dossier
             </Link>
             <button
               onClick={() => syncMutation.mutate(accountId)}
@@ -132,7 +132,7 @@ export default function MatchListPage() {
               className={`btn-secondary flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 h-fit ${isSyncing ? 'opacity-70' : ''}`}
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-              {isSyncing ? 'Syncing...' : 'Sync with API'}
+              {isSyncing ? 'Intercepting...' : 'Intercept New Intel'}
             </button>
           </div>
         </div>
@@ -140,9 +140,9 @@ export default function MatchListPage() {
         {/* Tracking Bot Banner */}
         <div className="mb-6 bg-[#ffad1c]/10 border border-[#ffad1c]/30 rounded-lg p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
           <div>
-            <h3 className="font-bold text-white mb-1">Missing Recent Matches?</h3>
+            <h3 className="font-bold text-white mb-1">Missing Ritual Records?</h3>
             <p className="text-sm text-gray-300">
-              Valve recently locked public match history. To sync live, up-to-date matches, you must run the community Deadlock API Ingest client while playing.
+              The Cursed Apple's Astral interference has locked public match telemetry. To maintain live intel, operatives must run the community Deadlock API Ingest client during Ritual engagements.
             </p>
           </div>
           <a

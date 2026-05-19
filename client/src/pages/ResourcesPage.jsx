@@ -112,7 +112,7 @@ export default function ResourcesPage() {
     websiteSchema(),
     breadcrumbSchema([
       { name: 'Home', path: '/' },
-      { name: 'Meta Tier List', path: '/resources' },
+      { name: 'Cursed Apple Intel', path: '/resources' },
     ]),
     speakableSchema('/resources'),
     ...(tierListSchema ? [tierListSchema] : []),
@@ -121,8 +121,8 @@ export default function ResourcesPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <SEOHead
-        title="Deadlock Hero Tier List and Meta Rankings | AfterMatch"
-        description="Live Deadlock hero tier list ranked by win rate, pick rate, and global meta data. Find the best Deadlock heroes for ranked play with S through D tier rankings."
+        title="Deadlock Hero Tier List — Cursed Apple Threat Assessment | AfterMatch"
+        description="OSIC threat assessment of Ritual combatants in the Cursed Apple — live hero rankings by win rate and engagement data. Find who dominates the streets from S-tier to D-tier."
         canonical={absoluteUrl('/resources')}
         imageUrl="/images/og-share.png"
         schema={resourcesSchema}
@@ -130,26 +130,26 @@ export default function ResourcesPage() {
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-100 font-display uppercase tracking-wider mb-2">
-          Global Meta Intelligence
+          Cursed Apple — Operative Threat Assessment
         </h1>
         <p className="text-gray-400">
-          Live tier list based on global match data and win rates.
-          {tierListData?.updatedAt && ` Last updated: ${new Date(tierListData.updatedAt).toLocaleString()}`}
+          OSIC field intelligence on active Ritual combatants, ranked by win rate across all engagements.
+          {tierListData?.updatedAt && ` Last filed: ${new Date(tierListData.updatedAt).toLocaleString()}`}
         </p>
       </div>
 
       {/* AEO answer block — provides entity-rich context for AI crawlers and voice assistants */}
       <section aria-label="Deadlock tier list explanation" className="mb-10">
         <p className="answer-block text-sm text-deadlock-text-dim leading-relaxed max-w-3xl">
-          The Deadlock AfterMatch meta tier list ranks every Deadlock hero from S-tier to D-tier using global win rate
-          and pick rate data. S-tier heroes are dominant picks with the highest win rates, while D-tier heroes are
-          currently struggling and may need specific team compositions to succeed. Tier rankings update automatically
-          as new match data becomes available.
+          The OSIC threat assessment ranks every Ritual combatant from S-tier (apex threat) to D-tier (neutralized) using 
+          live win rate and engagement data from the Cursed Apple. S-tier operatives dominate the streets — the Hidden King 
+          and the Archmother both covet their service. D-tier combatants are struggling to survive the Ritual and may 
+          need specific team compositions to contribute. Rankings update automatically as new Ritual telemetry is intercepted.
         </p>
       </section>
 
       <section aria-label="Deadlock Community Benchmarks" className="mb-12">
-        <h2 className="text-2xl font-bold text-gray-100 mb-4">Deadlock Community Benchmarks</h2>
+        <h2 className="text-2xl font-bold text-gray-100 mb-4">OSIC Operative Performance Standards</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm text-left text-gray-400 bg-dark-600 rounded-lg overflow-hidden">
             <thead className="text-xs text-gray-300 uppercase bg-dark-700">
@@ -183,22 +183,22 @@ export default function ResourcesPage() {
           </table>
         </div>
         <p className="mt-3 text-xs text-deadlock-text-dim">
-          * Benchmarks are calculated based on average performance of top 10% players across all regions (Patch 0.14).
+          * Standards calibrated by the Sandman Division against top 10% operative performance across all Cursed Apple engagements.
         </p>
       </section>
 
       <StateHandler
         loading={isLoading}
         error={error?.message}
-        loadingText="Analyzing global meta..."
+        loadingText="Intercepting Cursed Apple intel..."
       >
         {tierListData && tierListData.tiers && (
           <div className="space-y-6">
-            <TierRow tier="S" heroes={tierListData.tiers.S} label="S-Tier (Dominant)" description="Dominant — pick or ban" heroesMap={heroesMap} />
-            <TierRow tier="A" heroes={tierListData.tiers.A} label="A-Tier (Strong)" description="Strong — reliable picks" heroesMap={heroesMap} />
-            <TierRow tier="B" heroes={tierListData.tiers.B} label="B-Tier (Balanced)" description="Balanced — skill-dependent" heroesMap={heroesMap} />
-            <TierRow tier="C" heroes={tierListData.tiers.C} label="C-Tier (Weak)" description="Weak — needs specific comps" heroesMap={heroesMap} />
-            <TierRow tier="D" heroes={tierListData.tiers.D} label="D-Tier (Struggling)" description="Struggling — avoid in ranked" heroesMap={heroesMap} />
+            <TierRow tier="S" heroes={tierListData.tiers.S} label="S-Tier (Apex Threat)" description="Dominant — the Patrons covet their service" heroesMap={heroesMap} />
+            <TierRow tier="A" heroes={tierListData.tiers.A} label="A-Tier (High Priority)" description="Strong — reliable combatants in any Ritual" heroesMap={heroesMap} />
+            <TierRow tier="B" heroes={tierListData.tiers.B} label="B-Tier (Under Surveillance)" description="Balanced — effectiveness depends on operative skill" heroesMap={heroesMap} />
+            <TierRow tier="C" heroes={tierListData.tiers.C} label="C-Tier (Low Threat)" description="Weak — requires specific team configurations" heroesMap={heroesMap} />
+            <TierRow tier="D" heroes={tierListData.tiers.D} label="D-Tier (Neutralized)" description="Struggling — avoid deploying in ranked Rituals" heroesMap={heroesMap} />
           </div>
         )}
       </StateHandler>

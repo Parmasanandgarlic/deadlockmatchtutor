@@ -63,8 +63,8 @@ export default function Footer() {
               Deadlock AfterMatch
             </h3>
             <p className="text-base text-white leading-relaxed mb-6">
-              A community-driven analytics project for Deadlock. 
-              We transform match data into actionable insights to help you master your performance.
+              An independent intelligence service operating outside OSIC jurisdiction. 
+              We intercept Ritual data from the Cursed Apple's Astral resonance and compile it into actionable field reports.
             </p>
             <p className="text-xs text-white/50 uppercase tracking-[0.1em] leading-loose">
               Not affiliated with Valve Corporation. Data sourced via{' '}
@@ -84,12 +84,12 @@ export default function Footer() {
             <nav role="navigation" aria-label="Footer navigation" className="flex flex-col gap-4">
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-white mb-2 flex items-center gap-2">
                 <span className="w-3 h-px bg-deadlock-amber/50" />
-                Navigation
+                Dossier Index
               </span>
-              <Link to="/about" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors">About</Link>
-              <Link to="/faq" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors">FAQ</Link>
-              <Link to="/resources" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors">Meta Tier List</Link>
-              <Link to="/privacy" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors">Privacy</Link>
+              <Link to="/about" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors">Commission Archives</Link>
+              <Link to="/faq" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors">Briefing Notes</Link>
+              <Link to="/resources" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors">Cursed Apple Intel</Link>
+              <Link to="/privacy" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors">Clearance Protocol</Link>
               <a href="https://github.com/Parmasanandgarlic/deadlockmatchtutor" target="_blank" rel="noopener noreferrer" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors flex items-center gap-2">
                 <Github className="w-4 h-4" /> GitHub
               </a>
@@ -98,7 +98,7 @@ export default function Footer() {
             <div className="flex flex-col gap-4">
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-white mb-2 flex items-center gap-2">
                 <span className="w-3 h-px bg-deadlock-amber/50" />
-                Contact
+                Dead Drop
               </span>
               <a href="mailto:contact@aftermatch.xyz" className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-deadlock-amber transition-colors">
                 contact@aftermatch.xyz
@@ -108,10 +108,10 @@ export default function Footer() {
             <div className="flex flex-col items-start gap-5">
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-white mb-2 flex items-center gap-2">
                 <span className="w-3 h-px bg-deadlock-amber/50" />
-                Status
+                Gate Status
               </span>
               <div className="px-4 py-1.5 bg-deadlock-blue/20 border border-deadlock-blue/40 text-xs font-bold uppercase tracking-widest text-deadlock-blue">
-                SYSTEMS OPERATIONAL
+                ASTRAL GATES STABLE
               </div>
               <div className="px-4 py-1.5 bg-deadlock-amber/20 border border-deadlock-amber/40 text-xs font-bold uppercase tracking-widest text-deadlock-amber flex items-center gap-2">
                 <Code2 className="w-4 h-4" /> MIT LICENSED
@@ -121,7 +121,7 @@ export default function Footer() {
             <div className="flex flex-col gap-4">
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-white mb-2 flex items-center gap-2">
                 <span className="w-3 h-px bg-deadlock-amber/50" />
-                Help Us Improve
+                Report to Marlowe
               </span>
               <button
                 type="button"
@@ -146,7 +146,7 @@ export default function Footer() {
 
         <div className="flex justify-between items-center">
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/40">
-            © {new Date().getFullYear()} DEADLOCK AFTERMATCH. ENCODE. EXECUTE.
+            © {new Date().getFullYear()} DEADLOCK AFTERMATCH. THE MAELSTROM WATCHES.
           </p>
         </div>
       </div>
