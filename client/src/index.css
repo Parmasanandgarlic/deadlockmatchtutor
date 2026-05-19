@@ -245,8 +245,12 @@
 
   /* Floating animation — applied only to "Deadlock" in the hero */
   .hero-float {
-    animation: heroFloat 6s ease-in-out infinite;
     will-change: transform;
+    transition: transform 0.3s ease;
+  }
+
+  .hero-float:hover {
+    animation: heroFloat 6s ease-in-out infinite;
   }
 
   @keyframes heroFloat {
