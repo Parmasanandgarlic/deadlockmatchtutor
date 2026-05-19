@@ -218,43 +218,69 @@ async function runAnalysis(req, res, next) {
     // Step 2-7: Parallelize independent API calls for match and player data
     logger.info(`[Analysis] Fetching data for match ${matchId} and account ${accountId} in parallel`);
     
-    const [matchInfo, matchHistory, accountStats, rankPredict, playerCard] = await Promise.all([
-      getMatchInfo(matchId).catch(err => {
-        logger.error(`[Analysis] Failed to fetch match info: ${err.message}`);
-        return {};
-      }),
-      getMatchHistory(accountId).catch(err => {
-        logger.error(`[Analysis] Failed to fetch match history: ${err.message}`);
-        throw new Error(`Failed to fetch match history: ${err.message}`);
-      }),
-      getPlayerAccountStats(accountId).catch(err => {
-        logger.error(`[Analysis] Failed to fetch account stats: ${err.message}`);
-        return null;
-      }),
-      getPlayerRankPredict(accountId).catch(err => {
-        logger.error(`[Analysis] Failed to fetch rank prediction: ${err.message}`);
-        return null;
-      }),
-      getPlayerCard(accountId).catch(err => {
-        logger.error(`[Analysis] Failed to fetch player card: ${err.message}`);
-        return {};
-      })
-    ]);
+    const matchHistoryPromise = getMatchHistory(accountId).catch(err => {
+      logger.error(`[Analysis] Failed to fetch match history: ${err.message}`);
+      // Graceful degradation: return empty array instead of throwing to allow analysis if matchInfo exists
+      return [];
+    });
 
-    // Step 8: Resolve heroId from parallel results
-    const matchInHistory = matchHistory.find(m => m.match_id === Number(matchId));
-    if (!matchInHistory && !Object.keys(matchInfo).length) {
-      throw new Error('Match not found. The Deadlock API may be experiencing issues — please try again later.');
-    }
+    const matchInfoPromise = getMatchInfo(matchId).catch(err => {
+      logger.error(`[Analysis] Failed to fetch match info: ${err.message}`);
+      return {};
+    });
 
-    const heroId = matchInHistory?.hero_id || matchInfo?.players?.find(p => p.account_id === Number(accountId))?.hero_id || 0;
+    // Step 8: Start hero stats fetching AS SOON AS heroId is known from either match history or match info
+    const heroStatsPromise = Promise.all([matchHistoryPromise, matchInfoPromise]).then(([matchHistory, matchInfo]) => {
+      const matchInHistory = matchHistory.find(m => m.match_id === Number(matchId));
+      if (!matchInHistory && (!matchInfo || Object.keys(matchInfo).length === 0)) {
+        throw new Error('Match not found. The Deadlock API may be experiencing issues — please try again later.');
+      }
+      const heroId = matchInHistory?.hero_id || matchInfo?.players?.find(p => p.account_id === Number(accountId))?.hero_id || 0;
+      
+      if (heroId) {
+        logger.info(`[Analysis] Extracting hero stats for hero ${heroId}`);
+        return getPlayerHeroStats(accountId, heroId).catch(err => {
+          logger.error(`[Analysis] Failed to fetch hero stats: ${err.message}`);
+          return null;
+        }).then(stats => ({ heroId, stats }));
+      }
+      return { heroId, stats: null };
+    });
 
-    // Step 9: Fetch hero-specific stats (depends on heroId)
-    logger.info(`[Analysis] Fetching hero stats for hero ${heroId}`);
-    const heroStats = await getPlayerHeroStats(accountId, heroId).catch(err => {
-      logger.error(`[Analysis] Failed to fetch hero stats: ${err.message}`);
+    const accountStatsPromise = getPlayerAccountStats(accountId).catch(err => {
+      logger.error(`[Analysis] Failed to fetch account stats: ${err.message}`);
       return null;
     });
+
+    const rankPredictPromise = getPlayerRankPredict(accountId).catch(err => {
+      logger.error(`[Analysis] Failed to fetch rank prediction: ${err.message}`);
+      return null;
+    });
+
+    const playerCardPromise = getPlayerCard(accountId).catch(err => {
+      logger.error(`[Analysis] Failed to fetch player card: ${err.message}`);
+      return {};
+    });
+
+    // Await all parallel promises (heroStatsPromise is chained, eliminating the waterfall)
+    const [
+      matchInfo,
+      matchHistory,
+      accountStats,
+      rankPredict,
+      playerCard,
+      heroStatsResult
+    ] = await Promise.all([
+      matchInfoPromise,
+      matchHistoryPromise,
+      accountStatsPromise,
+      rankPredictPromise,
+      playerCardPromise,
+      heroStatsPromise
+    ]);
+
+    const { heroId, stats: heroStats } = heroStatsResult;
+    const matchInHistory = matchHistory.find(m => m.match_id === Number(matchId));
 
     // Step 10: Build API-based data structure for pipeline
     const apiData = {

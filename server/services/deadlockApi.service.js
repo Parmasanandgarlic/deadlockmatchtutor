@@ -1,5 +1,7 @@
 const { Configuration, PlayersApi, MatchesApi, AnalyticsApi } = require('../deadlock_api_client');
 const axios = require('axios');
+const http = require('http');
+const https = require('https');
 const config = require('../config');
 const logger = require('../utils/logger');
 const redisClient = require('./redis.service');
@@ -9,15 +11,56 @@ const { CircuitBreaker } = require('../utils/circuitBreaker');
 const { logAndFallback } = require('../utils/logging');
 const { SOURCE_PAYLOAD_VERSION } = require('../utils/analysisVersioning');
 
-const apiBreaker = new CircuitBreaker('DeadlockAPI', { failureThreshold: 3, resetTimeoutMs: 30000 });
+// Granular circuit breakers for isolated failure domains
+const assetsBreaker = new CircuitBreaker('AssetsAPI', { failureThreshold: 3, resetTimeoutMs: 30000 });
+const matchesBreaker = new CircuitBreaker('MatchesAPI', { failureThreshold: 3, resetTimeoutMs: 30000 });
+const playersBreaker = new CircuitBreaker('PlayersAPI', { failureThreshold: 3, resetTimeoutMs: 30000 });
+const analyticsBreaker = new CircuitBreaker('AnalyticsAPI', { failureThreshold: 3, resetTimeoutMs: 30000 });
+
+// Optimized Axios Instance with Connection Pooling
+const keepAliveAgentOptions = { keepAlive: true, maxSockets: 50, timeout: 60000 };
+const apiClient = axios.create({
+  httpAgent: new http.Agent(keepAliveAgentOptions),
+  httpsAgent: new https.Agent(keepAliveAgentOptions),
+  timeout: 15000,
+});
+
+// Robust Retry Interceptor for transient errors & rate limits
+apiClient.interceptors.response.use(undefined, async (err) => {
+  const cfg = err.config;
+  if (!cfg || !cfg.retryCount) {
+    if (!cfg) err.config = {};
+    err.config.retryCount = 0;
+  }
+  
+  const status = err.response?.status;
+  const isTransient = status >= 500 || status === 429 || err.code === 'ECONNABORTED';
+  
+  if (isTransient && err.config.retryCount < 2) {
+    err.config.retryCount += 1;
+    let delay = 1000 * err.config.retryCount;
+    
+    // Respect Retry-After header if present
+    if (status === 429 && err.response?.headers?.['retry-after']) {
+      const retryAfter = parseInt(err.response.headers['retry-after'], 10);
+      if (!isNaN(retryAfter)) delay = retryAfter * 1000;
+    }
+    
+    logger.warn(`API retrying (${err.config.retryCount}/2) after ${delay}ms for ${err.config.url}`);
+    await new Promise(r => setTimeout(r, delay));
+    return apiClient(err.config);
+  }
+  
+  return Promise.reject(err);
+});
 
 const configuration = new Configuration({
   basePath: config.deadlockApi.baseUrl,
 });
 
-const playersApi = new PlayersApi(configuration);
-const matchesApi = new MatchesApi(configuration);
-const analyticsApi = new AnalyticsApi(configuration);
+const playersApi = new PlayersApi(configuration, undefined, apiClient);
+const matchesApi = new MatchesApi(configuration, undefined, apiClient);
+const analyticsApi = new AnalyticsApi(configuration, undefined, apiClient);
 const ASSETS_API_BASE_URL = 'https://assets.deadlock-api.com/v2';
 const ASSET_CACHE_TTL_SECONDS = 24 * 60 * 60;
 const ASSET_CACHE_TTL_MS = ASSET_CACHE_TTL_SECONDS * 1000;
@@ -81,7 +124,7 @@ async function fetchAssetList(label, path, redisKey) {
     return cached;
   }
 
-  const { data } = await apiBreaker.call(() => axios.get(`${ASSETS_API_BASE_URL}/${path}`, { timeout: 10000 }));
+  const { data } = await assetsBreaker.call(() => apiClient.get(`${ASSETS_API_BASE_URL}/${path}`));
   const list = Array.isArray(data) ? data : [];
   if (list.length > 0) {
     assetMemoryCache.set(label, { data: list, fetchedAt: now });
@@ -96,9 +139,7 @@ async function fetchAssetList(label, path, redisKey) {
 
 async function fetchMatchHistoryFromApi(accountId) {
   const url = `${config.deadlockApi.baseUrl}/v1/players/${Number(accountId)}/match-history`;
-  const { data } = await apiBreaker.call(() => axios.get(url, {
-    timeout: 15000,
-  }));
+  const { data } = await matchesBreaker.call(() => apiClient.get(url));
   return data;
 }
 
@@ -169,7 +210,7 @@ async function getMatchHistory(accountId, { bypassCache = false } = {}) {
  */
 async function getMatchMetadata(matchId) {
   try {
-    const { data } = await apiBreaker.call(() => matchesApi.salts({ matchId: Number(matchId) }));
+    const { data } = await matchesBreaker.call(() => matchesApi.salts({ matchId: Number(matchId) }));
     logger.debug(`Fetched metadata salts for match ${matchId}`);
     return data;
   } catch (err) {
@@ -218,7 +259,7 @@ async function getMatchInfo(matchId) {
   //    item data, which breaks build-path grading.
   let lastErr = null;
   try {
-    const { data } = await apiBreaker.call(() => matchesApi.bulkMetadata({
+    const { data } = await matchesBreaker.call(() => matchesApi.bulkMetadata({
       includeInfo: true,
       includeMoreInfo: true,
       includeObjectives: true,
@@ -252,7 +293,7 @@ async function getMatchInfo(matchId) {
 
   // 3. Fall back to the generated client's basic metadata call (no item guarantees).
   try {
-    const { data } = await apiBreaker.call(() => matchesApi.metadata({ matchId: Number(matchId) }));
+    const { data } = await matchesBreaker.call(() => matchesApi.metadata({ matchId: Number(matchId) }));
     if (data && Object.keys(data).length > 0) {
       logger.debug(`Fetched fallback match info for ${matchId}`);
       if (!data.players || !Array.isArray(data.players)) {
@@ -290,7 +331,7 @@ async function getMatchInfo(matchId) {
  */
 async function getPlayerHeroStats(accountId, heroId) {
   try {
-    const { data } = await apiBreaker.call(() => playersApi.playerHeroStats({
+    const { data } = await playersBreaker.call(() => playersApi.playerHeroStats({
       accountIds: [Number(accountId)],
       heroIds: [Number(heroId)],
     }));
@@ -317,7 +358,7 @@ async function getPlayerHeroStats(accountId, heroId) {
  */
 async function getPlayerHeroStatsAll(accountId) {
   try {
-    const { data } = await apiBreaker.call(() => playersApi.playerHeroStats({
+    const { data } = await playersBreaker.call(() => playersApi.playerHeroStats({
       accountIds: [Number(accountId)],
     }));
     const arr = Array.isArray(data) ? data : [];
@@ -340,7 +381,7 @@ async function getPlayerHeroStatsAll(accountId) {
  */
 async function getPlayerRankPredict(accountId) {
   try {
-    const { data } = await apiBreaker.call(() => playersApi.rankPredict({ accountId: Number(accountId) }));
+    const { data } = await playersBreaker.call(() => playersApi.rankPredict({ accountId: Number(accountId) }));
     logger.debug(`Fetched rank predict for account ${accountId}`);
     return data;
   } catch (err) {
@@ -360,7 +401,7 @@ async function getPlayerRankPredict(accountId) {
  */
 async function getPlayerAccountStats(accountId) {
   try {
-    const { data } = await apiBreaker.call(() => playersApi.accountStats({ accountId: Number(accountId) }));
+    const { data } = await playersBreaker.call(() => playersApi.accountStats({ accountId: Number(accountId) }));
     logger.debug(`Fetched account stats for account ${accountId}`);
     return data;
   } catch (err) {
@@ -389,7 +430,7 @@ async function getPlayerCard(accountId) {
       return cached;
     }
 
-    const { data } = await apiBreaker.call(() => playersApi.card({ accountId: Number(accountId) }));
+    const { data } = await playersBreaker.call(() => playersApi.card({ accountId: Number(accountId) }));
     logger.debug(`Fetched player card for account ${accountId}`);
 
     // 3. Save to Redis (1 hour TTL)
@@ -463,7 +504,7 @@ async function getShopItems() {
  */
 async function getGlobalHeroStats() {
   try {
-    const { data } = await apiBreaker.call(() => analyticsApi.heroStats());
+    const { data } = await analyticsBreaker.call(() => analyticsApi.heroStats());
     logger.debug('Fetched global hero stats from Analytics API');
     const arr = Array.isArray(data) ? data : [];
     return arr;
