@@ -21,7 +21,7 @@ const { getGlobalHeroStats } = require('./deadlockApi.service');
 const CACHE_TTL = 15 * 60; // 15 minutes in seconds
 const CACHE_KEYS = {
   heroWinRates: () => 'meta:hero_win_rates',
-  heroTierList: () => 'meta:hero_tier_list',
+  heroTierList: () => 'meta:hero_tier_list:v2',
   itemBuildStats: (heroId) => `meta:item_builds:${heroId}`,
 };
 
