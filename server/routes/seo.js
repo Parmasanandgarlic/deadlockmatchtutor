@@ -127,10 +127,8 @@ router.get('/sitemap-matches.xml', async (req, res) => {
  */
 router.get('/robots.txt', (req, res) => {
   const robots = `User-agent: *
+Disallow: /api/
 Allow: /
-Allow: /api/
-Allow: /player/
-Allow: /report/
 
 Sitemap: https://aftermatch.xyz/sitemap.xml`;
 

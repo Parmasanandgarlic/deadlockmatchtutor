@@ -7,14 +7,11 @@ const cronRoutes = require('./cron.routes');
 const trendsRoutes = require('./trends.routes');
 const metaRoutes = require('./meta.routes');
 const feedbackRoutes = require('./feedback.routes');
-const seoRoutes = require('./seo');
 const statsRoutes = require('./stats.routes');
 const { getCsrfToken } = require('../middleware/csrf.middleware');
 
 const router = Router();
 
-// Mount SEO routes at the root so /sitemap.xml matches
-router.use('/', seoRoutes);
 
 /**
  * @swagger

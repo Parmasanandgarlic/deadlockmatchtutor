@@ -344,35 +344,43 @@ export default function LandingPage() {
         </section>
 
         {/* Themed Modules */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-4xl">
-          <div className="card card-blue group hover:bg-deadlock-blue/5 transition-colors">
-            <Flame className="w-8 h-8 text-deadlock-blue mb-4 group-hover:scale-110 transition-transform" />
-            <h3 className="text-sm font-serif mb-2 tracking-widest">Soul Harvest</h3>
-            <p className="text-xs text-deadlock-text-dim leading-relaxed">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 w-full max-w-4xl mt-24">
+          <div className="relative p-8 bg-black/40 border border-white/10 hover:border-deadlock-blue/50 transition-all duration-500 group overflow-hidden shadow-2xl backdrop-blur-md">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-deadlock-blue to-transparent opacity-40 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-deadlock-blue/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+            <Flame className="w-8 h-8 text-deadlock-blue mb-5 group-hover:scale-110 group-hover:text-white transition-all duration-500 relative z-10" />
+            <h3 className="text-sm font-serif mb-3 tracking-widest text-white relative z-10">Soul Harvest</h3>
+            <p className="text-xs text-deadlock-text-dim leading-relaxed relative z-10">
               Track soul acquisition across the Ritual. Did you harvest enough to outpace the enemy's Patron summoning?
             </p>
           </div>
 
-          <div className="card card-amber group hover:bg-deadlock-amber/5 transition-colors">
-            <Skull className="w-8 h-8 text-deadlock-amber mb-4 group-hover:scale-110 transition-transform" />
-            <h3 className="text-sm font-serif mb-2 tracking-widest">Kill Ledger</h3>
-            <p className="text-xs text-deadlock-text-dim leading-relaxed">
+          <div className="relative p-8 bg-black/40 border border-white/10 hover:border-deadlock-amber/50 transition-all duration-500 group overflow-hidden shadow-2xl backdrop-blur-md">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-deadlock-amber to-transparent opacity-40 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-deadlock-amber/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+            <Skull className="w-8 h-8 text-deadlock-amber mb-5 group-hover:scale-110 group-hover:text-white transition-all duration-500 relative z-10" />
+            <h3 className="text-sm font-serif mb-3 tracking-widest text-white relative z-10">Kill Ledger</h3>
+            <p className="text-xs text-deadlock-text-dim leading-relaxed relative z-10">
               Your combat record as filed by OSIC field observers. Every death, every elimination, accounted for.
             </p>
           </div>
 
-          <div className="card card-amber group hover:bg-deadlock-amber/5 transition-colors">
-            <Hourglass className="w-8 h-8 text-deadlock-amber mb-4 group-hover:scale-110 transition-transform" />
-            <h3 className="text-sm font-serif mb-2 tracking-widest">Occult Arsenal</h3>
-            <p className="text-xs text-deadlock-text-dim leading-relaxed">
+          <div className="relative p-8 bg-black/40 border border-white/10 hover:border-deadlock-amber/50 transition-all duration-500 group overflow-hidden shadow-2xl backdrop-blur-md">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-deadlock-amber to-transparent opacity-40 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-deadlock-amber/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+            <Hourglass className="w-8 h-8 text-deadlock-amber mb-5 group-hover:scale-110 group-hover:text-white transition-all duration-500 relative z-10" />
+            <h3 className="text-sm font-serif mb-3 tracking-widest text-white relative z-10">Occult Arsenal</h3>
+            <p className="text-xs text-deadlock-text-dim leading-relaxed relative z-10">
               Review your spirit weapon loadout and power spike timing against Cursed Apple field benchmarks.
             </p>
           </div>
 
-          <div className="card card-blue group hover:bg-deadlock-blue/5 transition-colors">
-            <Compass className="w-8 h-8 text-deadlock-blue mb-4 group-hover:scale-110 transition-transform" />
-            <h3 className="text-sm font-serif mb-2 tracking-widest">Ritual Pressure</h3>
-            <p className="text-xs text-deadlock-text-dim leading-relaxed">
+          <div className="relative p-8 bg-black/40 border border-white/10 hover:border-deadlock-blue/50 transition-all duration-500 group overflow-hidden shadow-2xl backdrop-blur-md">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-deadlock-blue to-transparent opacity-40 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-deadlock-blue/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+            <Compass className="w-8 h-8 text-deadlock-blue mb-5 group-hover:scale-110 group-hover:text-white transition-all duration-500 relative z-10" />
+            <h3 className="text-sm font-serif mb-3 tracking-widest text-white relative z-10">Ritual Pressure</h3>
+            <p className="text-xs text-deadlock-text-dim leading-relaxed relative z-10">
               Objective damage toward Guardians, Walkers, and the enemy Patron. Did you push the Ritual forward?
             </p>
           </div>
