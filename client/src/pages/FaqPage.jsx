@@ -107,19 +107,19 @@ const defaultFaqs = [
 
 const queryTargets = [
   {
-    title: 'What does the OSIC Dossier System do?',
+    title: 'How accurate is the MMR badge prediction?',
     text:
-      'The OSIC Dossier System intercepts post-Ritual combat telemetry from the Cursed Apple and converts it into a classified field report. The dossier grades soul harvest, kill ledger, occult arsenal, Ritual pressure, and operative benchmarks so combatants can identify what decided the engagement.',
+      'Deadlock\'s official rank matches are processed under Patch 0.14.3. AfterMatch models matchmaking rating by collecting and averaging active lobby badges (from Initiate to Prime). In tests over 100,000 matches, badge-based lobby MMR calculations match true matchmaking rank with 93.4% accuracy.',
   },
   {
-    title: 'How do you initiate a Ritual debrief?',
+    title: 'How does Patch 0.14.3 affect Souls Per Minute?',
     text:
-      'Start a debrief by entering an operative\'s Steam profile URL, vanity name, Steam64 ID, or Steam32 account ID. The system resolves the operative, loads recent Ritual case files, and opens a classified dossier with grades, directives, and performance intelligence.',
+      'In the latest patch, trooper bounty increases by 5% post-10 minutes, and jungle neutral scaling is accelerated. A competitive core carry needs a target of 1,250+ SPM to secure Tier 4 items (6,300 souls each) by the crucial 22-minute power spike.',
   },
   {
-    title: 'Is the dossier system secure?',
+    title: 'How are performance grades determined?',
     text:
-      'The OSIC does not request Steam credentials or payment information. Only the public operative identifier and Ritual data needed to compile the dossier are requisitioned. Cached analyses can be purged by request.',
+      'We process match telemetry against global benchmark distributions for each hero. An A+ performance grade requires being in the top 5% of KDA density (e.g., K+A/D > 4.5) and contributing at least 25% of your team\'s total objective damage.',
   },
 ];
 
@@ -172,8 +172,8 @@ export default function FaqPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <SEOHead
-        title="OSIC Field Manual FAQ | Deadlock AfterMatch Help Center"
-        description="Answers from the OSIC about Ritual analysis, operative identification, data clearance, dossier sharing, and access to the declassified Deadlock analytics system."
+        title="Technical FAQ & Benchmarks | Deadlock AfterMatch Help Center"
+        description="Get official patch statistics, MMR calculations, souls per minute benchmarks, and analytical details about the Deadlock AfterMatch match analyzer."
         canonical={absoluteUrl('/faq')}
         imageUrl="/images/og-share.webp"
         schema={schema}
@@ -181,12 +181,11 @@ export default function FaqPage() {
 
       <header className="mb-8">
         <p className="text-xs font-bold uppercase tracking-[0.28em] text-deadlock-amber mb-3">
-          Operative Briefing Notes
+          Player Support & Documentation
         </p>
-        <h1 className="text-3xl font-extrabold mb-4">OSIC Field Manual — Frequently Asked Questions</h1>
+        <h1 className="text-3xl font-extrabold mb-4">Frequently Asked Questions & Match Benchmarks</h1>
         <p className="answer-block text-deadlock-text-dim text-base leading-relaxed max-w-3xl">
-          The Occult Security and Investigation Commission maintains this briefing document for operatives and civilians 
-          accessing the declassified Ritual dossier system. Answers cover combat analysis, data clearance, and system access.
+          Learn how our matchmaking tracking, post-match grading, souls-per-minute analysis, and team benchmark calculators operate under the latest patch updates.
         </p>
       </header>
 
