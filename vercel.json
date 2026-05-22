@@ -19,16 +19,18 @@
     { "source": "/sitemap-players.xml", "destination": "/api/index?vercel_path=/sitemap-players.xml" },
     { "source": "/sitemap-matches.xml", "destination": "/api/index?vercel_path=/sitemap-matches.xml" },
     { "source": "/robots.txt", "destination": "/api/index?vercel_path=/robots.txt" },
-    { "source": "/", "destination": "/api/index" },
-    { "source": "/about", "destination": "/api/index" },
-    { "source": "/faq", "destination": "/api/index" },
-    { "source": "/resources", "destination": "/api/index" },
-    { "source": "/privacy", "destination": "/api/index" },
-    { "source": "/matches/(.*)", "destination": "/api/index" },
-    { "source": "/player/(.*)", "destination": "/api/index" },
-    { "source": "/dashboard/(.*)", "destination": "/api/index" },
-    { "source": "/report/(.*)", "destination": "/api/index" },
-    { "source": "/guide/(.*)", "destination": "/api/index" }
+    { "source": "/", "destination": "/api/index?vercel_path=/" },
+    { "source": "/about", "destination": "/api/index?vercel_path=/about" },
+    { "source": "/faq", "destination": "/api/index?vercel_path=/faq" },
+    { "source": "/resources", "destination": "/api/index?vercel_path=/resources" },
+    { "source": "/privacy", "destination": "/api/index?vercel_path=/privacy" },
+    { "source": "/matches/:accountId", "destination": "/api/index?vercel_path=/matches/:accountId" },
+    { "source": "/player/:accountId", "destination": "/api/index?vercel_path=/player/:accountId" },
+    { "source": "/dashboard/:matchId/:accountId", "destination": "/api/index?vercel_path=/dashboard/:matchId/:accountId" },
+    { "source": "/report/:matchId/:accountId", "destination": "/api/index?vercel_path=/report/:matchId/:accountId" },
+    { "source": "/guide/:heroId", "destination": "/api/index?vercel_path=/guide/:heroId" },
+    { "source": "/entity/hero/:id", "destination": "/api/index?vercel_path=/entity/hero/:id" },
+    { "source": "/entity/stat/:id", "destination": "/api/index?vercel_path=/entity/stat/:id" }
   ],
   "headers": [
     {

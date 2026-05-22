@@ -3,7 +3,7 @@ const { supabase } = require('../utils/supabase');
 const logger = require('../utils/logger');
 
 const router = Router();
-const baseUrl = 'https://aftermatch.xyz';
+const baseUrl = 'https://www.aftermatch.xyz';
 
 /**
  * GET /sitemap.xml
@@ -59,12 +59,12 @@ router.get('/sitemap-players.xml', async (req, res) => {
   try {
     const { data: players } = await supabase
       .from('tracked_accounts')
-      .select('account_id, updated_at')
-      .order('updated_at', { ascending: false })
+      .select('account_id, last_synced_at')
+      .order('last_synced_at', { ascending: false })
       .limit(1000);
 
     const playerUrls = (players || []).map(p => {
-      const date = p.updated_at ? new Date(p.updated_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+      const date = p.last_synced_at ? new Date(p.last_synced_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
       return `<url><loc>${baseUrl}/player/${p.account_id}</loc><lastmod>${date}</lastmod><changefreq>daily</changefreq><priority>0.6</priority></url>`;
     });
 
@@ -95,16 +95,14 @@ router.get('/sitemap-matches.xml', async (req, res) => {
     // Note: match_metadata may not have account_id directly if it's aggregated. 
     // We will just generate URLs if we have the data, else we'll output an empty urlset.
     const { data: matches } = await supabase
-      .from('match_metadata')
-      .select('match_id, created_at')
-      .order('created_at', { ascending: false })
+      .from('analyses')
+      .select('match_id, account_id, updated_at')
+      .order('updated_at', { ascending: false })
       .limit(5000);
 
-    // We don't have a direct route to just /match/:id yet, so we will generate /matches/:id which might be a future route, 
-    // or just omit the locs. I will output them as /match/:id so Google knows they exist.
     const matchUrls = (matches || []).map(m => {
-      const date = m.created_at ? new Date(m.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
-      return `<url><loc>${baseUrl}/match/${m.match_id}</loc><lastmod>${date}</lastmod><changefreq>never</changefreq><priority>0.5</priority></url>`;
+      const date = m.updated_at ? new Date(m.updated_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+      return `<url><loc>${baseUrl}/report/${m.match_id}/${m.account_id}</loc><lastmod>${date}</lastmod><changefreq>never</changefreq><priority>0.5</priority></url>`;
     });
 
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -130,7 +128,7 @@ router.get('/robots.txt', (req, res) => {
 Disallow: /api/
 Allow: /
 
-Sitemap: https://aftermatch.xyz/sitemap.xml`;
+Sitemap: https://www.aftermatch.xyz/sitemap.xml`;
 
   res.header('Content-Type', 'text/plain');
   res.header('Cache-Control', 'public, max-age=86400, s-maxage=86400');

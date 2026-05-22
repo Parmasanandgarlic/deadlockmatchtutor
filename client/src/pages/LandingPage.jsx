@@ -101,18 +101,19 @@ export default function LandingPage() {
 
   const homeFaqs = [
     {
-      question: 'What is the OSIC Dossier System?',
+      question: 'What is Deadlock AfterMatch?',
       answer:
-        'The OSIC Dossier System is the Occult Security and Investigation Commission\'s declassified post-Ritual analytics engine. It intercepts match telemetry from the Cursed Apple and compiles classified field reports grading soul harvest, combat effectiveness, occult arsenal deployment, and Ritual pressure.',
+        'Deadlock AfterMatch is a free, interactive post-match analytics platform and player tracker for Valve\'s Deadlock. It parses match telemetry to output intuitive performance grades, economic efficiency ratings, itemization guides, and custom coaching notes.',
     },
     {
-      question: 'How does the OSIC grade Ritual performance?',
+      question: 'How are matchmaking ranks predicted?',
       answer:
-        'The Sandman Division analyzes Ritual telemetry and scores key dimensions — soul acquisition trajectory, kill ledger density, spirit weapon timing, and objective pressure against Guardians and Walkers. Your performance is compared against Cursed Apple field benchmarks to assign a grade from F to A+.',
+        'Valve uses a hidden MMR (Matchmaking Rating) for Deadlock rituals. AfterMatch aggregates the visible historical rank badges of all players present in your lobbies to calculate and predict your exact matchmaking bracket and longitudinal rank placement.',
     },
     {
-      question: 'Is the dossier system free to access?',
-      answer: 'Yes. The OSIC\'s civilian transparency initiative makes this intelligence fully declassified and open source.',
+      question: 'Is a Steam login required to track profile stats?',
+      answer:
+        'No, Steam authentication is not required. You can search any public Steam vanity URL, custom nickname, Steam64 ID, or Steam32 ID to instantly generate reports.',
     },
   ];
 
@@ -128,7 +129,7 @@ export default function LandingPage() {
       applicationCategory: 'GameApplication',
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
       description:
-        'The OSIC Dossier System provides post-Ritual intelligence from the Cursed Apple — soul harvest, occult arsenal, combat ledger, and Ritual pressure assessment for every operative.',
+        'Deadlock AfterMatch provides comprehensive post-match analytics and player tracking — including economy benchmarks, item timing assessments, and combat grades for every game.',
     },
     faqSchema(homeFaqs),
     howToSchema(),
@@ -139,7 +140,7 @@ export default function LandingPage() {
     <div className="relative min-h-[90vh] flex flex-col items-center justify-center pt-10 pb-20 overflow-hidden">
       <SEOHead 
         title="Deadlock Match Analyzer and Player Reports | AfterMatch"
-        description="Free Deadlock match analyzer — OSIC-grade post-Ritual intelligence from the Cursed Apple. Get combat dossiers, soul harvest grades, and classified field reports. No login required."
+        description="Free Deadlock match analyzer and career player tracker. Get post-match performance grades, economy rate reviews, item build recommendations, and hidden MMR predictions. No login required."
         canonical={absoluteUrl('/')}
         imageUrl="/images/og-share.webp"
         schema={landingSchema} 
