@@ -30,10 +30,10 @@ const CACHE_KEYS = {
  * These thresholds are based on standard MOBA analytics methodology.
  */
 const TIER_THRESHOLDS = {
-  S: { min: 53, label: 'S-Tier', description: 'Dominant — pick or ban' },
-  A: { min: 51, label: 'A-Tier', description: 'Strong — reliable picks' },
-  B: { min: 49, label: 'B-Tier', description: 'Balanced — skill-dependent' },
-  C: { min: 47, label: 'C-Tier', description: 'Weak — needs specific comps' },
+  S: { min: 55, label: 'S-Tier', description: 'Dominant — pick or ban' },
+  A: { min: 50, label: 'A-Tier', description: 'Strong — reliable picks' },
+  B: { min: 45, label: 'B-Tier', description: 'Balanced — skill-dependent' },
+  C: { min: 42, label: 'C-Tier', description: 'Weak — needs specific comps' },
   D: { min: 0,  label: 'D-Tier', description: 'Struggling — avoid in ranked' },
 };
 
