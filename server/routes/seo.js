@@ -125,9 +125,26 @@ router.get('/sitemap-matches.xml', async (req, res) => {
  */
 router.get('/robots.txt', (req, res) => {
   const robots = `User-agent: *
-Disallow: /api/
 Allow: /
+Allow: /dashboard/
+Allow: /matches/
+Allow: /player/
+Allow: /hero/
+Allow: /guide/
+Allow: /faq
+Allow: /about
+Allow: /resources
+Allow: /privacy
+Allow: /report/
 
+# Block technical internals
+Disallow: /api/
+Disallow: /_next/
+Disallow: /static/
+Disallow: /*?*sort=
+Disallow: /*?*filter=
+
+# Sitemap location
 Sitemap: https://www.aftermatch.xyz/sitemap.xml`;
 
   res.header('Content-Type', 'text/plain');

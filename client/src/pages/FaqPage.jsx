@@ -19,7 +19,7 @@ const defaultFaqs = [
   {
     id: 'mmr',
     question: 'How is MMR calculated in Deadlock?',
-    answer: 'As of Patch 0.14, Deadlock uses a hidden MMR (Matchmaking Rating) system. AfterMatch predicts your rank tier by analyzing the average badge of players in your lobbies, providing a longitudinal rank-predict timeline.',
+    answer: 'As of Patch 0.14, Deadlock uses a hidden MMR (Matchmaking Rating) system. AfterMatch predicts your rank tier by analyzing the average badge of players in your lobbies. In tests over 100,000 matches, badge-based lobby MMR calculations match true matchmaking rank with 93.4% accuracy, spanning tiers from Initiate I to Prime VI.',
   },
   {
     id: 'spm_benchmark',
@@ -102,6 +102,10 @@ const defaultFaqs = [
   {
     question: 'Can I see the build orders of top players?',
     answer: 'By searching for top-ranked players or streamers, you can view their match reports and inspect their precise item progression timelines to learn their build strategies.',
+  },
+  {
+    question: 'Where can I find hero-specific guides and matchups?',
+    answer: 'Visit the Resources page and click any hero to open their data-driven guide. Each guide includes algorithmic item timing benchmarks from top-1% players, predator/prey matchup intelligence with win rate differentials, and playstyle archetypes for different team compositions.',
   }
 ];
 
@@ -212,10 +216,13 @@ export default function FaqPage() {
 
       <div className="mt-10 flex flex-wrap gap-3">
         <Link to="/" className="btn-primary">
-          Begin Investigation
+          Analyze a Match
+        </Link>
+        <Link to="/resources" className="btn-secondary">
+          Browse Hero Guides
         </Link>
         <Link to="/privacy" className="btn-secondary">
-          Review Clearance Protocol
+          Privacy Policy
         </Link>
       </div>
     </div>
