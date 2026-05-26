@@ -12,21 +12,60 @@ import {
   websiteSchema,
 } from '../utils/seo';
 
+/**
+ * Tier-specific colour map used for both the badge AND the hero card
+ * border/background glow so the avatar container visually matches the
+ * tier indicator — providing "visual congruency" across the row.
+ */
+const TIER_STYLES = {
+  S: {
+    badge: 'border-deadlock-amber text-deadlock-amber',
+    card:  'border-deadlock-amber/40 hover:border-deadlock-amber',
+    glow:  'shadow-[0_0_12px_rgba(212,175,55,0.15)]',
+    avatar: 'border-deadlock-amber/50 bg-deadlock-amber/5',
+  },
+  A: {
+    badge: 'border-deadlock-green text-deadlock-green',
+    card:  'border-deadlock-green/30 hover:border-deadlock-green',
+    glow:  'shadow-[0_0_12px_rgba(34,197,94,0.12)]',
+    avatar: 'border-deadlock-green/40 bg-deadlock-green/5',
+  },
+  B: {
+    badge: 'border-deadlock-blue text-deadlock-blue',
+    card:  'border-deadlock-blue/30 hover:border-deadlock-blue',
+    glow:  'shadow-[0_0_12px_rgba(59,130,246,0.12)]',
+    avatar: 'border-deadlock-blue/40 bg-deadlock-blue/5',
+  },
+  C: {
+    badge: 'border-yellow-500 text-yellow-500',
+    card:  'border-yellow-500/30 hover:border-yellow-500',
+    glow:  'shadow-[0_0_12px_rgba(234,179,8,0.12)]',
+    avatar: 'border-yellow-500/40 bg-yellow-500/5',
+  },
+  D: {
+    badge: 'border-deadlock-red text-deadlock-red',
+    card:  'border-deadlock-red/30 hover:border-deadlock-red',
+    glow:  'shadow-[0_0_12px_rgba(239,68,68,0.12)]',
+    avatar: 'border-deadlock-red/40 bg-deadlock-red/5',
+  },
+};
+
+const DEFAULT_STYLE = {
+  badge: 'border-deadlock-border text-deadlock-text-dim',
+  card: 'border-deadlock-border hover:border-deadlock-border',
+  glow: '',
+  avatar: 'border-deadlock-border/30 bg-black/40',
+};
+
 function TierRow({ tier, heroes, label, description, heroesMap }) {
   if (!heroes || heroes.length === 0) return null;
-  
-  const tierColors = {
-    S: 'border-deadlock-amber text-deadlock-amber',
-    A: 'border-deadlock-green text-deadlock-green',
-    B: 'border-deadlock-blue text-deadlock-blue',
-    C: 'border-yellow-500 text-yellow-500',
-    D: 'border-deadlock-red text-deadlock-red',
-  };
-  
+
+  const style = TIER_STYLES[tier] || DEFAULT_STYLE;
+
   return (
     <div className="mb-8">
       <div className="flex items-center gap-4 mb-4">
-        <div className={`w-12 h-12 rounded-none border-2 flex items-center justify-center text-xl font-bold font-serif ${tierColors[tier] || 'border-deadlock-border text-deadlock-text-dim'}`}>
+        <div className={`w-12 h-12 rounded-none border-2 flex items-center justify-center text-xl font-bold font-serif ${style.badge}`}>
           {tier}
         </div>
         <div>
@@ -42,8 +81,8 @@ function TierRow({ tier, heroes, label, description, heroesMap }) {
                              getHeroImage(heroAsset || hero.heroName, 'small');
           
           return (
-            <div key={hero.heroId} className="panel-inset p-3 hover:border-deadlock-amber/50 transition-colors flex flex-col items-center">
-               <div className="w-14 h-14 rounded-none bg-black/40 overflow-hidden mb-2 relative group flex items-center justify-center border border-deadlock-border/30">
+            <div key={hero.heroId} className={`panel-inset p-3 border transition-all duration-300 flex flex-col items-center ${style.card} ${style.glow}`}>
+               <div className={`w-14 h-14 rounded-none overflow-hidden mb-2 relative group flex items-center justify-center border ${style.avatar}`}>
                  {heroAvatar ? (
                    <img 
                      src={heroAvatar} 
@@ -138,13 +177,24 @@ export default function ResourcesPage() {
         </p>
       </div>
 
+      {/* Weekly refresh notice */}
+      <div className="mb-8 flex items-center gap-3 px-4 py-3 bg-deadlock-amber/5 border border-deadlock-amber/20">
+        <div className="w-2 h-2 rounded-full bg-deadlock-amber animate-pulse flex-shrink-0" />
+        <p className="text-sm text-deadlock-amber/90">
+          <span className="font-bold uppercase tracking-wider">Live Data</span>
+          <span className="mx-2 text-deadlock-amber/30">|</span>
+          This tier list is refreshed <strong>every week</strong> using aggregated community analytics across all rank brackets. 
+          Win rates, pick rates, and performance benchmarks reflect the latest 7-day competitive window.
+        </p>
+      </div>
+
       {/* AEO answer block — provides entity-rich context for AI crawlers and voice assistants */}
       <section aria-label="Deadlock meta tier list explanation" className="mb-10">
         <p className="answer-block text-sm text-deadlock-text-dim leading-relaxed max-w-3xl">
           The Deadlock meta tier list ranks every Ritual combatant from S-tier (apex threat) to D-tier (neutralized) using 
           live win rate and engagement data from the Cursed Apple. S-tier heroes dominate the meta — the Hidden King 
           and the Archmother both covet their service. D-tier heroes are struggling in the current meta and may 
-          need specific team compositions to contribute. Tier rankings update as new meta data is curated.
+          need specific team compositions to contribute. Tier rankings update weekly as new meta data is curated.
         </p>
       </section>
 
