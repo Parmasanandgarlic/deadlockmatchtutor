@@ -74,5 +74,12 @@ test('validateSteamInput: valid accepted', () => {
   assert.strictEqual(called, true);
 });
 
+test('validateSteamInput: homepage Steam URL example accepted', () => {
+  const res = mockRes();
+  let called = false;
+  validateSteamInput({ params: {}, query: {}, body: { steamInput: 'https://steamcommunity.com/id/yourname' } }, res, () => { called = true; });
+  assert.strictEqual(called, true);
+});
+
 console.log(`\n  ${test.passed} passed / ${test.failed} failed`);
 if (test.failed > 0) process.exitCode = 1;

@@ -263,7 +263,7 @@ export default function LandingPage() {
             <span>Known operatives:</span>
             <button type="button" onClick={() => setInput('76561198072944445')} className="hover:text-deadlock-amber transition-colors cursor-pointer">76561198072944445</button>
             <span className="text-deadlock-border">|</span>
-            <button type="button" onClick={() => setInput('steamcommunity.com/id/yourname')} className="hover:text-deadlock-amber transition-colors cursor-pointer">steamcommunity.com/id/yourname</button>
+            <button type="button" onClick={() => setInput('https://steamcommunity.com/id/yourname')} className="hover:text-deadlock-amber transition-colors cursor-pointer">steamcommunity.com/id/yourname</button>
           </div>
 
           {error && (

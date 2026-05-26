@@ -48,17 +48,18 @@ process.on('uncaughtException', (err) => {
 const app = express();
 app.set('trust proxy', 1);
 
-// Redis is beneficial but not mandatory — the RedisClient class has a full
-// in-memory fallback (degraded mode) that keeps the site functional without
-// a Redis instance. Only enforce Redis if explicitly required via env var.
-const redisRequired = process.env.REDIS_REQUIRED === '1' || process.env.REDIS_REQUIRED === 'true';
+// Redis is required in production because serverless in-memory fallback is
+// instance-local and cannot safely back locks, sessions, or shared rate limits.
+const redisRequired = config.nodeEnv === 'production' ||
+  process.env.REDIS_REQUIRED === '1' ||
+  process.env.REDIS_REQUIRED === 'true';
 const startupState = {
   redisError: null,
 };
 
 const redisReadyPromise = (async () => {
   if (redisRequired && !config.redis.url) {
-    const err = new Error('REDIS_URL is required (REDIS_REQUIRED=1 is set).');
+    const err = new Error('REDIS_URL is required in production or when REDIS_REQUIRED=1 is set.');
     err.code = 'REDIS_NOT_CONFIGURED';
     startupState.redisError = err;
     throw err;

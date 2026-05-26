@@ -50,6 +50,11 @@ test.passed = 0; test.failed = 0;
     }
   });
 
+  await test('Schema: tracked_accounts table selectable', async () => {
+    const { error } = await supabase.from('tracked_accounts').select('account_id').limit(1);
+    assert.ok(!error, `tracked_accounts select failed: ${error?.message}`);
+  });
+
   await test('CREATE: insert new analysis', async () => {
     const t0 = Date.now();
     const { error } = await supabase.from('analyses').insert({
@@ -113,6 +118,33 @@ test.passed = 0; test.failed = 0;
       .eq('account_id', testAccountId)
       .maybeSingle();
     assert.strictEqual(data, null);
+  });
+
+  await test('TRACKED_ACCOUNTS: upsert/read/delete tracked account', async () => {
+    const { error: upsertError } = await supabase.from('tracked_accounts').upsert(
+      {
+        account_id: testAccountId,
+        last_synced_at: new Date().toISOString(),
+        is_active: true,
+      },
+      { onConflict: 'account_id' }
+    );
+    assert.ok(!upsertError, `tracked_accounts upsert failed: ${upsertError?.message}`);
+
+    const { data, error: readError } = await supabase
+      .from('tracked_accounts')
+      .select('account_id,is_active')
+      .eq('account_id', testAccountId)
+      .maybeSingle();
+    assert.ok(!readError, `tracked_accounts read failed: ${readError?.message}`);
+    assert.strictEqual(Number(data.account_id), testAccountId);
+    assert.strictEqual(data.is_active, true);
+
+    const { error: deleteError } = await supabase
+      .from('tracked_accounts')
+      .delete()
+      .eq('account_id', testAccountId);
+    assert.ok(!deleteError, `tracked_accounts delete failed: ${deleteError?.message}`);
   });
 
   console.log(`\n  ${test.passed} passed / ${test.failed} failed`);
