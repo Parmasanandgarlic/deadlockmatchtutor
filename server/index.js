@@ -48,18 +48,17 @@ process.on('uncaughtException', (err) => {
 const app = express();
 app.set('trust proxy', 1);
 
-// Redis is required in production because serverless in-memory fallback is
-// instance-local and cannot safely back locks, sessions, or shared rate limits.
-const redisRequired = config.nodeEnv === 'production' ||
-  process.env.REDIS_REQUIRED === '1' ||
-  process.env.REDIS_REQUIRED === 'true';
+// Redis is strongly recommended in production for shared locks, sessions, and
+// rate limits. Hard-fail only when explicitly requested so public reads and
+// investigations do not go down if Redis is absent or temporarily unavailable.
+const redisRequired = process.env.REDIS_REQUIRED === '1' || process.env.REDIS_REQUIRED === 'true';
 const startupState = {
   redisError: null,
 };
 
 const redisReadyPromise = (async () => {
   if (redisRequired && !config.redis.url) {
-    const err = new Error('REDIS_URL is required in production or when REDIS_REQUIRED=1 is set.');
+    const err = new Error('REDIS_URL is required when REDIS_REQUIRED=1 is set.');
     err.code = 'REDIS_NOT_CONFIGURED';
     startupState.redisError = err;
     throw err;

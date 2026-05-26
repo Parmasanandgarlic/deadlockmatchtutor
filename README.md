@@ -105,7 +105,7 @@ vercel
 # - SUPABASE_SERVICE_ROLE_KEY
 # - SESSION_SECRET (also signs CSRF tokens unless CSRF_SECRET is set)
 # - SHARE_TOKEN_SECRET (recommended; signs shared report links)
-# - REDIS_URL (required when NODE_ENV=production)
+# - REDIS_URL (recommended in production; required when REDIS_REQUIRED=1)
 # - DEADLOCK_API_BASE_URL (default: https://api.deadlock-api.com)
 # - RATE_LIMIT_WINDOW_MS (default: 900000)
 # - RATE_LIMIT_MAX_REQUESTS (default: 100)
@@ -187,7 +187,8 @@ deadlock-match-tutor/
 | `SESSION_SECRET` | Yes in production | Session signing secret; also signs CSRF tokens unless `CSRF_SECRET` is set | - |
 | `CSRF_SECRET` | No | Optional separate secret for CSRF token signing | `SESSION_SECRET` |
 | `SHARE_TOKEN_SECRET` | No | Optional separate secret for signed shared report links | `CSRF_SECRET` / `SESSION_SECRET` |
-| `REDIS_URL` | Yes in production | Redis connection URL for shared cache, sessions, and auth rate limits | - |
+| `REDIS_URL` | Recommended in production | Redis connection URL for shared cache, sessions, and auth rate limits. Required when `REDIS_REQUIRED=1` | - |
+| `REDIS_REQUIRED` | No | Set to `1` or `true` to fail startup/requests when Redis is unavailable | - |
 | `CORS_ORIGIN` | No | Comma-separated allowed CORS origins | `http://localhost:5173` (dev) / `true` (prod) |
 | `RATE_LIMIT_WINDOW_MS` | No | Rate limit window in milliseconds | `900000` (15 min) |
 | `RATE_LIMIT_MAX_REQUESTS` | No | Max requests per window per IP | `100` |

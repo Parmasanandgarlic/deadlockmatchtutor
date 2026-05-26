@@ -8,8 +8,8 @@ const logger = require('../utils/logger');
  * RedisClient — Singleton wrapper around ioredis.
  *
  * Architecture decisions:
- *   - Production requires Redis.
- *   - Development degraded mode uses an in-memory TTL fallback and exposes that state.
+ *   - Redis can be required with REDIS_REQUIRED=1.
+ *   - Degraded mode uses an in-memory TTL fallback and exposes that state.
  *   - A connection guard (`_connectPromise`) prevents duplicate connections
  *     on Vercel cold-starts or rapid restarts.
  *   - SIGTERM / SIGINT handlers ensure clean disconnect.
@@ -40,9 +40,7 @@ class RedisClient {
 
   /** @private */
   async _doConnect() {
-    const enforceRedis = config.nodeEnv === 'production' ||
-      process.env.REDIS_REQUIRED === '1' ||
-      process.env.REDIS_REQUIRED === 'true';
+    const enforceRedis = process.env.REDIS_REQUIRED === '1' || process.env.REDIS_REQUIRED === 'true';
 
     if (!config.redis.url) {
       if (enforceRedis) {
