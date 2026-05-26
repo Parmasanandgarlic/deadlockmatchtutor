@@ -78,7 +78,7 @@ function TierRow({ tier, heroes, label, description, heroesMap }) {
           const heroAsset = heroesMap?.[hero.heroId];
           const heroAvatar = heroAsset?.images?.icon_image_small_webp || 
                              heroAsset?.images?.icon_image_small || 
-                             getHeroImage(heroAsset || hero.heroName, 'small');
+                             getHeroImage(heroAsset || hero.heroName, 'small', hero.heroId);
           
           return (
             <div key={hero.heroId} className={`panel-inset p-3 border transition-all duration-300 flex flex-col items-center ${style.card} ${style.glow}`}>
