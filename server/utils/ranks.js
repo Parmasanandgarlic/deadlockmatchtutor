@@ -1,5 +1,5 @@
 // Deadlock rank data utilities.
-// Source: Deadlock Assets API https://assets.deadlock-api.com/v2/ranks
+// Source: Deadlock API https://api.deadlock-api.com/v1/assets/ranks
 
 // Cache for API-provided rank data
 let apiRanks = null;
