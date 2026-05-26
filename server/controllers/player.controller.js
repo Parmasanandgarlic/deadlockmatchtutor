@@ -173,7 +173,7 @@ async function getPlayerProfile(req, res) {
       getPlayerAccountStats(accountId).catch(logAndFallback(`Profile account stats fetch failed for ${accountId}`, {})),
       getPlayerCard(accountId).catch(logAndFallback(`Profile card fetch failed for ${accountId}`, {})),
       getPlayerHeroStatsAll(accountId).catch(logAndFallback(`Profile hero stats fetch failed for ${accountId}`, [])),
-      getMatchHistory(accountId).catch(logAndFallback(`Profile match history fetch failed for ${accountId}`, [])),
+      getMatchHistory(accountId, { bypassCache }).catch(logAndFallback(`Profile match history fetch failed for ${accountId}`, [])),
     ]);
 
     const rankPredict = rankPredictRaw || rankPredictClient || null;
