@@ -530,6 +530,49 @@ async function getRanks() {
   }
 }
 
+/**
+ * Fetch NPC Units metadata from Deadlock Assets API.
+ * @returns {Promise<Array>} Array of NPC unit objects
+ */
+async function getNpcUnits() {
+  try {
+    const data = await fetchAssetList('npc-units', 'npc-units', redisClient.cacheKeys?.npcUnits?.());
+    logger.debug('Fetched NPC units from Deadlock Assets API');
+    return data;
+  } catch (err) {
+    logger.warn(`Failed to fetch NPC units from API: ${err.message}. Using empty array.`);
+    return [];
+  }
+}
+
+/**
+ * Fetch Ability Order Stats from Analytics API.
+ * @param {string|number} heroId 
+ * @returns {Promise<Object>} Statistics for the ability order of a hero
+ */
+async function getAbilityOrderStats(heroId) {
+  const cacheKey = redisClient.cacheKeys?.abilityOrder?.(heroId);
+  try {
+    const cached = cacheKey ? await redisClient.get(cacheKey) : null;
+    if (cached) {
+      logger.debug(`[Redis] Cache hit for ability order: ${heroId}`);
+      return cached;
+    }
+
+    const { data } = await analyticsBreaker.call(() => analyticsApi.abilityOrderStats({ heroId: Number(heroId) }));
+    logger.debug(`Fetched ability order stats for hero ${heroId}`);
+    
+    if (cacheKey && data) {
+      // Cache for 2 hours
+      await redisClient.set(cacheKey, data, 7200);
+    }
+    return data;
+  } catch (err) {
+    logger.error(`Failed to fetch ability order stats for ${heroId}: ${err.message}`);
+    return null;
+  }
+}
+
 module.exports = {
   getMatchHistory,
   getMatchMetadata,
@@ -544,4 +587,6 @@ module.exports = {
   getItems,
   getShopItems,
   getRanks,
+  getNpcUnits,
+  getAbilityOrderStats,
 };

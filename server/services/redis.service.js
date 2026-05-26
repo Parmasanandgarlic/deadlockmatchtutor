@@ -391,8 +391,10 @@ class RedisClient {
     heroData: () => 'game:heroes',
     itemData: () => 'game:items',
     rankData: () => 'game:ranks',
+    npcUnits: () => 'game:npc-units',
     userFavorites: (userId) => `user:favorites:${userId}`,
     userProfile: (accountId) => `player:profile:${accountId}`,
+    abilityOrder: (heroId) => `analytics:ability-order:${heroId}`,
   };
 }
 
