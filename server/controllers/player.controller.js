@@ -135,7 +135,7 @@ async function getPlayerMmrHistory(req, res, next) {
     const bypassCache = req.query?.refresh === '1' || req.query?.refresh === 'true';
 
     const [rankPredictRaw, rankPredictClient, matches] = await Promise.all([
-      fetchRankPredictRaw(accountId).catch(logAndFallback(`MMR history raw fetch failed for ${accountId}`, null)),
+      fetchRankPredictRaw(accountId, { bypassCache }).catch(logAndFallback(`MMR history raw fetch failed for ${accountId}`, null)),
       getPlayerRankPredict(accountId).catch(logAndFallback(`Rank predict fetch failed for ${accountId}`, null)),
       getMatchHistory(accountId, { bypassCache }).catch(logAndFallback(`Match history fetch failed for ${accountId}`, [])),
     ]);
@@ -165,8 +165,10 @@ async function getPlayerProfile(req, res) {
     // Warm the hero + rank lookup tables so names / images resolve.
     await Promise.all([ensureHeroMetadata(), ensureRankMetadata()]);
 
+    const bypassCache = req.query?.refresh === '1' || req.query?.refresh === 'true';
+
     const [rankPredictRaw, rankPredictClient, accountStats, card, heroStats, matches] = await Promise.all([
-      fetchRankPredictRaw(accountId).catch(logAndFallback(`Profile MMR history raw fetch failed for ${accountId}`, null)),
+      fetchRankPredictRaw(accountId, { bypassCache }).catch(logAndFallback(`Profile MMR history raw fetch failed for ${accountId}`, null)),
       getPlayerRankPredict(accountId).catch(logAndFallback(`Profile rank predict fetch failed for ${accountId}`, null)),
       getPlayerAccountStats(accountId).catch(logAndFallback(`Profile account stats fetch failed for ${accountId}`, {})),
       getPlayerCard(accountId).catch(logAndFallback(`Profile card fetch failed for ${accountId}`, {})),

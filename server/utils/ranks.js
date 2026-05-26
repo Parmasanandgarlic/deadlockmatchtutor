@@ -50,4 +50,30 @@ function getRankInfo(badge) {
   };
 }
 
-module.exports = { getRankInfo, setApiRanks };
+/**
+ * Convert a badge number to a continuous MMR score.
+ * Formula from API spec: (intDiv(badge, 10) - 1) * 6 + (badge % 10)
+ * @param {number} badge 
+ * @returns {number} continuous MMR score
+ */
+function badgeToMmr(badge) {
+  if (badge == null || typeof badge !== 'number') return 0;
+  return (Math.floor(badge / 10) - 1) * 6 + (badge % 10);
+}
+
+/**
+ * Convert a continuous MMR score back to a badge number.
+ * Formula from API spec: 10 * intDiv(mmr_score - 1, 6) + 1 + (mmr_score - 1) % 6
+ * (Adjusted for 1-indexed subtiers)
+ * @param {number} mmrScore 
+ * @returns {number} badge
+ */
+function mmrToBadge(mmrScore) {
+  if (mmrScore == null || typeof mmrScore !== 'number' || mmrScore < 1) return 11;
+  const mmrZeroIndexed = mmrScore - 1;
+  const tier = Math.floor(mmrZeroIndexed / 6) + 1;
+  const subtier = (mmrZeroIndexed % 6) + 1;
+  return tier * 10 + subtier;
+}
+
+module.exports = { getRankInfo, setApiRanks, badgeToMmr, mmrToBadge };

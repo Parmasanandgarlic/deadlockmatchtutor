@@ -2,7 +2,7 @@ const axios = require('axios');
 const config = require('../config');
 const logger = require('../utils/logger');
 const redisClient = require('./redis.service');
-const { getRankInfo } = require('../utils/ranks');
+const { getRankInfo, badgeToMmr, mmrToBadge } = require('../utils/ranks');
 const { logAndFallback } = require('../utils/logging');
 
 /**
@@ -88,11 +88,12 @@ function buildMmrHistory(rankPredict, matchHistory = []) {
   }
 
   // Build history with deltas
-  let prevBadge = null;
+  let prevMmr = null;
   const history = enriched.map((e) => {
     const info = getRankInfo(e.badge);
-    const delta = prevBadge != null ? e.badge - prevBadge : 0;
-    prevBadge = e.badge;
+    const currentMmr = badgeToMmr(e.badge);
+    const delta = prevMmr != null ? currentMmr - prevMmr : 0;
+    prevMmr = currentMmr;
     return {
       matchId: e.matchId,
       startTime: e.startTime,
@@ -107,21 +108,25 @@ function buildMmrHistory(rankPredict, matchHistory = []) {
 
   const current = history[history.length - 1];
   const first = history[0];
-  const peak = history.reduce((best, h) => (h.badge > (best?.badge ?? -Infinity) ? h : best), null);
+  const peak = history.reduce((best, h) => {
+    const hMmr = badgeToMmr(h.badge);
+    const bestMmr = best ? badgeToMmr(best.badge) : -Infinity;
+    return hMmr > bestMmr ? h : best;
+  }, null);
 
-  // Trend: last 10 vs previous 10 average
+  // Trend: last 10 vs previous 10 average (on continuous MMR scale)
   const last10 = history.slice(-10);
   const prev10 = history.slice(-20, -10);
-  const avg = (xs) => (xs.length ? xs.reduce((a, b) => a + b.badge, 0) / xs.length : 0);
-  const last10Avg = avg(last10);
-  const prev10Avg = avg(prev10);
+  const avgMmr = (xs) => (xs.length ? xs.reduce((a, b) => a + badgeToMmr(b.badge), 0) / xs.length : 0);
+  const last10Avg = avgMmr(last10);
+  const prev10Avg = avgMmr(prev10);
   let trend = 'stable';
   if (last10.length >= 3 && prev10.length >= 3) {
     if (last10Avg - prev10Avg > 0.5) trend = 'climbing';
     else if (last10Avg - prev10Avg < -0.5) trend = 'declining';
   }
 
-  const delta30 = current.badge - first.badge;
+  const delta30 = badgeToMmr(current.badge) - badgeToMmr(first.badge);
 
   return {
     current,
@@ -136,11 +141,12 @@ function buildMmrHistory(rankPredict, matchHistory = []) {
  * Fetch the Deadlock API rank-predict endpoint; supports both object and array
  * shapes depending on endpoint version. Uses Redis caching (10 min TTL).
  */
-async function fetchRankPredictRaw(accountId) {
+async function fetchRankPredictRaw(accountId, { bypassCache = false } = {}) {
   const cacheKey = `mmr:${accountId}`;
-  const cached = await redisClient
+  
+  const cached = !bypassCache ? await redisClient
     .get(cacheKey)
-    .catch(logAndFallback(`[Redis] MMR cache read failed for ${accountId}`, null));
+    .catch(logAndFallback(`[Redis] MMR cache read failed for ${accountId}`, null)) : null;
   if (cached) return cached;
 
   try {
