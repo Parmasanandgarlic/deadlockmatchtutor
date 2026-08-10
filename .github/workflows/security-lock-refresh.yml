@@ -1,0 +1,31 @@
+name: Security Lockfile Refresh
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  refresh:
+    if: github.head_ref == 'agent/portfolio-security-audit'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: agent/portfolio-security-audit}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: npm
+      - name: Apply non-breaking production dependency fixes
+        continue-on-error: true
+        run: npm audit fix --package-lock-only --ignore-scripts
+      - name: Verify no high or critical production advisories remain
+        run: npm audit --omit=dev --audit-level=high
+      - name: Commit verified lockfile only
+        shell: bash
+        run: |
+          if git diff --quiet -- package-lock.json; then exit 0; fi
+          git config user.name 'security-lockfile-bot'
+          git config user.email 'security-lockfile-bot@users.noreply.github.com'
+          git add package-lock.json
+          git commit -m 'security: refresh patched dependency lockfile'
+          git push origin HEAD:agent/portfolio-security-audit
