@@ -1,0 +1,58 @@
+name: Portfolio Security Audit
+on:
+  push:
+    branches: [agent/portfolio-security-audit]
+permissions: {contents: read}
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: 22.x}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Scan credentials in current tree and history
+        shell: bash
+        run: |
+          python - <<'PY'
+          import re,subprocess,sys
+          from pathlib import Path
+          P=[('private/wallet key',re.compile(r'(?i)(?:private|wallet|secret|clean|compromised)[_ -]*(?:key|keypair|pk)[^\n]{0,100}?(?:0x)?[0-9a-f]{64}')),('secret assignment',re.compile(r'(?i)(?:PRIVATE_KEY|WALLET_PRIVATE_KEY|SECRET_KEY|SOLANA_PRIVATE_KEY|JWT_SECRET|AUTH_SECRET|SUPABASE_SERVICE_ROLE_KEY|DISCORD_BOT_TOKEN)\s*[:=]\s*["\']?(?!your_|example|replace|change|process\.|os\.|env\.|<)[A-Za-z0-9+/=_-]{32,}')),('Solana keypair array',re.compile(r'(?is)(?:secret|private|wallet)[_ -]*(?:key|keypair|pk)[^=\n]{0,60}[=:]\s*\[(?:\s*\d{1,3}\s*,){31,}\s*\d{1,3}\s*\]')),('PEM private key',re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----')),('GitHub token',re.compile(r'\b(?:ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,})\b')),('OpenAI key',re.compile(r'\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b')),('Google API key',re.compile(r'\bAIza[0-9A-Za-z_-]{30,}\b')),('AWS access key',re.compile(r'\bAKIA[0-9A-Z]{16}\b')),('Telegram token',re.compile(r'\b\d{8,12}:[A-Za-z0-9_-]{30,}\b')),('Stripe live key',re.compile(r'\b(?:sk|rk)_live_[A-Za-z0-9]{16,}\b')),('Slack token',re.compile(r'\bxox[baprs]-[A-Za-z0-9-]{20,}\b')),('keyed RPC',re.compile(r'https?://[^\s"\']*(?:alchemy\.com/v2|infura\.io/v3)/[A-Za-z0-9_-]{16,}',re.I))]
+          F=re.compile(r'(^|/)(?:\.env(?:\..+)?|credentials\.json|service-account[^/]*\.json|[^/]+\.(?:pem|p12|pfx|key))$',re.I);T={'.env.example','env.example','.env.sample','env.sample'}
+          cur=[]
+          for f in filter(None,subprocess.check_output(['git','ls-files','-z']).decode(errors='ignore').split('\0')):
+            b=Path(f).name
+            if F.search(f.replace('\\','/')) and b not in T:cur.append((f,'credential filename'))
+            try:s=Path(f).read_text('utf-8',errors='ignore')
+            except:continue
+            if b not in T:
+              for n,p in P:
+                if p.search(s):cur.append((f,n))
+          if cur:
+            print('Current-tree credential findings:');[print(f' - {f}: {n}') for f,n in sorted(set(cur))];sys.exit(1)
+          hist=[];seen=set()
+          for row in subprocess.check_output(['git','rev-list','--objects','--all'],text=True,errors='ignore').splitlines():
+            a=row.split(' ',1);o=a[0];path=a[1] if len(a)>1 else '<unknown>'
+            if o in seen:continue
+            seen.add(o)
+            try:
+              if subprocess.check_output(['git','cat-file','-t',o],text=True,stderr=subprocess.DEVNULL).strip()!='blob':continue
+              if int(subprocess.check_output(['git','cat-file','-s',o],text=True,stderr=subprocess.DEVNULL).strip())>2000000:continue
+              s=subprocess.check_output(['git','cat-file','-p',o],stderr=subprocess.DEVNULL).decode('utf-8',errors='ignore')
+            except:continue
+            if Path(path).name not in T:
+              for n,p in P:
+                if p.search(s):hist.append((path,n));break
+          if hist:
+            print('::warning::Credential-like material exists in Git history; rotate before history cleanup.');[print(f' history: {f}: {n}') for f,n in sorted(set(hist))[:100]]
+          else:print('Credential scan passed.')
+          PY
+      - name: Audit production dependencies
+        shell: bash
+        run: |
+          if [ -f package-lock.json ] && [ -f package.json ]; then npm ci --ignore-scripts && npm audit --omit=dev --audit-level=high;
+          elif [ -f pnpm-lock.yaml ] && [ -f package.json ]; then corepack enable && pnpm install --frozen-lockfile --ignore-scripts && pnpm audit --prod --audit-level high;
+          elif [ -f package.json ]; then echo '::warning::Node manifest has no supported lockfile.'; fi
+          if [ -f requirements.txt ]; then python -m pip install --disable-pip-version-check -q pip-audit && pip-audit -r requirements.txt; fi
