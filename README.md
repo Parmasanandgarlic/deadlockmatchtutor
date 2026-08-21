@@ -1,364 +1,134 @@
 # Deadlock AfterMatch
 
-A comprehensive aggregate post-match analytics dashboard for **Deadlock**. Fetches match data directly from the Deadlock API, runs an analysis pipeline evaluating Economy, Itemization, Combat, and available Objective signals, and surfaces the most critical "Game Losing Mistakes" in plain English.
+Deadlock AfterMatch is an open-source post-match analytics application for Valve's **Deadlock**. It resolves Steam identities, retrieves match data from the Deadlock community API, runs a multi-stage analysis pipeline, and turns raw statistics into player-facing performance grades, trends, and coaching insights.
 
-**Live Site**: https://www.aftermatch.xyz
+**Live application:** https://www.aftermatch.xyz
 
-## How to Use
+## What it does
 
-### Finding Your Steam Profile
-
-1. **Open Steam** and go to your profile (click your username in the top right)
-2. **Copy your profile URL** from the address bar
-   - It will look like: `https://steamcommunity.com/id/yourusername` (custom URL)
-   - Or: `https://steamcommunity.com/profiles/76561198000000000` (Steam64 ID)
-3. **Paste it** into the search box on https://www.aftermatch.xyz
-
-### Accepted Input Formats
-
-- **Steam Vanity URL**: `https://steamcommunity.com/id/yourusername`
-- **Steam64 ID**: `76561198000000000` (17 digits, found in your profile URL)
-- **Steam32 ID**: `12345678` (8-10 digits, commonly used in Deadlock)
-
-### Analyzing Your Matches
-
-1. Enter your Steam profile URL or ID on the homepage
-2. Browse your recent match history
-3. Click on any match to view the full analysis
-4. Review your performance grades and actionable insights
-
-### What You'll See
-
-- **Deep Player Profiles**: View your MMR history, temporal win-rate trends, and aggregated top-hero statistics.
-- **OSIC Field Report**: Lore-accurate actionable insights delivered as Occult Security and Investigation Commission directives.
-- **Tactical Matrix**: A multi-dimensional radar chart visualizing your unique "Combat Signature" against average players.
-- **Lore-Accurate Aesthetics**: A beautifully themed UI inspired directly by Deadlock's 1930s occult-steampunk New York setting, featuring subway backgrounds, Juke Rooms, and geometric art-deco dossier styling.
-- **Score & Grade**: A+ to F letter grade based on your performance across multiple match dimensions.
+- Resolves Steam vanity URLs, Steam64 IDs, and Steam32 account IDs.
+- Retrieves recent Deadlock match history and player metadata.
+- Analyzes economy, combat, objectives, itemization, matchup difficulty, build paths, temporal performance, and decision quality.
+- Produces player profiles with MMR history, hero performance, trend analysis, and shareable match reports.
+- Presents analysis through the OSIC-inspired dossier interface while keeping the underlying API and scoring systems independently testable.
+- Publishes OpenAPI and agent-discovery metadata for machine-readable integrations.
 
 ## Architecture
 
-```
-┌─────────────┐      ┌──────────────────────────────────────────────┐
-│  React SPA  │◄────►│  Node.js / Express Backend (Serverless)       │
-│  (Vite)     │ JSON │                                              │
-│  Port 5173  │      │  ┌────────────┐  ┌────────────────────────┐ │
-└─────────────┘      │  │ REST API   │  │ Analysis Pipeline       │ │
-                     │  │ Routes     │──►  Economy Analyzer      │ │
-                     │  └────────────┘  │  Itemization Analyzer  │ │
-                     │                  │  Combat Analyzer       │ │
-                     │  ┌────────────┐  │  Objectives Analyzer   │ │
-                     │  │ Services   │  │  Insights Engine       │ │
-                     │  │ Steam API  │  │  Scoring Engine        │ │
-                     │  │ Deadlock   │  └────────────────────────┘ │
-                     │  │ API        │                              │
-                     │  └────────────┘       Port 3001              │
-                     │  ┌────────────┐                              │
-                     │  │ Supabase   │◄────┐                       │
-                     │  │ Cache/DB   │     │                       │
-                     │  └────────────┘     │                       │
-                     └─────────────────────┼───────────────────────┘
-                                           │
-                     ┌─────────────────────┴─────────────────────┐
-                     │  External APIs                               │
-                     │  deadlock-api.com (community API)            │
-                     │  Steam Web API (vanity resolution)          │
-                     └─────────────────────────────────────────────┘
+```text
+React / Vite client
+        |
+        v
+Vercel serverless bridge -> Express API
+        |                     |
+        |                     +-> Analysis / scoring pipeline
+        |                     +-> Steam + Deadlock APIs
+        |                     +-> Redis cache / sessions
+        |                     +-> Supabase / PostgreSQL
+        |
+        +-> SSR-aware public routing and generated social previews
 ```
 
-## Quick Start
+The repository is an npm workspace with separate `client` and `server` packages. Production API traffic is consolidated through `api/index.js`, while `vercel.json` defines routing, headers, function limits, and the scheduled account-sync job.
 
-### Local Development
+## Local development
+
+Prerequisites: Node.js 20, npm, and a PostgreSQL/Supabase project. Redis is optional for local development and recommended for production.
 
 ```bash
-# Install all dependencies
 npm install
-
-# Create environment file
 cp server/.env.example server/.env
-
-# Edit server/.env with your Supabase credentials
-# Required: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
-
-# Run both client & server in dev mode
 npm run dev
 ```
 
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:3001
+The client starts on `http://localhost:5173` and the API on `http://localhost:3001`.
 
-### Vercel Deployment
+At minimum, configure the Supabase values in `server/.env`. Steam authentication additionally requires `STEAM_API_KEY` and `SESSION_SECRET`. See `server/.env.example` and `DEVELOPER_SETUP.md` for the complete configuration contract.
 
-The application is deployed at **https://www.aftermatch.xyz**
+## Database migrations
 
-To deploy your own instance:
+`node-pg-migrate` is the authoritative schema migration path. Do not manually replay individual migration files against production.
 
 ```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy to Vercel
-vercel
-
-# Set environment variables in Vercel dashboard:
-# - SUPABASE_URL
-# - SUPABASE_ANON_KEY
-# - SUPABASE_SERVICE_ROLE_KEY
-# - SESSION_SECRET (also signs CSRF tokens unless CSRF_SECRET is set)
-# - SHARE_TOKEN_SECRET (recommended; signs shared report links)
-# - REDIS_URL (recommended in production; required when REDIS_REQUIRED=1)
-# - DEADLOCK_API_BASE_URL (default: https://api.deadlock-api.com)
-# - RATE_LIMIT_WINDOW_MS (default: 900000)
-# - RATE_LIMIT_MAX_REQUESTS (default: 100)
-# - AUTH_RATE_LIMIT_WINDOW_MS (default: 900000)
-# - AUTH_RATE_LIMIT_MAX_REQUESTS (default: 10)
+npx node-pg-migrate up \
+  --database-url "$DATABASE_URL" \
+  --migrations-dir server/migrations
 ```
 
-## Data Flow
+The migration directory contains the schema history used by the application, including the tracked-account table used for scheduled synchronization. Root-level legacy SQL files are retained only as historical references and are not the supported deployment path.
 
-1. **Resolve** — Convert Steam vanity URL, Steam32, or Steam64 ID to standardized format
-2. **Match List** — Fetch recent matches from Deadlock community API
-3. **Fetch Match Data** — Retrieve match info, player stats, hero stats, rank prediction from API
-4. **Analyze** — Run analysis pipeline; generate scores & insights JSON
-5. **Cache** — Store results in Supabase for fast retrieval on subsequent requests
-6. **Render** — Serve JSON to React frontend for visualization
+## Scheduled synchronization
 
-## Tech Stack
+Production uses the Vercel Cron configured in `vercel.json` to call `/api/cron/sync`. The endpoint requires `CRON_SECRET` authentication. Users can also request an on-demand refresh for an individual account from the product.
 
-| Layer | Technology |
-|---|---|
-| Frontend | React 18, Vite, Tailwind CSS, React Router |
-| Charts | Recharts |
-| Backend | Node.js, Express |
-| API Integration | Axios, OpenAPI-generated Deadlock API client |
-| Database/Cache | Supabase (PostgreSQL) |
-| Deployment | Vercel (serverless functions) |
-| Security | Helmet, signed CSRF tokens, CORS, Redis-backed auth rate limits |
+The scheduled job refreshes the oldest active tracked accounts; it is not part of request-critical match analysis and can fail independently without taking the user-facing API offline.
 
-## Project Structure
+## Environment variables
 
-```
-deadlock-match-tutor/
-├── api/               # Vercel Serverless entry point (bypasses Hobby limits)
-│   └── index.js       # Bridge exporting the unified Express app
-├── client/            # React SPA (Vite)
-│   ├── src/
-│   │   ├── api/       # Backend HTTP client
-│   │   ├── components/# UI components
-│   │   ├── hooks/     # Custom React hooks
-│   │   ├── pages/     # Route-level pages
-│   │   └── utils/     # Formatters, constants
-│   └── ...
-├── server/            # Express API + Analysis Pipeline
-│   ├── config/        # App configuration
-│   ├── controllers/   # Request handlers
-│   ├── middleware/    # Error handling, validation, rate limiting
-│   ├── pipeline/      # Analysis modules & scoring
-│   ├── routes/        # API route definitions
-│   ├── services/      # External API integrations (Steam, Deadlock)
-│   └── utils/         # Helpers, logger, constants
-├── supabase/          # Database definitions and security
-│   └── fix_rls_analyses.sql # RLS bypass security script
-├── tests/             # Comprehensive test suite
-│   ├── unit/          # Unit tests (helpers, scoring)
-│   ├── component/     # Component tests (validation, error handler)
-│   ├── sast/          # Static Application Security Testing
-│   ├── integration/   # Integration tests (pipeline)
-│   ├── api/           # API endpoint tests
-│   ├── database/      # Database tests (Supabase)
-│   ├── performance/   # Performance & Load tests, Stress tests
-│   ├── security/      # DAST / Penetration tests
-│   ├── failover/      # Disaster Recovery & Failover tests
-│   └── run-all.js     # Master test runner
-├── setup-supabase.js  # Script to initialize Supabase schema
-├── vercel.json        # Vercel deployment configuration
-└── package.json       # Workspace root
-```
+Important server-side values include:
 
-## Environment Variables
+| Variable | Purpose |
+| --- | --- |
+| `SUPABASE_URL` | Supabase project URL |
+| `SUPABASE_ANON_KEY` | Public Supabase key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only service-role key |
+| `DATABASE_URL` | Direct PostgreSQL connection used by migrations |
+| `STEAM_API_KEY` | Steam Web API authentication |
+| `SESSION_SECRET` | Session signing and default CSRF secret |
+| `CSRF_SECRET` | Optional dedicated CSRF signing secret |
+| `SHARE_TOKEN_SECRET` | Optional dedicated shared-report signing secret |
+| `REDIS_URL` | Shared cache, session, and throttling backend |
+| `REDIS_REQUIRED` | Fail closed when Redis is unavailable if set to `1`/`true` |
+| `CRON_SECRET` | Authenticates the production scheduled sync endpoint |
+| `CORS_ORIGIN` | Allowed cross-origin clients |
+| `DEADLOCK_API_BASE_URL` | Deadlock community API base URL |
 
-| Variable | Required | Description | Default |
-|---|---|---|---|
-| `PORT` | No | Server port | `3001` |
-| `NODE_ENV` | No | Environment (development/production) | `development` |
-| `DEADLOCK_API_BASE_URL` | No | Deadlock community API URL | `https://api.deadlock-api.com` |
-| `SUPABASE_URL` | Yes | Supabase project URL | - |
-| `SUPABASE_ANON_KEY` | Yes | Supabase anon/public key | - |
-| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service role key (bypasses RLS) | - |
-| `SESSION_SECRET` | Yes in production | Session signing secret; also signs CSRF tokens unless `CSRF_SECRET` is set | - |
-| `CSRF_SECRET` | No | Optional separate secret for CSRF token signing | `SESSION_SECRET` |
-| `SHARE_TOKEN_SECRET` | No | Optional separate secret for signed shared report links | `CSRF_SECRET` / `SESSION_SECRET` |
-| `REDIS_URL` | Recommended in production | Redis connection URL for shared cache, sessions, and auth rate limits. Required when `REDIS_REQUIRED=1` | - |
-| `REDIS_REQUIRED` | No | Set to `1` or `true` to fail startup/requests when Redis is unavailable | - |
-| `CORS_ORIGIN` | No | Comma-separated allowed CORS origins | `http://localhost:5173` (dev) / `true` (prod) |
-| `RATE_LIMIT_WINDOW_MS` | No | Rate limit window in milliseconds | `900000` (15 min) |
-| `RATE_LIMIT_MAX_REQUESTS` | No | Max requests per window per IP | `100` |
-| `AUTH_RATE_LIMIT_WINDOW_MS` | No | Auth-specific rate limit window in milliseconds | `900000` (15 min) |
-| `AUTH_RATE_LIMIT_MAX_REQUESTS` | No | Max auth attempts per window per IP | `10` |
+Never commit real credentials. Example values belong only in `server/.env.example`.
 
-## Testing
+## Testing and CI
 
-The project includes a comprehensive test suite covering unit, component, integration, API, database, performance, stress, security, and disaster recovery scenarios.
-
-### Run All Tests
+The repository includes unit, component, integration, API, database, regression, compliance, browser, performance, security, and failover coverage.
 
 ```bash
 npm test
+npm run test:ci:api
+npm run test:ci:browser
+npm run test:sast
 ```
 
-### Run Individual Test Suites
+GitHub Actions runs the core CI suite on pushes and pull requests. A separate portfolio security workflow scans the current tree and Git history for credential-shaped material and audits production dependencies.
 
-```bash
-npm run test:unit        # Unit tests (helpers, scoring)
-npm run test:component   # Component tests (validation, error handler)
-npm run test:sast        # Static Application Security Testing
-npm run test:integration # Integration tests (pipeline)
-npm run test:api         # API endpoint tests
-npm run test:db          # Database tests (Supabase)
-npm run test:load        # Performance & Load tests
-npm run test:stress      # Stress tests
-npm run test:dast        # DAST / Penetration tests
-npm run test:failover    # Disaster Recovery & Failover tests
+## Project structure
+
+```text
+.github/workflows/   CI and security automation
+api/                 Vercel serverless entry points
+client/              React/Vite application
+server/
+  controllers/       HTTP handlers
+  middleware/        Security, validation, SSR and error handling
+  migrations/        Authoritative database migrations
+  pipeline/          Analysis, scoring and insight engines
+  routes/            API routes
+  services/          Steam, Deadlock, Redis and sync services
+  utils/             Shared server utilities
+docs/adr/             Architecture decision records
+scripts/              Maintained build/asset utilities
+supabase/             Historical Supabase-specific references
+tests/                Automated verification suites
+vercel.json           Production deployment and cron configuration
 ```
 
-### Test Coverage
+## Security model
 
-| Suite | Tests | Coverage |
-|---|---|---|
-| Unit: helpers | 15 | Steam ID normalization, validation |
-| Unit: scoring | 7 | Impact score calculation, grading |
-| Component: validation | 6 | Middleware validation logic |
-| Component: errorHandler | 3 | Error handling middleware |
-| SAST: static scan | 10 rules | Hardcoded secrets, SQL injection, etc. |
-| Integration: pipeline | 5 | End-to-end pipeline logic |
-| API: http | 10 | All API endpoints |
-| Database: supabase | 6 | CRUD operations, constraints |
-| Performance: load | 3 | Latency, throughput, error rates |
-| Stress: burst/limits | 5 | Burst requests, oversized payloads, recovery |
-| DAST: pen test | 10 | XSS, SQLi, path traversal, headers |
-| Failover: DR | 4 | Supabase/API outage, fallback cache |
+The server uses input validation, Helmet/security headers, signed CSRF tokens, configurable CORS, rate limiting, server-mediated Supabase access, signed shared-report tokens, and Redis-backed production state where configured. Scheduled synchronization requires an explicit bearer secret and is not trusted based on client-supplied platform-identification headers.
 
-**Total: 62 tests across 12 suites**
-
-## Key Features
-
-### Authentic "Deadlock" Lore Integration
-
-- **OSIC Dossier UI**: The dashboard leverages Deadlock's "Occult Security and Investigation Commission" lore, serving reports inside realistic government ledgers with custom art-deco SVGs.
-- **Game-Accurate Scenery**: Dynamic backgrounds featuring high-resolution captures of "Broadway" (the Blue Lane) and subway Juke Rooms.
-
-### Match Synchronization & Tracking
-
-- **Automated Match Sync**: Background cron jobs keep player match histories continuously up to date.
-- **On-Demand Sync**: An in-UI button allows players to instantly pull data for matches that just ended without waiting on background jobs.
-- **Player Trends**: Dedicated profile pages track MMR progression and win-rate trends over your last 20 matches.
-
-### Fault Tolerance
-
-- **Private Profiles**: Gracefully handles 403 Forbidden responses from the Deadlock API for private player profiles
-- **Fallback Cache**: In-memory cache automatically activates when Supabase is unavailable
-- **Rate Limiting**: Built-in rate limiting prevents abuse and API exhaustion
-- **Error Handling**: Comprehensive error handling with production-safe error responses
-
-### Input Support
-
-- **Steam Vanity URLs**: e.g., `https://steamcommunity.com/id/username`
-- **Steam32 IDs**: 8-10 digit account IDs (commonly used in Deadlock)
-- **Steam64 IDs**: 17-digit Steam IDs
-
-### Security
-
-- **Helmet**: Security headers (CSP, HSTS, X-Frame-Options, etc.)
-- **CORS**: Configurable origin validation
-- **CSRF Protection**: Signed double-submit token validation for all non-safe methods
-- **Rate Limiting**: Per-IP request throttling, with Redis-backed auth throttles in production
-- **Input Validation**: Strict validation on all inputs
-- **SQL Injection Protection**: Parameterized queries via Supabase client
-
-### Performance
-
-- **Supabase Caching**: Analysis results cached for fast retrieval through server-mediated, signed shared report access
-- **Efficient API Calls**: Batch API calls where possible
-- **Graceful Degradation**: Development fallback mechanisms preserve local availability; production requires Redis for shared cache and throttling
-
-## Deployment Notes
-
-### Vercel Configuration
-
-- **Max Duration**: 60 seconds per function
-- **Memory**: 1024 MB
-- **API Routes**: All `/api/*` routes are consolidated into a single Serverless Function (`api/index.js`) to prevent exceeding the Vercel Hobby plan 12-function limit.
-- **Static Assets**: React build served from root
-- **SPA Routing**: All non-API routes fall back to `/index.html`
-
-### Database Setup (Supabase)
-
-1. Create a Supabase project at [supabase.com](https://supabase.com)
-2. Create an `analyses` table with the following schema:
-
-```sql
-CREATE TABLE analyses (
-  match_id BIGINT NOT NULL,
-  account_id BIGINT NOT NULL,
-  data JSONB NOT NULL,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  PRIMARY KEY (match_id, account_id)
-);
-
-CREATE INDEX idx_analyses_match_account ON analyses(match_id, account_id);
-CREATE INDEX idx_analyses_updated_at ON analyses(updated_at DESC);
-```
-
-3. Retrieve your `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` from the Supabase dashboard
-4. Add them to your environment variables (locally or in Vercel)
-
-## Key Limitations
-
-- **API Availability**: Depends on the Deadlock community API availability
-- **Rate Limits**: API may have rate limits; configure `RATE_LIMIT_MAX_REQUESTS` accordingly
-- **Private Profiles**: Private player profiles will return partial data (account stats, rank prediction, player card will be empty)
-- **Match History**: Only matches available through the Deadlock API can be analyzed
-
-## Troubleshooting
-
-### COMMON ISSUES
-
-- **Deadlock API (500 Error)**: The community API may occasionally be offline or under heavy load. If analysis fails with a 500 error, check the [Deadlock API Status](https://deadlock-api.com) and try again later.
-- **Match Not Found**: Matches typically take 2-5 minutes to appear in the community API after a game ends. If your recent match is missing, wait a few minutes and refresh.
-- **Supabase Connectivity**: Ensure your `SUPABASE_SERVICE_ROLE_KEY` is correct. If the server logs "Bypassing RLS", the service role key is required for original analysis caching.
-- **Rate Limits**: If you see "Too many requests", your IP has exceeded the 100 requests/15 min limit. This is configurable via `RATE_LIMIT_MAX_REQUESTS`.
-
-### DEBUGGING
-
-To enable detailed debug logs, set the following environment variable:
-```bash
-# In your .env file
-DEBUG=true
-```
-Server logs are handled by `winston` and `morgan`. In development mode, you will see colorized HTTP logs in your terminal. For production (Vercel), logs are accessible via the Vercel Dashboard under **Logs**.
+Please report security issues through the process described in `SECURITY.md` rather than opening a public vulnerability report.
 
 ## Contributing
 
-We welcome contributions! To ensure a smooth process, please follow these guidelines:
-
-### DEVELOPMENT WORKFLOW
-
-1. **Fork & Clone**: Create a personal fork of the repository.
-2. **Feature Branch**: Create a branch for your feature (`git checkout -b feat/my-new-feature`).
-3. **Draft PR**: If your work is in progress, open a Draft PR to get early feedback.
-4. **Tests**: Ensure all tests pass before requesting a review.
-
-### PR CHECKLIST
-
-- [ ] All tests pass (`npm test`)
-- [ ] Code follows existing style (linting)
-- [ ] Documentation updated (if applicable)
-- [ ] PR description clearly explains the "why" behind the change
-- [ ] No sensitive credentials/keys committed
-
-### ARCHITECTURE DECISIONS (ADRs)
-
-Key architectural decisions (such as the choice of Supabase and Vercel) are documented in the [docs/adr/](docs/adr/) directory. Please refer to these before proposing major structural changes.
+Use a feature branch, keep changes narrowly scoped, update relevant documentation, and run the affected tests before opening a pull request. Architecture decisions with long-term consequences should be documented under `docs/adr/`.
 
 ---
 
-*Deadlock AfterMatch is a community project and is not affiliated with Valve Corporation.*
+Deadlock AfterMatch is a community project and is not affiliated with Valve Corporation.
