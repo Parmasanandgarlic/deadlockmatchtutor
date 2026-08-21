@@ -48,6 +48,7 @@ async function main() {
       SESSION_SECRET: 'ci-session-secret',
       CSRF_SECRET: 'ci-csrf-secret',
       SHARE_TOKEN_SECRET: 'ci-share-token-secret',
+      CRON_SECRET: 'ci-cron-secret',
       CORS_ORIGIN: `http://127.0.0.1:${port}`,
       REDIS_URL: '',
     },
@@ -64,6 +65,18 @@ async function main() {
     const health = await fetch(`${baseUrl}/api/health`);
     assert.equal(health.status, 200, '/api/health should be reachable');
     assert.equal((await readJson(health)).status, 'ok');
+
+    const cronWithoutAuth = await fetch(`${baseUrl}/api/cron/sync`);
+    assert.equal(cronWithoutAuth.status, 401, 'cron endpoint should reject unauthenticated requests');
+
+    const cronWithSpoofedPlatformHeader = await fetch(`${baseUrl}/api/cron/sync`, {
+      headers: { 'x-vercel-cron': '1' },
+    });
+    assert.equal(
+      cronWithSpoofedPlatformHeader.status,
+      401,
+      'cron endpoint must not trust a client-supplied Vercel cron header',
+    );
 
     const csrf = await fetch(`${baseUrl}/api/csrf`);
     assert.equal(csrf.status, 200, '/api/csrf should issue a token');

@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-08-21
+
+- Consolidated scheduled account synchronization onto the production Vercel Cron and removed the redundant 30-minute GitHub Actions scheduler.
+- Hardened `/api/cron/sync` to require an explicitly configured bearer secret and reject spoofable platform-identification headers.
+- Removed generated bundle output, one-off scratch verification code, obsolete setup tooling, and completed internal planning/review documents.
+- Consolidated contributor setup guidance around the maintained `node-pg-migrate` workflow and refreshed repository documentation.
+- Kept the portfolio security audit active on `main` and added CI coverage for cron authentication boundaries.
+
 ## 2026-04-24
 
 - Completed a technical SEO, AEO, GEO, performance, and UX/accessibility pass for the React/Vite client.
