@@ -1,7 +1,7 @@
 {
   "name": "deadlock-aftermatch",
   "version": "1.0.1",
-  "description": "Comprehensive post-match analyzer for Deadlock",
+  "description": "Open-source Deadlock analytics engine with Steam identity resolution, match ingestion, role-aware scoring, trend analysis, and secure shareable reports.",
   "type": "commonjs",
   "homepage": "https://www.aftermatch.xyz",
   "repository": {
