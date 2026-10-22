@@ -16,8 +16,9 @@ jobs:
           node-version: '22'
       - name: Resolve workspace dependencies and explicit patched Vite version
         run: |
+          npm pkg set --workspace=client devDependencies.vite=6.4.5
+          npm pkg set overrides.vite=6.4.5
           npm install --package-lock-only --ignore-scripts --no-audit --no-fund
-          npm install -w client vite@6.4.5 --save-exact --package-lock-only --ignore-scripts --no-audit --no-fund
       - name: Verify lock contains patched dependencies
         run: |
           node <<'NODE'
@@ -44,6 +45,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git rm .github/workflows/security-lockfile-regeneration-20261022.yml
-          git add package-lock.json client/package.json
+          git add package.json package-lock.json client/package.json
           git commit -m "chore(security): lock patched Deadlock client and API dependencies"
           git push origin HEAD:security/20261022-axios-vite6
