@@ -2,6 +2,8 @@
  * API Tests: exercises the Express backend over HTTP using Node's built-in http.
  * Dynamically starts the server on an ephemeral port to run autonomously.
  */
+process.env.NODE_ENV = process.env.NODE_ENV || 'test';
+process.env.RATE_LIMIT_MAX_REQUESTS = process.env.RATE_LIMIT_MAX_REQUESTS || '10000';
 const http = require('http');
 const assert = require('assert');
 const app = require('../../server/index');

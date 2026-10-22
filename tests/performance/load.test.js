@@ -11,9 +11,12 @@
  *   - /health         p95 < 50ms   @ 50 concurrent
  *   - cached /analysis p95 < 500ms @ 20 concurrent
  */
+process.env.NODE_ENV = process.env.NODE_ENV || 'test';
+process.env.RATE_LIMIT_MAX_REQUESTS = process.env.RATE_LIMIT_MAX_REQUESTS || '10000';
 const http = require('http');
 const os = require('os');
 const app = require('../../server/index');
+const { createShareToken } = require('../../server/utils/shareTokens');
 
 const HOST = '127.0.0.1';
 let PORT = 0;
@@ -118,6 +121,7 @@ async function runLoad(label, { method, path, body, concurrency, total, maxP95 }
 
   // Warm-up so the cache populates
   await request('POST', '/api/analysis/run', { matchId: 75965136, accountId: 1743346546 });
+  const shareToken = createShareToken(75965136, 1743346546);
 
   // Warm up /health once before measuring
   await Promise.all(Array.from({ length: 20 }, () => request('GET', '/health')));
@@ -127,7 +131,7 @@ async function runLoad(label, { method, path, body, concurrency, total, maxP95 }
   }));
 
   results.push(await runLoad('GET /api/analysis/:m/:a (cached) @ 20 concurrent x 100', {
-    method: 'GET', path: '/api/analysis/75965136/1743346546',
+    method: 'GET', path: `/api/analysis/75965136/1743346546?token=${encodeURIComponent(shareToken)}`,
     concurrency: 20, total: 100, maxP95: process.env.SUPABASE_URL ? 500 : 8000,
   }));
 

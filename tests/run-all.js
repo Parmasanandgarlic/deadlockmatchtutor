@@ -49,7 +49,10 @@ const results = [];
 for (const s of suites) {
   const full = path.join(__dirname, s.file);
   if (!fs.existsSync(full)) { results.push({ ...s, status: 'MISSING' }); continue; }
-  const r = spawnSync(process.execPath, [full], { stdio: 'inherit' });
+  const r = spawnSync(process.execPath, [full], {
+    stdio: 'inherit',
+    env: { ...process.env, NODE_ENV: 'test', RATE_LIMIT_MAX_REQUESTS: '10000' },
+  });
   let status = 'PASS';
   if (r.status === 2) status = 'SKIP';
   else if (r.status !== 0) status = 'FAIL';

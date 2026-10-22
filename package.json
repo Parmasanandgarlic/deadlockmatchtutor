@@ -44,7 +44,7 @@
     "@sentry/node": "^10.49.0",
     "@supabase/supabase-js": "^2.103.2",
     "axios": "^1.20.0",
-    "compression": "^1.7.4",
+    "compression": "^1.8.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "deadlock_api_client": "file:./server/deadlock_api_client",
@@ -54,7 +54,7 @@
     "express-session": "^1.19.0",
     "helmet": "^7.1.0",
     "ioredis": "^5.10.1",
-    "morgan": "^1.10.0",
+    "morgan": "^1.12.1",
     "node-pg-migrate": "^8.0.4",
     "passport": "^0.7.0",
     "passport-steam": "^1.0.18",
@@ -75,7 +75,7 @@
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "concurrently": "^8.2.2",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.5",
     "typescript": "^6.0.3"
   },
   "engines": {
@@ -87,6 +87,21 @@
   },
   "overrides": {
     "follow-redirects": "1.16.1",
-    "vite": "6.4.5"
+    "vite": "6.4.5",
+    "baseline-browser-mapping": "^2.11.0",
+    "brace-expansion": {
+      ".": "^5.0.12"
+    },
+    "browserslist": "^4.28.7",
+    "compression": "^1.8.2",
+    "fast-uri": "^3.1.8",
+    "morgan": "^1.12.1",
+    "postcss-selector-parser": "^7.1.6",
+    "proxy-addr": "^2.0.8",
+    "qs": "^6.16.0",
+    "sharp": "^0.35.5",
+    "shell-quote": "^1.11.0",
+    "source-map-js": "^1.2.2",
+    "undici": "^7.29.1"
   }
 }

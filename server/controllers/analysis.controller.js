@@ -232,10 +232,11 @@ async function runAnalysis(req, res, next) {
     // Step 8: Start hero stats fetching AS SOON AS heroId is known from either match history or match info
     const heroStatsPromise = Promise.all([matchHistoryPromise, matchInfoPromise]).then(([matchHistory, matchInfo]) => {
       const matchInHistory = matchHistory.find(m => m.match_id === Number(matchId));
-      if (!matchInHistory && (!matchInfo || Object.keys(matchInfo).length === 0)) {
-        throw new Error('Match not found. The Deadlock API may be experiencing issues — please try again later.');
+      const playerInMatch = matchInfo?.players?.find(p => p.account_id === Number(accountId));
+      if (!matchInHistory && !playerInMatch) {
+        throw new Error('Match or player not found. The Deadlock API may be experiencing issues — please try again later.');
       }
-      const heroId = matchInHistory?.hero_id || matchInfo?.players?.find(p => p.account_id === Number(accountId))?.hero_id || 0;
+      const heroId = matchInHistory?.hero_id || playerInMatch?.hero_id || 0;
       
       if (heroId) {
         logger.info(`[Analysis] Extracting hero stats for hero ${heroId}`);
