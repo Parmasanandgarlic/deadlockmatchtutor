@@ -19,15 +19,17 @@ jobs:
           npm pkg set --workspace=client devDependencies.vite=6.4.5
           npm pkg set overrides.vite=6.4.5
           npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          npm install -w client vite@6.4.5 --save-exact --package-lock-only --ignore-scripts --no-audit --no-fund
+          npm update vite --package-lock-only --ignore-scripts --no-audit --no-fund
       - name: Verify lock contains patched dependencies
         run: |
           node <<'NODE'
           const lock=require('./package-lock.json');
           const targets={vite:[6,4,5],axios:[1,20,0],'follow-redirects':[1,16,1]};
           for(const [name,floor] of Object.entries(targets)){
-            const all=Object.entries(lock.packages||{}).filter(([k])=>k==='node_modules/'+name||k.endsWith('/node_modules/'+name)).map(([,v])=>v.version);
+            const all=Object.entries(lock.packages||{}).filter(([k])=>k==='node_modules/'+name||k.endsWith('/node_modules/'+name)).map(([k,v])=>k+'='+v.version);
             if(!all.length)throw Error('Missing '+name);
-            for(const v of all){const a=v.split('.').map(Number);if(a[0]<floor[0]||(a[0]===floor[0]&&(a[1]<floor[1]||(a[1]===floor[1]&&a[2]<floor[2]))))throw Error(name+'@'+v+' is still vulnerable');}
+            for(const v of all){const a=v.slice(v.lastIndexOf('=')+1).split('.').map(Number);if(a[0]<floor[0]||(a[0]===floor[0]&&(a[1]<floor[1]||(a[1]===floor[1]&&a[2]<floor[2]))))throw Error(name+'@'+v+' is still vulnerable');}
             console.log(name+': '+all.join(', '));
           }
           NODE
