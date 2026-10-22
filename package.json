@@ -43,7 +43,7 @@
   "dependencies": {
     "@sentry/node": "^10.49.0",
     "@supabase/supabase-js": "^2.103.2",
-    "axios": "^1.7.2",
+    "axios": "^1.20.0",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -84,5 +84,9 @@
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "4.60.1",
     "@rollup/rollup-linux-x64-musl": "4.60.1"
+  },
+  "overrides": {
+    "follow-redirects": "1.16.1",
+    "vite": "6.4.5"
   }
 }

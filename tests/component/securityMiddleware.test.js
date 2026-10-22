@@ -169,7 +169,7 @@ test('Redis allows degraded in-memory mode in production if REDIS_REQUIRED is no
   const redisService = fs.readFileSync(path.resolve(__dirname, '../../server/services/redis.service.js'), 'utf8');
   const index = fs.readFileSync(path.resolve(__dirname, '../../server/index.js'), 'utf8');
 
-  assert.ok(/REDIS_URL is required \(REDIS_REQUIRED=1 is set\)/.test(index), 'startup should require REDIS_URL if REDIS_REQUIRED is set');
+  assert.ok(/REDIS_URL is required when REDIS_REQUIRED=1 is set/.test(index), 'startup should require REDIS_URL if REDIS_REQUIRED is set');
 });
 
 console.log(`\n  ${test.passed} passed / ${test.failed} failed`);
