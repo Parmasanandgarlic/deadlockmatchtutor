@@ -1,0 +1,49 @@
+name: Isolated Deadlock dependency security patch
+on:
+  push:
+    branches: [security/20261022-axios-vite6]
+permissions:
+  contents: write
+jobs:
+  verify-lock:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Resolve workspace dependencies and explicit patched Vite version
+        run: |
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          npm install -w client vite@6.4.5 --save-exact --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Verify lock contains patched dependencies
+        run: |
+          node <<'NODE'
+          const lock=require('./package-lock.json');
+          const targets={vite:[6,4,5],axios:[1,20,0],'follow-redirects':[1,16,1]};
+          for(const [name,floor] of Object.entries(targets)){
+            const all=Object.entries(lock.packages||{}).filter(([k])=>k==='node_modules/'+name||k.endsWith('/node_modules/'+name)).map(([,v])=>v.version);
+            if(!all.length)throw Error('Missing '+name);
+            for(const v of all){const a=v.split('.').map(Number);if(a[0]<floor[0]||(a[0]===floor[0]&&(a[1]<floor[1]||(a[1]===floor[1]&&a[2]<floor[2]))))throw Error(name+'@'+v+' is still vulnerable');}
+            console.log(name+': '+all.join(', '));
+          }
+          NODE
+      - run: npm ci --ignore-scripts --no-fund
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm run test:unit
+      - name: Middleware component tests
+        run: npm run test:component
+      - name: Client build
+        run: npm run build
+      - name: Commit lockfile, targeted client manifest and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/security-lockfile-regeneration-20261022.yml
+          git add package-lock.json client/package.json
+          git commit -m "chore(security): lock patched Deadlock client and API dependencies"
+          git push origin HEAD:security/20261022-axios-vite6
